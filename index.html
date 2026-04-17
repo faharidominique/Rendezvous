@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rendezvous — For the friend who makes it happen</title>
+<meta name="description" content="You already make the plans. Rendezvous makes it easier. Live in Washington DC.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0A08;
+  --bg2:#141410;
+  --bg3:#1c1b16;
+  --gold:#E8A135;
+  --gold2:#f0b45a;
+  --gold-dim:rgba(232,161,53,0.15);
+  --gold-border:rgba(232,161,53,0.28);
+  --cream:#F5F0E8;
+  --cream2:rgba(245,240,232,0.6);
+  --cream3:rgba(245,240,232,0.3);
+  --cream4:rgba(245,240,232,0.06);
+  --border:rgba(245,240,232,0.09);
+  --border2:rgba(245,240,232,0.16);
+  --font-d:'Playfair Display',Georgia,serif;
+  --font-b:'DM Sans',system-ui,sans-serif;
+}
+html{background:var(--bg);color:var(--cream);font-family:var(--font-b);scroll-behavior:smooth}
+body{overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.25rem 2.5rem;
+  background:rgba(10,10,8,0.88);
+  backdrop-filter:blur(20px);
+  border-bottom:0.5px solid var(--border);
+}
+.nav-logo{font-family:var(--font-d);font-size:1.1rem;color:var(--gold);letter-spacing:0.02em}
+.nav-links{display:flex;gap:2rem;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--cream3)}
+.nav-links a:hover{color:var(--cream);transition:color 0.15s}
+.nav-cta{
+  font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:500;
+  padding:0.55rem 1.4rem;border:0.5px solid var(--gold);color:var(--gold);border-radius:2px;
+  transition:background 0.2s,color 0.2s;
+}
+.nav-cta:hover{background:var(--gold);color:var(--bg)}
+
+/* HERO */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  padding:9rem 2.5rem 5rem;max-width:960px;margin:0 auto;
+}
+.hero-live{
+  display:inline-flex;align-items:center;gap:0.6rem;
+  font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:2rem;
+  animation:fadeUp 0.5s 0.1s both;
+}
+.live-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--gold);
+  animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.hero-h1{
+  font-family:var(--font-d);
+  font-size:clamp(3rem,7vw,5.5rem);
+  font-weight:400;line-height:1.05;
+  color:var(--cream);margin-bottom:1.5rem;
+  animation:fadeUp 0.6s 0.2s both;
+}
+.hero-h1 em{font-style:italic;color:var(--gold)}
+.hero-sub{
+  font-size:1.1rem;font-weight:300;line-height:1.7;
+  color:var(--cream2);max-width:500px;margin-bottom:3rem;
+  animation:fadeUp 0.6s 0.3s both;
+}
+.hero-sub strong{font-weight:500;color:var(--cream)}
+.hero-cta{animation:fadeUp 0.6s 0.4s both;display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:0.5rem;
+  background:var(--gold);color:var(--bg);
+  font-size:0.82rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;
+  padding:0.95rem 2.25rem;border-radius:2px;
+  transition:opacity 0.2s,transform 0.15s;
+}
+.btn-primary:hover{opacity:0.85;transform:translateY(-1px)}
+.btn-text{
+  font-size:0.78rem;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--cream3);display:flex;align-items:center;gap:0.4rem;
+  transition:color 0.2s;
+}
+.btn-text:hover{color:var(--cream)}
+
+.hero-numbers{
+  display:flex;gap:3.5rem;flex-wrap:wrap;
+  margin-top:5rem;padding-top:2.5rem;
+  border-top:0.5px solid var(--border);
+  animation:fadeUp 0.6s 0.5s both;
+}
+.num-val{font-family:var(--font-d);font-size:2rem;font-weight:700;color:var(--gold);line-height:1}
+.num-label{font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--cream3);margin-top:0.4rem}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* MARQUEE */
+.marquee-wrap{
+  border-top:0.5px solid var(--border);
+  border-bottom:0.5px solid var(--border);
+  padding:1rem 0;overflow:hidden;
+  background:var(--bg2);
+}
+.marquee-track{
+  display:flex;gap:0;white-space:nowrap;
+  animation:marquee 20s linear infinite;
+}
+.marquee-track:hover{animation-play-state:paused}
+.marquee-item{
+  font-family:var(--font-d);font-size:0.9rem;font-style:italic;
+  color:var(--cream3);padding:0 2rem;
+  display:flex;align-items:center;gap:2rem;
+}
+.marquee-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);display:inline-block}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* FEATURE SECTIONS */
+.feature{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:0;min-height:90vh;
+  border-bottom:0.5px solid var(--border);
+}
+.feature.flip{direction:rtl}
+.feature.flip>*{direction:ltr}
+.feature-visual{
+  background:var(--bg2);
+  border-right:0.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  padding:4rem;min-height:90vh;
+  position:relative;overflow:hidden;
+}
+.feature.flip .feature-visual{border-right:none;border-left:0.5px solid var(--border)}
+.feature-copy{
+  display:flex;flex-direction:column;justify-content:center;
+  padding:5rem 4rem;
+}
+.feat-num{
+  font-size:0.68rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:1.5rem;
+  display:flex;align-items:center;gap:0.75rem;
+}
+.feat-num::before{content:'';display:block;width:20px;height:0.5px;background:var(--gold)}
+.feat-h{
+  font-family:var(--font-d);
+  font-size:clamp(2rem,3.5vw,3rem);
+  font-weight:400;line-height:1.15;
+  color:var(--cream);margin-bottom:1.25rem;
+}
+.feat-h em{font-style:italic;color:var(--gold)}
+.feat-p{
+  font-size:0.95rem;font-weight:300;line-height:1.8;
+  color:var(--cream2);max-width:420px;
+}
+.feat-p strong{font-weight:500;color:var(--cream)}
+
+/* PHONE MOCKUP */
+.phone{
+  width:220px;height:420px;
+  background:var(--bg3);
+  border:1.5px solid var(--border2);
+  border-radius:28px;
+  overflow:hidden;position:relative;
+  box-shadow:0 0 80px rgba(232,161,53,0.06);
+}
+.phone-bar{
+  height:36px;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+}
+.phone-notch{width:80px;height:14px;background:var(--bg3);border-radius:0 0 10px 10px}
+.phone-screen{padding:1rem}
+.phone-label{
+  font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:0.75rem;
+}
+.phone-card{
+  background:var(--cream4);border:0.5px solid var(--border2);
+  border-radius:8px;padding:0.85rem;margin-bottom:0.5rem;
+}
+.phone-card-title{font-size:0.78rem;font-weight:500;color:var(--cream);margin-bottom:0.3rem}
+.phone-card-meta{font-size:0.65rem;color:var(--cream3);font-weight:300}
+.phone-card-tag{
+  display:inline-block;margin-top:0.4rem;
+  font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;
+  background:var(--gold-dim);color:var(--gold);
+  padding:0.15rem 0.5rem;border-radius:2px;
+}
+.phone-vote{
+  display:flex;gap:0.4rem;margin-top:0.75rem;
+}
+.vote-btn{
+  flex:1;padding:0.4rem;border-radius:4px;
+  font-size:0.6rem;letter-spacing:0.06em;text-transform:uppercase;
+  text-align:center;font-weight:500;
+  border:0.5px solid var(--border2);color:var(--cream3);
+  background:transparent;
+}
+.vote-btn.active{background:var(--gold);color:var(--bg);border-color:var(--gold)}
+
+/* CHECKIN MOCKUP */
+.checkin-mock{
+  width:260px;
+  background:var(--bg3);border:1.5px solid var(--border2);
+  border-radius:16px;padding:1.5rem;
+  box-shadow:0 0 80px rgba(232,161,53,0.06);
+}
+.checkin-title{
+  font-family:var(--font-d);font-size:1rem;
+  color:var(--cream);margin-bottom:0.4rem;
+}
+.checkin-sub{font-size:0.72rem;color:var(--cream3);margin-bottom:1.25rem;font-weight:300}
+.checkin-label{font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.5rem}
+.checkin-pills{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1rem}
+.pill{
+  font-size:0.68rem;padding:0.3rem 0.75rem;border-radius:20px;
+  border:0.5px solid var(--border2);color:var(--cream3);
+  cursor:pointer;transition:all 0.15s;
+}
+.pill.on{background:var(--gold);color:var(--bg);border-color:var(--gold);font-weight:500}
+.checkin-timer{
+  margin-top:1rem;padding-top:1rem;border-top:0.5px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.timer-label{font-size:0.65rem;color:var(--cream3)}
+.timer-val{font-family:var(--font-d);font-size:1.1rem;color:var(--gold);font-weight:700}
+
+/* PLAN MOCKUP */
+.plan-mock{
+  width:280px;
+  background:var(--bg3);border:1.5px solid var(--border2);
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 0 80px rgba(232,161,53,0.06);
+}
+.plan-mock-head{
+  padding:1.25rem 1.25rem 1rem;
+  border-bottom:0.5px solid var(--border);
+}
+.plan-mock-name{font-family:var(--font-d);font-size:1rem;font-style:italic;color:var(--cream)}
+.plan-mock-tag{
+  display:inline-block;margin-top:0.4rem;
+  font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;
+  background:var(--gold-dim);color:var(--gold);padding:0.15rem 0.5rem;border-radius:2px;
+}
+.plan-stop{
+  display:flex;gap:1rem;padding:0.85rem 1.25rem;
+  border-bottom:0.5px solid var(--border);
+  align-items:flex-start;
+}
+.plan-stop-time{font-size:0.65rem;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;min-width:40px;margin-top:2px}
+.plan-stop-name{font-size:0.8rem;font-weight:500;color:var(--cream)}
+.plan-stop-meta{font-size:0.68rem;color:var(--cream3);margin-top:0.15rem;font-weight:300}
+.plan-mock-foot{
+  padding:0.85rem 1.25rem;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.plan-mock-foot-label{font-size:0.65rem;color:var(--cream3)}
+.plan-mock-vote{
+  font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;
+  padding:0.3rem 0.85rem;border:0.5px solid var(--gold);
+  color:var(--gold);border-radius:2px;background:transparent;
+  font-family:var(--font-b);cursor:pointer;
+  transition:background 0.15s,color 0.15s;
+}
+.plan-mock-vote:hover{background:var(--gold);color:var(--bg)}
+
+/* QUOTE SECTION */
+.quote-section{
+  padding:7rem 2.5rem;text-align:center;
+  border-bottom:0.5px solid var(--border);
+  max-width:760px;margin:0 auto;
+}
+.quote-mark{font-family:var(--font-d);font-size:5rem;color:var(--gold);line-height:0.5;opacity:0.3;margin-bottom:1rem}
+.quote-text{
+  font-family:var(--font-d);font-size:clamp(1.4rem,3vw,2.2rem);
+  font-style:italic;line-height:1.5;color:var(--cream);margin-bottom:1.5rem;
+}
+.quote-attr{font-size:0.75rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--cream3)}
+
+/* LEADERBOARD */
+.lb-section{padding:6rem 2.5rem;max-width:860px;margin:0 auto}
+.s-label{
+  font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:1rem;
+  display:flex;align-items:center;gap:0.75rem;
+}
+.s-label::before{content:'';display:block;width:20px;height:0.5px;background:var(--gold)}
+.s-h2{
+  font-family:var(--font-d);
+  font-size:clamp(1.8rem,4vw,2.6rem);
+  font-weight:400;line-height:1.15;
+  color:var(--cream);margin-bottom:0.75rem;
+}
+.s-h2 em{font-style:italic;color:var(--gold)}
+.s-sub{font-size:0.95rem;font-weight:300;color:var(--cream2);margin-bottom:2.5rem;line-height:1.7}
+.lb-list{display:flex;flex-direction:column;gap:0.5rem}
+.lb-row{
+  display:flex;align-items:center;gap:1.25rem;
+  padding:1.1rem 1.5rem;
+  border:0.5px solid var(--border);border-radius:2px;
+  background:var(--cream4);
+  transition:border-color 0.2s,background 0.15s;
+  opacity:0;transform:translateY(10px);
+  transition:opacity 0.4s ease, transform 0.4s ease, border-color 0.2s, background 0.15s;
+}
+.lb-row.visible{opacity:1;transform:translateY(0)}
+.lb-row:hover{border-color:var(--gold-border);background:rgba(232,161,53,0.04)}
+.lb-rank{font-family:var(--font-d);font-size:1.1rem;font-weight:700;color:var(--gold);min-width:28px}
+.lb-info{flex:1}
+.lb-name{font-size:0.92rem;font-weight:500;color:var(--cream)}
+.lb-meta{font-size:0.75rem;font-weight:300;color:var(--cream3);margin-top:0.2rem}
+.lb-stars{display:flex;gap:3px}
+.lb-star{width:10px;height:10px;background:var(--gold);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.lb-star.empty{background:var(--border2)}
+.lb-empty{text-align:center;padding:2rem;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--cream3)}
+
+/* FAQ */
+.faq-section{padding:5rem 2.5rem 6rem;max-width:760px;margin:0 auto}
+.faqs{margin-top:2rem}
+.faq{border-bottom:0.5px solid var(--border)}
+.faq-q{
+  width:100%;background:none;border:none;text-align:left;
+  padding:1.25rem 0;cursor:pointer;
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--font-b);font-size:0.92rem;font-weight:400;
+  color:var(--cream);transition:color 0.15s;
+}
+.faq-q:hover{color:var(--gold)}
+.faq-icon{font-size:1.1rem;color:var(--gold);transition:transform 0.25s;flex-shrink:0;margin-left:1rem}
+.faq-icon.open{transform:rotate(45deg)}
+.faq-a{
+  max-height:0;overflow:hidden;transition:max-height 0.35s ease,padding 0.2s;
+  font-size:0.88rem;font-weight:300;line-height:1.8;color:var(--cream2);
+}
+.faq-a.open{max-height:200px;padding-bottom:1.25rem}
+
+/* CTA */
+.cta-section{
+  border-top:0.5px solid var(--border);
+  padding:7rem 2.5rem 8rem;text-align:center;
+}
+.cta-inner{max-width:580px;margin:0 auto}
+.cta-badge{
+  display:inline-flex;align-items:center;gap:0.5rem;
+  font-size:0.68rem;letter-spacing:0.16em;text-transform:uppercase;
+  color:var(--gold);border:0.5px solid var(--gold-border);
+  padding:0.35rem 1rem;border-radius:2px;margin-bottom:2.5rem;
+}
+.cta-h{
+  font-family:var(--font-d);
+  font-size:clamp(2.5rem,6vw,4rem);
+  font-weight:400;line-height:1.1;
+  color:var(--cream);margin-bottom:1.25rem;
+}
+.cta-h em{font-style:italic;color:var(--gold)}
+.cta-sub{font-size:1rem;font-weight:300;color:var(--cream2);margin-bottom:2.5rem;line-height:1.7}
+.cta-note{margin-top:1rem;font-size:0.75rem;color:var(--cream3);letter-spacing:0.04em}
+
+/* FOOTER */
+footer{
+  border-top:0.5px solid var(--border);
+  padding:2rem 2.5rem;
+  display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:1rem;
+}
+.footer-logo{font-family:var(--font-d);color:var(--gold);font-size:1rem}
+.footer-links{display:flex;gap:1.5rem;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--cream3)}
+.footer-links a:hover{color:var(--cream)}
+.footer-copy{font-size:0.72rem;color:var(--cream3)}
+
+/* MOBILE */
+@media(max-width:768px){
+  nav{padding:1rem 1.25rem}
+  .nav-links{display:none}
+  .hero{padding:7rem 1.25rem 4rem}
+  .hero-numbers{gap:2rem;margin-top:3rem}
+  .feature{grid-template-columns:1fr;min-height:auto}
+  .feature.flip{direction:ltr}
+  .feature-visual{min-height:320px;border-right:none;border-bottom:0.5px solid var(--border)}
+  .feature.flip .feature-visual{border-left:none;border-bottom:0.5px solid var(--border)}
+  .feature-copy{padding:3rem 1.5rem}
+  .quote-section{padding:4rem 1.5rem}
+  .lb-section{padding:4rem 1.25rem}
+  .faq-section{padding:4rem 1.25rem 5rem}
+  .cta-section{padding:5rem 1.25rem 6rem}
+  footer{padding:1.5rem 1.25rem;flex-direction:column;text-align:center}
+  .footer-links{justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">✦ Rendezvous</div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#nights">Real nights</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <a href="https://rendezvous-backend-production.up.railway.app/host" class="nav-cta">Plan tonight →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-live">
+    <span class="live-dot"></span>
+    Live in Washington DC
+  </div>
+  <h1 class="hero-h1">
+    Planning for your<br>
+    crew just got<br>
+    <em>a co-pilot.</em>
+  </h1>
+  <p class="hero-sub">
+    You already make it happen.<br>
+    <strong>Rendezvous handles the back-and-forth.</strong><br>
+    Share a link. Get three plans. Everyone votes. Go.
+  </p>
+  <div class="hero-cta">
+    <a href="https://rendezvous-backend-production.up.railway.app/host" class="btn-primary">Plan tonight — free</a>
+    <a href="#how" class="btn-text">See how it works ↓</a>
+  </div>
+  <div class="hero-numbers">
+    <div>
+      <div class="num-val">90s</div>
+      <div class="num-label">Check-in time</div>
+    </div>
+    <div>
+      <div class="num-val">135</div>
+      <div class="num-label">DC venues</div>
+    </div>
+    <div>
+      <div class="num-val">3</div>
+      <div class="num-label">Plans per session</div>
+    </div>
+    <div>
+      <div class="num-val">$0</div>
+      <div class="num-label">Always free</div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marquee">
+    <span class="marquee-item">No group chat debates <span class="marquee-dot"></span></span>
+    <span class="marquee-item">No app download for your crew <span class="marquee-dot"></span></span>
+    <span class="marquee-item">135 hand-picked DC spots <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Three plans. One vote. <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Built for DC organizers <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Gets smarter every session <span class="marquee-dot"></span></span>
+    <span class="marquee-item">No group chat debates <span class="marquee-dot"></span></span>
+    <span class="marquee-item">No app download for your crew <span class="marquee-dot"></span></span>
+    <span class="marquee-item">135 hand-picked DC spots <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Three plans. One vote. <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Built for DC organizers <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Gets smarter every session <span class="marquee-dot"></span></span>
+  </div>
+</div>
+
+<!-- FEATURE 1 -->
+<div class="feature" id="how">
+  <div class="feature-visual">
+    <div class="checkin-mock">
+      <div class="checkin-title">Tonight's check-in</div>
+      <div class="checkin-sub">Shaw · Friday · 6 people checking in</div>
+      <div class="checkin-label">What's the vibe?</div>
+      <div class="checkin-pills">
+        <div class="pill on">Chill</div>
+        <div class="pill">Medium</div>
+        <div class="pill">Hype</div>
+      </div>
+      <div class="checkin-label">Budget cap?</div>
+      <div class="checkin-pills">
+        <div class="pill">$15</div>
+        <div class="pill on">$30</div>
+        <div class="pill">$50+</div>
+      </div>
+      <div class="checkin-label">Available from?</div>
+      <div class="checkin-pills">
+        <div class="pill">7pm</div>
+        <div class="pill on">8pm</div>
+        <div class="pill">9pm</div>
+      </div>
+      <div class="checkin-timer">
+        <div class="timer-label">Session closes in</div>
+        <div class="timer-val" id="timer">14:32</div>
+      </div>
+    </div>
+  </div>
+  <div class="feature-copy">
+    <div class="feat-num">01 — You set it up</div>
+    <h2 class="feat-h">30 seconds.<br><em>That's your part.</em></h2>
+    <p class="feat-p">Pick the neighborhood, set a budget cap, drop the link in your group chat. <strong>Your crew taps it in iMessage — no app, no account, no friction.</strong> They're in in 90 seconds.</p>
+  </div>
+</div>
+
+<!-- FEATURE 2 -->
+<div class="feature flip">
+  <div class="feature-visual">
+    <div class="plan-mock">
+      <div class="plan-mock-head">
+        <div class="plan-mock-name">The Shaw Circuit</div>
+        <div class="plan-mock-tag">matched to your group's vibe</div>
+      </div>
+      <div class="plan-stop">
+        <div class="plan-stop-time">7:30p</div>
+        <div>
+          <div class="plan-stop-name">Compass Rose</div>
+          <div class="plan-stop-meta">Global street food · Shaw · $$</div>
+        </div>
+      </div>
+      <div class="plan-stop">
+        <div class="plan-stop-time">9:15p</div>
+        <div>
+          <div class="plan-stop-name">Churchkey</div>
+          <div class="plan-stop-meta">555 craft beers · 14th St · $$</div>
+        </div>
+      </div>
+      <div class="plan-stop">
+        <div class="plan-stop-time">10:30p</div>
+        <div>
+          <div class="plan-stop-name">Soundcheck</div>
+          <div class="plan-stop-meta">Live music · Shaw · $</div>
+        </div>
+      </div>
+      <div class="plan-mock-foot">
+        <div class="plan-mock-foot-label">Fits $30 · walkable · late night</div>
+        <button class="plan-mock-vote">Vote</button>
+      </div>
+    </div>
+  </div>
+  <div class="feature-copy">
+    <div class="feat-num">02 — AI builds the night</div>
+    <h2 class="feat-h">Not a list.<br><em>An actual plan.</em></h2>
+    <p class="feat-p">Three complete itineraries — stops, sequence, timing — matched to your group's collective vibe. <strong>Real DC spots your group will actually want to go to.</strong> Not Service Bar for the 4th time.</p>
+  </div>
+</div>
+
+<!-- FEATURE 3 -->
+<div class="feature">
+  <div class="feature-visual">
+    <div class="phone">
+      <div class="phone-bar"><div class="phone-notch"></div></div>
+      <div class="phone-screen">
+        <div class="phone-label">Vote · 4 of 6 responded</div>
+        <div class="phone-card">
+          <div class="phone-card-title">The Shaw Circuit</div>
+          <div class="phone-card-meta">Compass Rose → Churchkey → Soundcheck</div>
+          <div class="phone-card-tag">3 votes</div>
+        </div>
+        <div class="phone-card">
+          <div class="phone-card-title">Blagden After Dark</div>
+          <div class="phone-card-meta">Tail Up Goat → The Wydown → Decades</div>
+          <div class="phone-card-tag">1 vote</div>
+        </div>
+        <div class="phone-card">
+          <div class="phone-card-title">Little Ethiopia First</div>
+          <div class="phone-card-meta">Lalibela → Right Proper → Flash</div>
+          <div class="phone-card-tag">0 votes</div>
+        </div>
+        <div class="phone-vote">
+          <div class="vote-btn active">Shaw Circuit ✓</div>
+          <div class="vote-btn">Change vote</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="feature-copy">
+    <div class="feat-num">03 — Group votes. Winner locks.</div>
+    <h2 class="feat-h">Everyone has<br><em>a say. Finally.</em></h2>
+    <p class="feat-p">All three plans go to a group vote. <strong>No more "idk you pick."</strong> Everyone chooses. The winner confirms automatically. You stop being the only one with skin in the game.</p>
+  </div>
+</div>
+
+<!-- QUOTE -->
+<div class="quote-section">
+  <div class="quote-mark">"</div>
+  <div class="quote-text">The hardest part of going out isn't finding something to do. It's getting six people to agree on what that something is.</div>
+  <div class="quote-attr">— why Rendezvous exists</div>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="lb-section" id="nights">
+  <div class="s-label">Real nights</div>
+  <h2 class="s-h2">DC's best sessions,<br><em>rated by the groups who went.</em></h2>
+  <p class="s-sub">Not demo plans. Real outings from real groups — rated after the night was done.</p>
+  <div class="lb-list" id="leaderboard">
+    <div class="lb-empty" id="lb-loading">Loading recent nights...</div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq-section" id="faq">
+  <div class="s-label">FAQ</div>
+  <h2 class="s-h2">Things you're<br><em>probably wondering.</em></h2>
+  <div class="faqs">
+    <div class="faq">
+      <button class="faq-q" onclick="toggleFaq(this)">Does my group need to download an app?<span class="faq-icon">+</span></button>
+      <div class="faq-a">No. You create the session here in 30 seconds. Everyone else taps a link in iMessage — Safari opens, they answer 4 questions, done. Zero downloads for anyone in your group.</div>
+    </div>
+    <div class="faq">
+      <button class="faq-q" onclick="toggleFaq(this)">How does the AI pick the spots?<span class="faq-icon">+</span></button>
+      <div class="faq-a">Everyone's energy level, budget, and availability feeds into a 7-dimension taste profile. We score 135 DC venues against your group's collective vibe, then generate three distinct plan types — each with real stops, real timing, and a narrative written for your group specifically.</div>
+    </div>
+    <div class="faq">
+      <button class="faq-q" onclick="toggleFaq(this)">What if my group has different budgets?<span class="faq-icon">+</span></button>
+      <div class="faq-a">Rendezvous uses the most budget-conscious person as the effective ceiling. Nobody gets a plan they can't afford. One option will always be the budget-optimized variant.</div>
+    </div>
+    <div class="faq">
+      <button class="faq-q" onclick="toggleFaq(this)">Which DC neighborhoods are covered?<span class="faq-icon">+</span></button>
+      <div class="faq-a">U Street, Shaw, Georgetown, Dupont Circle, Capitol Hill, Columbia Heights, Navy Yard, Adams Morgan, H Street, Brookland, Logan Circle, Penn Quarter, and more. 135 venues across 23 neighborhoods. 48 of them are free or under $15.</div>
+    </div>
+    <div class="faq">
+      <button class="faq-q" onclick="toggleFaq(this)">Is it actually free?<span class="faq-icon">+</span></button>
+      <div class="faq-a">Yes. Completely free during our DC launch. Three plans, group vote, confirmed night — the core experience will always have a free option. No paywall on the thing that matters.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div class="cta-inner">
+    <div class="cta-badge"><span class="live-dot"></span> Live in Washington DC</div>
+    <h2 class="cta-h">Stop carrying<br><em>the whole group.</em></h2>
+    <p class="cta-sub">You still make the call. Rendezvous handles everything in between.</p>
+    <a href="https://rendezvous-backend-production.up.railway.app/host" class="btn-primary">Plan tonight — it's free</a>
+    <div class="cta-note">30 seconds to set up. Your group needs no app.</div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">✦ Rendezvous</div>
+  <div class="footer-links">
+    <a href="#how">How it works</a>
+    <a href="#faq">FAQ</a>
+    <a href="mailto:hello@rendezvous.app">Contact</a>
+  </div>
+  <div class="footer-copy">© 2026 Rendezvous · Washington DC</div>
+</footer>
+
+<script>
+const API = 'https://rendezvous-backend-production.up.railway.app';
+
+async function loadLeaderboard() {
+  const list = document.getElementById('leaderboard');
+  const loading = document.getElementById('lb-loading');
+  try {
+    const res = await fetch(API + '/api/leaderboard?limit=5');
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const items = data.data || data.leaderboard || data.plans || data || [];
+    if (!Array.isArray(items) || !items.length) throw new Error();
+    loading.remove();
+    items.slice(0,5).forEach((item, i) => {
+      const rating = Math.round(Math.min(5, Math.max(0, item.rating || item.averageRating || item.stars || 5)));
+      const starsHtml = Array.from({length:5},(_,s) => `<div class="lb-star${s < rating ? '' : ' empty'}"></div>`).join('');
+      const date = item.date ? new Date(item.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : 'Recent';
+      const row = document.createElement('div');
+      row.className = 'lb-row';
+      row.innerHTML = `
+        <div class="lb-rank">${String(i+1).padStart(2,'0')}</div>
+        <div class="lb-info">
+          <div class="lb-name">${item.planName||item.name||item.label||'Unnamed session'}</div>
+          <div class="lb-meta">${item.neighborhood||item.city||'Washington DC'} · ${item.groupSize||item.memberCount||'?'} people · ${date}</div>
+        </div>
+        <div class="lb-stars">${starsHtml}</div>`;
+      list.appendChild(row);
+      setTimeout(() => row.classList.add('visible'), i * 100);
+    });
+  } catch {
+    loading.textContent = 'Recent sessions coming soon — be the first to rate yours.';
+  }
+}
+
+function toggleFaq(btn) {
+  const a = btn.nextElementSibling;
+  const icon = btn.querySelector('.faq-icon');
+  const isOpen = a.classList.contains('open');
+  document.querySelectorAll('.faq-a.open').forEach(el => {
+    el.classList.remove('open');
+    el.previousElementSibling.querySelector('.faq-icon').classList.remove('open');
+  });
+  if (!isOpen) { a.classList.add('open'); icon.classList.add('open'); }
+}
+
+// countdown timer animation
+function startTimer() {
+  const el = document.getElementById('timer');
+  let mins = 14, secs = 32;
+  setInterval(() => {
+    secs--;
+    if (secs < 0) { secs = 59; mins--; }
+    if (mins < 0) { mins = 14; secs = 32; }
+    el.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+  }, 1000);
+}
+
+// scroll reveal
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, {threshold: 0.08});
+
+document.querySelectorAll('.feature-copy, .quote-section, .feat-h, .feat-p').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  observer.observe(el);
+});
+
+loadLeaderboard();
+startTimer();
+</script>
+</body>
+</html>
