@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Rendezvous — Join Party</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    :root{
+      --bg:#0f0e0c;--bg2:#1a1814;--bg3:#232018;--bg4:#2c2820;
+      --gold:#E8A135;--gold2:#f5c46a;--gold-pale:rgba(232,161,53,0.13);--gold-border:rgba(232,161,53,0.28);
+      --white:#f5f0e8;--white2:#cec8bc;--muted:#7a7060;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+      --green:#1D9E75;--red:#e74c3c;--font-d:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;--r:14px;
+    }
+    html,body{height:100%;background:var(--bg);color:var(--white);font-family:var(--font-b);overflow-x:hidden;}
+    .screen{display:none;flex-direction:column;min-height:100vh;padding:0 0 40px;}
+    .screen.active{display:flex;}
+    .top-bar{padding:52px 24px 0;display:flex;align-items:center;justify-content:space-between;}
+    .logo-sm{font-family:var(--font-d);font-size:15px;font-weight:800;color:var(--gold);}
+    .step-dots{display:flex;gap:5px;}
+    .dot{width:6px;height:6px;border-radius:50%;background:var(--bg3);transition:all 0.3s;}
+    .dot.done{background:rgba(232,161,53,0.5);}
+    .dot.active{background:var(--gold);width:18px;border-radius:3px;}
+    .content{flex:1;padding:40px 24px 20px;display:flex;flex-direction:column;}
+    .step-label{font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+    h2{font-family:var(--font-d);font-size:30px;font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:10px;}
+    .sub{font-size:15px;color:var(--white2);font-weight:300;line-height:1.6;margin-bottom:36px;}
+    .options{display:flex;flex-direction:column;gap:10px;margin-bottom:32px;}
+    .option{background:var(--bg2);border:2px solid var(--border);border-radius:var(--r);padding:16px 18px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:14px;}
+    .option:active{transform:scale(0.98);}
+    .option.selected{border-color:var(--gold);background:var(--gold-pale);}
+    .option-icon{font-size:24px;flex-shrink:0;}
+    .option-label{font-family:var(--font-d);font-size:15px;font-weight:700;}
+    .option-desc{font-size:12px;color:var(--muted);margin-top:2px;}
+    .budget-wrap{margin-bottom:32px;}
+    .budget-display{font-family:var(--font-d);font-size:48px;font-weight:800;color:var(--gold);text-align:center;margin-bottom:20px;letter-spacing:-0.04em;}
+    input[type=range]{width:100%;-webkit-appearance:none;height:4px;background:var(--bg4);border-radius:2px;outline:none;}
+    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--gold);cursor:pointer;box-shadow:0 0 0 6px var(--gold-pale);}
+    .budget-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:10px;}
+    .time-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:32px;}
+    .time-btn{background:var(--bg2);border:2px solid var(--border);border-radius:var(--r);padding:14px 8px;text-align:center;cursor:pointer;transition:all 0.15s;font-family:var(--font-d);font-size:14px;font-weight:700;}
+    .time-btn:active{transform:scale(0.97);}
+    .time-btn.selected{border-color:var(--gold);background:var(--gold-pale);color:var(--gold);}
+    .input-field{background:var(--bg3);border:1.5px solid var(--border2);color:var(--white);padding:14px 16px;border-radius:var(--r);font-family:var(--font-b);font-size:16px;outline:none;caret-color:var(--gold);width:100%;margin-bottom:32px;transition:border-color 0.2s;}
+    .input-field:focus{border-color:var(--gold-border);}
+    .input-field::placeholder{color:var(--muted);}
+    .btn-gold{background:var(--gold);color:#0f0e0c;border:none;font-family:var(--font-d);font-size:16px;font-weight:700;padding:17px;border-radius:50px;cursor:pointer;width:100%;letter-spacing:0.02em;transition:opacity 0.15s,transform 0.12s;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .btn-gold:disabled{opacity:0.5;cursor:not-allowed;}
+    .btn-ghost{background:var(--bg3);color:var(--white2);border:1px solid var(--border2);font-family:var(--font-b);font-size:15px;font-weight:500;padding:15px;border-radius:50px;cursor:pointer;width:100%;margin-top:10px;transition:all 0.15s;}
+    .party-preview{background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:20px;margin-bottom:28px;text-align:center;}
+    .party-code{font-family:var(--font-d);font-size:28px;font-weight:800;color:var(--gold);letter-spacing:0.08em;margin-bottom:6px;}
+    .party-host{font-size:13px;color:var(--muted);}
+    .members-list{display:flex;flex-direction:column;gap:8px;margin-bottom:28px;}
+    .member-row{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:12px;}
+    .av{width:36px;height:36px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:13px;font-weight:700;color:var(--gold);flex-shrink:0;}
+    .member-name{font-family:var(--font-d);font-size:14px;font-weight:700;}
+    .member-status{font-size:11px;color:var(--muted);margin-top:1px;}
+    .checkin-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--gold-pale);color:var(--gold);border:1px solid var(--gold-border);margin-left:auto;flex-shrink:0;}
+    .waiting-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--bg3);color:var(--muted);border:1px solid var(--border);margin-left:auto;flex-shrink:0;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    .fade-in{animation:fadeUp 0.4s ease both;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .spinner{width:20px;height:20px;border:2px solid rgba(15,14,12,0.3);border-top-color:#0f0e0c;border-radius:50%;animation:spin 0.7s linear infinite;}
+  </style>
+</head>
+<body>
+
+  <!-- STEP 0: Enter code -->
+  <div class="screen active" id="s0">
+    <div class="top-bar"><div class="logo-sm">✦ Rendezvous</div><div class="step-dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+    <div class="content">
+      <div class="step-label">Step 1 of 4</div>
+      <h2>What's the party code?</h2>
+      <p class="sub">Your host shared a 10-character code. Enter it below to join.</p>
+      <input class="input-field" type="text" id="code-input" placeholder="RNDVZ-XXXX" maxlength="10" style="text-transform:uppercase;letter-spacing:0.1em;font-family:var(--font-d);font-size:22px;font-weight:700;text-align:center;" oninput="this.value=this.value.toUpperCase()"/>
+      <div id="s0-error" style="color:var(--red);font-size:13px;margin:-20px 0 20px;display:none;"></div>
+      <button class="btn-gold" onclick="lookupParty()">
+        <span id="s0-btn-text">Find party →</span>
+        <div class="spinner" id="s0-spinner" style="display:none;"></div>
+      </button>
+      <button class="btn-ghost" onclick="location.href='/login.html'">Sign in instead</button>
+    </div>
+  </div>
+
+  <!-- STEP 1: Your name -->
+  <div class="screen" id="s1">
+    <div class="top-bar"><div class="logo-sm">✦ Rendezvous</div><div class="step-dots"><div class="dot done"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div></div>
+    <div class="content fade-in">
+      <div class="step-label">Step 2 of 4</div>
+      <div class="party-preview">
+        <div class="party-code" id="party-code-display">—</div>
+        <div class="party-host" id="party-host-display">Hosted by —</div>
+      </div>
+      <h2>What's your name?</h2>
+      <p class="sub">Just so the group knows who you are.</p>
+      <input class="input-field" type="text" id="guest-name" placeholder="Your name" maxlength="50"/>
+      <button class="btn-gold" onclick="goToStep2()">Next →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Energy -->
+  <div class="screen" id="s2">
+    <div class="top-bar"><div class="logo-sm">✦ Rendezvous</div><div class="step-dots"><div class="dot done"></div><div class="dot done"></div><div class="dot active"></div><div class="dot"></div></div></div>
+    <div class="content fade-in">
+      <div class="step-label">Step 3 of 4</div>
+      <h2>What's your energy tonight?</h2>
+      <p class="sub">Be honest. No wrong answers.</p>
+      <div class="options" id="energy-options">
+        <div class="option" onclick="selectEnergy('low')">
+          <div class="option-icon">🌙</div>
+          <div><div class="option-label">Low key</div><div class="option-desc">Chill vibes, good conversation, nothing too loud</div></div>
+        </div>
+        <div class="option" onclick="selectEnergy('medium')">
+          <div class="option-icon">✨</div>
+          <div><div class="option-label">Medium energy</div><div class="option-desc">Up for most things, feeling social</div></div>
+        </div>
+        <div class="option" onclick="selectEnergy('high')">
+          <div class="option-icon">🔥</div>
+          <div><div class="option-label">High energy</div><div class="option-desc">Let's actually go out out tonight</div></div>
+        </div>
+      </div>
+      <button class="btn-gold" id="energy-btn" onclick="goToStep3()" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Budget + time -->
+  <div class="screen" id="s3">
+    <div class="top-bar"><div class="logo-sm">✦ Rendezvous</div><div class="step-dots"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot active"></div></div></div>
+    <div class="content fade-in">
+      <div class="step-label">Step 4 of 4</div>
+      <h2>Budget & timing.</h2>
+      <p class="sub">How much do you want to spend tonight? And when are you free?</p>
+      <div class="budget-wrap">
+        <div class="budget-display">$<span id="budget-val">40</span></div>
+        <input type="range" id="budget-slider" min="10" max="150" step="5" value="40" oninput="document.getElementById('budget-val').textContent=this.value"/>
+        <div class="budget-labels"><span>$10</span><span>$150+</span></div>
+      </div>
+      <div class="time-grid" id="time-grid">
+        <div class="time-btn" onclick="selectTime('18:00')">6 PM</div>
+        <div class="time-btn" onclick="selectTime('19:00')">7 PM</div>
+        <div class="time-btn" onclick="selectTime('20:00')">8 PM</div>
+        <div class="time-btn" onclick="selectTime('21:00')">9 PM</div>
+        <div class="time-btn" onclick="selectTime('22:00')">10 PM</div>
+        <div class="time-btn" onclick="selectTime('23:00')">11 PM</div>
+      </div>
+      <button class="btn-gold" id="checkin-btn" onclick="submitCheckin()">
+        <span id="checkin-btn-text">Check in 🎉</span>
+        <div class="spinner" id="checkin-spinner" style="display:none;"></div>
+      </button>
+    </div>
+  </div>
+
+  <!-- DONE: Waiting room -->
+  <div class="screen" id="s-done">
+    <div class="top-bar"><div class="logo-sm">✦ Rendezvous</div></div>
+    <div class="content fade-in" style="align-items:center;text-align:center;">
+      <div style="font-size:64px;margin-bottom:24px;">🎉</div>
+      <h2>You're in!</h2>
+      <p class="sub">Waiting for the host to generate plans. You'll get a notification the moment they're ready.</p>
+      <div class="members-list" id="waiting-members" style="text-align:left;width:100%;"></div>
+      <div style="background:var(--bg2);border:1px solid var(--gold-border);border-radius:var(--r);padding:16px 20px;text-align:center;width:100%;margin-bottom:20px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;">Party code</div>
+        <div style="font-family:var(--font-d);font-size:24px;font-weight:800;color:var(--gold);letter-spacing:0.08em;" id="done-code">—</div>
+      </div>
+      <button class="btn-ghost" onclick="shareParty()" style="width:100%;">Share party link 🔗</button>
+    </div>
+  </div>
+
+  <script>
+    const API = '/api/v1';
+    let partyData = null;
+    let guestName = '';
+    let selectedEnergy = null;
+    let selectedTime = null;
+
+    async function lookupParty() {
+      const code = document.getElementById('code-input').value.trim().toUpperCase();
+      if (!code) return;
+      const btn = document.getElementById('s0-btn-text');
+      const spinner = document.getElementById('s0-spinner');
+      const err = document.getElementById('s0-error');
+      btn.style.display = 'none'; spinner.style.display = 'block';
+      err.style.display = 'none';
+
+      try {
+        // We use the join endpoint with a temp token approach — guests don't need accounts
+        // For now we search by code via a guest endpoint
+        const res = await fetch(`${API}/parties/guest/lookup?code=${code}`);
+        const json = await res.json();
+        if (!json.success) {
+          err.textContent = json.error?.message || 'Party not found. Check your code.';
+          err.style.display = 'block'; return;
+        }
+        partyData = json.data.party;
+        document.getElementById('party-code-display').textContent = partyData.code;
+        document.getElementById('party-host-display').textContent = 'Hosted by ' + (partyData.host?.displayName || 'your friend');
+        document.getElementById('done-code').textContent = partyData.code;
+        goToScreen('s1');
+      } catch {
+        err.textContent = 'Something went wrong. Try again.';
+        err.style.display = 'block';
+      } finally {
+        btn.style.display = 'block'; spinner.style.display = 'none';
+      }
+    }
+
+    function goToStep2() {
+      guestName = document.getElementById('guest-name').value.trim();
+      if (!guestName) return;
+      goToScreen('s2');
+    }
+
+    function selectEnergy(val) {
+      selectedEnergy = val;
+      document.querySelectorAll('#energy-options .option').forEach(o => o.classList.remove('selected'));
+      event.currentTarget.classList.add('selected');
+      document.getElementById('energy-btn').disabled = false;
+    }
+
+    function goToStep3() {
+      if (!selectedEnergy) return;
+      goToScreen('s3');
+    }
+
+    function selectTime(val) {
+      selectedTime = val;
+      document.querySelectorAll('#time-grid .time-btn').forEach(b => b.classList.remove('selected'));
+      event.currentTarget.classList.add('selected');
+    }
+
+    async function submitCheckin() {
+      const btn = document.getElementById('checkin-btn-text');
+      const spinner = document.getElementById('checkin-spinner');
+      btn.style.display = 'none'; spinner.style.display = 'block';
+
+      const budget = parseInt(document.getElementById('budget-slider').value);
+
+      try {
+        // For guest check-in we pass guestName as a header or query
+        const res = await fetch(`${API}/parties/guest/checkin`, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            partyId: partyData.id,
+            guestName,
+            energyLevel: selectedEnergy,
+            budget,
+            availableFrom: selectedTime || '19:00',
+          })
+        });
+        const json = await res.json();
+        // Load members for waiting screen
+        loadWaitingMembers();
+        goToScreen('s-done');
+      } catch {
+        alert('Something went wrong. Try again.');
+      } finally {
+        btn.style.display = 'block'; spinner.style.display = 'none';
+      }
+    }
+
+    async function loadWaitingMembers() {
+      try {
+        const res = await fetch(`${API}/parties/guest/lookup?code=${partyData?.code}`);
+        const json = await res.json();
+        if (!json.success) return;
+        const members = json.data.party.members || [];
+        const list = document.getElementById('waiting-members');
+        list.innerHTML = members.map(m => `
+          <div class="member-row">
+            <div class="av">${(m.user?.displayName || m.guestName || '?')[0].toUpperCase()}</div>
+            <div>
+              <div class="member-name">${m.user?.displayName || m.guestName || 'Guest'}</div>
+              <div class="member-status">${m.checkedInAt ? 'Checked in' : 'Joined'}</div>
+            </div>
+            ${m.checkedInAt ? '<div class="checkin-badge">Ready ✓</div>' : '<div class="waiting-badge">Waiting</div>'}
+          </div>
+        `).join('');
+      } catch {}
+    }
+
+    function goToScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      window.scrollTo(0,0);
+    }
+
+    function shareParty() {
+      const url = `${location.origin}/join.html?code=${partyData?.code}`;
+      if (navigator.share) {
+        navigator.share({ title: 'Join my Rendezvous', text: `Join my party: ${partyData?.code}`, url });
+      } else {
+        navigator.clipboard.writeText(url).then(() => alert('Link copied!'));
+      }
+    }
+
+    // Pre-fill code from URL
+    const urlCode = new URLSearchParams(location.search).get('code');
+    if (urlCode) {
+      document.getElementById('code-input').value = urlCode.toUpperCase();
+    }
+  </script>
+</body>
+</html>

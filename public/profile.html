@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>Profile — Rendezvous</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --bg:#0f0e0c;--bg2:#1a1814;--bg3:#232018;--bg4:#2c2820;
+      --gold:#E8A135;--gold2:#f5c46a;--gold-pale:rgba(232,161,53,0.13);--gold-border:rgba(232,161,53,0.28);
+      --white:#f5f0e8;--white2:#cec8bc;--muted:#7a7060;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+      --green:#1D9E75;--green-pale:rgba(29,158,117,0.12);--red:#e74c3c;
+      --font-d:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;--r:14px;
+    }
+    html{scroll-padding-top:70px;}
+    body{background:var(--bg);color:var(--white);font-family:var(--font-b);min-height:100vh;padding-bottom:100px;}
+
+    /* ── NAV ── */
+    .nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,14,12,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;}
+    .nav-logo{font-family:var(--font-d);font-size:18px;font-weight:800;color:var(--gold);text-decoration:none;letter-spacing:-0.02em;}
+    .nav-back{color:var(--white2);text-decoration:none;font-size:14px;display:flex;align-items:center;gap:6px;}
+    .nav-back svg{width:16px;height:16px;}
+
+    /* ── HERO ── */
+    .hero{padding:80px 20px 0;max-width:500px;margin:0 auto;}
+    .avatar-wrap{position:relative;width:88px;height:88px;margin-bottom:16px;}
+    .avatar{width:88px;height:88px;border-radius:50%;object-fit:cover;border:3px solid var(--gold-border);}
+    .avatar-placeholder{width:88px;height:88px;border-radius:50%;background:var(--bg3);border:3px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:32px;font-weight:800;color:var(--gold);}
+    .online-dot{position:absolute;bottom:4px;right:4px;width:14px;height:14px;border-radius:50%;background:var(--green);border:2px solid var(--bg);}
+    .display-name{font-family:var(--font-d);font-size:26px;font-weight:800;letter-spacing:-0.02em;margin-bottom:4px;}
+    .handle{font-size:14px;color:var(--muted);margin-bottom:8px;}
+    .city{font-size:13px;color:var(--white2);display:flex;align-items:center;gap:5px;margin-bottom:20px;}
+    .city svg{width:13px;height:13px;color:var(--gold);}
+    .stats-row{display:flex;gap:24px;margin-bottom:24px;}
+    .stat{text-align:center;}
+    .stat-num{font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--gold);}
+    .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;}
+    .joined-badge{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:50px;padding:6px 14px;font-size:12px;color:var(--white2);}
+
+    /* ── COMPAT BANNER ── */
+    .compat-banner{background:linear-gradient(135deg,rgba(29,158,117,0.15),rgba(232,161,53,0.1));border:1px solid rgba(29,158,117,0.3);border-radius:16px;padding:16px 20px;margin:20px 0;display:none;}
+    .compat-banner.show{display:block;}
+    .compat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+    .compat-score{font-family:var(--font-d);font-size:32px;font-weight:800;color:var(--green);}
+    .compat-label{font-size:13px;color:var(--white2);}
+    .compat-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+    .compat-tag{background:var(--green-pale);border:1px solid rgba(29,158,117,0.3);color:var(--green);border-radius:50px;padding:3px 10px;font-size:12px;}
+
+    /* ── SECTION ── */
+    .section{padding:24px 20px 0;max-width:500px;margin:0 auto;}
+    .section-title{font-family:var(--font-d);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:16px;}
+
+    /* ── TASTE PROFILE ── */
+    .taste-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .taste-bar-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;}
+    .taste-bar-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;display:flex;justify-content:space-between;}
+    .taste-bar-label span{color:var(--white2);}
+    .taste-bar-track{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+    .taste-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--green));transition:width 1.2s cubic-bezier(0.22,1,0.36,1);}
+
+    /* ── VIBE TAGS ── */
+    .tag-cloud{display:flex;flex-wrap:wrap;gap:8px;}
+    .vibe-tag{background:var(--gold-pale);border:1px solid var(--gold-border);color:var(--gold2);border-radius:50px;padding:6px 14px;font-size:13px;font-weight:500;}
+    .act-tag{background:var(--bg3);border:1px solid var(--border2);color:var(--white2);border-radius:50px;padding:6px 14px;font-size:13px;}
+
+    /* ── NIGHTS RECAP ── */
+    .nights-scroll{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
+    .nights-scroll::-webkit-scrollbar{display:none;}
+    .night-card{flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;width:140px;}
+    .night-month{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);}
+    .night-count{font-family:var(--font-d);font-size:28px;font-weight:800;color:var(--gold);margin:4px 0;}
+    .night-label{font-size:11px;color:var(--white2);}
+    .night-bar{height:3px;background:var(--bg3);border-radius:2px;margin-top:10px;overflow:hidden;}
+    .night-bar-fill{height:100%;background:var(--gold);border-radius:2px;}
+
+    /* ── RECENT PARTIES ── */
+    .party-list{display:flex;flex-direction:column;gap:10px;}
+    .party-item{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:14px;}
+    .party-icon{width:44px;height:44px;border-radius:10px;background:var(--gold-pale);border:1px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+    .party-meta{flex:1;min-width:0;}
+    .party-name{font-family:var(--font-d);font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .party-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+    .party-badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:50px;flex-shrink:0;}
+    .badge-host{background:rgba(232,161,53,0.15);color:var(--gold);border:1px solid var(--gold-border);}
+    .badge-member{background:var(--bg3);color:var(--white2);border:1px solid var(--border2);}
+
+    /* ── EMPTY STATE ── */
+    .empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px;}
+    .empty-icon{font-size:36px;margin-bottom:10px;}
+
+    /* ── BOTTOM ACTIONS ── */
+    .bottom-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(15,14,12,0.96);backdrop-filter:blur(16px);border-top:1px solid var(--border);padding:12px 20px;padding-bottom:calc(12px + env(safe-area-inset-bottom));}
+    .actions{display:flex;gap:10px;max-width:500px;margin:0 auto;}
+    .btn{flex:1;padding:14px;border-radius:50px;border:none;font-family:var(--font-d);font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.02em;transition:opacity 0.15s,transform 0.12s;}
+    .btn:active{transform:scale(0.97);}
+    .btn-gold{background:var(--gold);color:#0f0e0c;}
+    .btn-outline{background:transparent;border:1.5px solid var(--border2);color:var(--white2);}
+    .btn:hover{opacity:0.85;}
+
+    /* ── SKELETON ── */
+    .skeleton{background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px;}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .sk-avatar{width:88px;height:88px;border-radius:50%;}
+    .sk-line{height:16px;margin-bottom:10px;}
+    .sk-short{width:40%;}
+    .sk-medium{width:65%;}
+
+    /* ── TOAST ── */
+    .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border2);border-radius:50px;padding:12px 20px;font-size:13px;font-weight:500;white-space:nowrap;opacity:0;transition:all 0.3s;z-index:200;pointer-events:none;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav-back" href="/party.html" id="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back
+    </a>
+    <a class="nav-logo" href="/">✦ Rendezvous</a>
+    <div style="width:60px"></div>
+  </nav>
+
+  <div id="loading-state" style="padding:90px 20px 0;max-width:500px;margin:0 auto;">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+      <div class="skeleton sk-avatar"></div>
+      <div style="flex:1">
+        <div class="skeleton sk-line sk-medium"></div>
+        <div class="skeleton sk-line sk-short"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="profile-content" style="display:none;">
+    <div class="hero">
+      <div class="avatar-wrap">
+        <div id="avatar-el"></div>
+      </div>
+      <div class="display-name" id="display-name"></div>
+      <div class="handle" id="handle-el"></div>
+      <div class="city" id="city-el" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        <span id="city-text"></span>
+      </div>
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-num" id="stat-nights">—</div>
+          <div class="stat-label">Nights out</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="stat-memories">—</div>
+          <div class="stat-label">Memories</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="stat-hosted">—</div>
+          <div class="stat-label">Hosted</div>
+        </div>
+      </div>
+      <div class="joined-badge" id="joined-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Member since —
+      </div>
+
+      <!-- Compatibility (shown when viewing another user) -->
+      <div class="compat-banner" id="compat-banner">
+        <div class="compat-top">
+          <div>
+            <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Vibe Match</div>
+            <div class="compat-label" id="compat-label">Loading...</div>
+          </div>
+          <div class="compat-score" id="compat-score">—%</div>
+        </div>
+        <div class="compat-tags" id="compat-tags"></div>
+      </div>
+    </div>
+
+    <!-- Taste Profile -->
+    <div class="section" id="taste-section" style="display:none;">
+      <div class="section-title">Taste Profile</div>
+      <div class="taste-grid">
+        <div class="taste-bar-card">
+          <div class="taste-bar-label">Energy <span id="bar-energy-val">—</span></div>
+          <div class="taste-bar-track"><div class="taste-bar-fill" id="bar-energy" style="width:0%"></div></div>
+        </div>
+        <div class="taste-bar-card">
+          <div class="taste-bar-label">Night Owl <span id="bar-night-val">—</span></div>
+          <div class="taste-bar-track"><div class="taste-bar-fill" id="bar-night" style="width:0%"></div></div>
+        </div>
+        <div class="taste-bar-card">
+          <div class="taste-bar-label">Social <span id="bar-social-val">—</span></div>
+          <div class="taste-bar-track"><div class="taste-bar-fill" id="bar-social" style="width:0%"></div></div>
+        </div>
+        <div class="taste-bar-card">
+          <div class="taste-bar-label">Spontaneous <span id="bar-spont-val">—</span></div>
+          <div class="taste-bar-track"><div class="taste-bar-fill" id="bar-spont" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vibe tags -->
+    <div class="section" id="vibes-section" style="display:none;">
+      <div class="section-title">Vibes</div>
+      <div class="tag-cloud" id="vibe-tags"></div>
+    </div>
+
+    <!-- Activities -->
+    <div class="section" id="acts-section" style="display:none;">
+      <div class="section-title">Into</div>
+      <div class="tag-cloud" id="act-tags"></div>
+    </div>
+
+    <!-- Nights out recap -->
+    <div class="section" id="nights-section" style="display:none;">
+      <div class="section-title">Your Year in Nights</div>
+      <div class="nights-scroll" id="nights-scroll"></div>
+    </div>
+
+    <!-- Recent parties -->
+    <div class="section" id="parties-section" style="display:none;">
+      <div class="section-title">Recent Parties</div>
+      <div class="party-list" id="party-list"></div>
+    </div>
+  </div>
+
+  <div id="error-state" style="display:none;text-align:center;padding:120px 20px 0;">
+    <div style="font-size:48px;margin-bottom:16px;">✦</div>
+    <div style="font-family:var(--font-d);font-size:20px;font-weight:700;margin-bottom:8px;">Profile not found</div>
+    <div style="color:var(--muted);font-size:14px;">This user doesn't exist or their profile is private.</div>
+  </div>
+
+  <div class="bottom-bar" id="bottom-bar" style="display:none;">
+    <div class="actions">
+      <button class="btn btn-outline" id="share-btn" onclick="shareProfile()">Share</button>
+      <button class="btn btn-gold" id="party-btn" onclick="startParty()">Start a party together</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API = '/api/v1';
+    const token = localStorage.getItem('rdv_token');
+    const currentUser = JSON.parse(localStorage.getItem('rdv_user') || 'null');
+
+    // Get handle from URL: /profile/handle or ?handle=xxx
+    const pathParts = location.pathname.split('/').filter(Boolean);
+    const handleFromPath = pathParts[1]; // /profile/:handle
+    const handleFromQuery = new URLSearchParams(location.search).get('handle');
+    const targetHandle = handleFromPath || handleFromQuery;
+
+    function showToast(msg, dur = 2500) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), dur);
+    }
+
+    function formatRelTime(dateStr) {
+      const d = new Date(dateStr);
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return `${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    function formatPartyDate(dateStr) {
+      const d = new Date(dateStr);
+      const now = new Date();
+      const diff = now - d;
+      if (diff < 86400000) return 'Today';
+      if (diff < 172800000) return 'Yesterday';
+      if (diff < 604800000) return `${Math.floor(diff/86400000)} days ago`;
+      if (diff < 2592000000) return `${Math.floor(diff/604800000)} weeks ago`;
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    function pct(val) {
+      return Math.round((val || 0.5) * 100);
+    }
+
+    async function loadProfile() {
+      if (!targetHandle) {
+        // Show own profile
+        if (!token || !currentUser) {
+          location.href = '/login.html?next=/profile.html';
+          return;
+        }
+        showOwnProfile();
+        return;
+      }
+
+      try {
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch(`${API}/users/by-handle/${encodeURIComponent(targetHandle)}`, { headers });
+        const json = await res.json();
+
+        if (!json.success) {
+          document.getElementById('loading-state').style.display = 'none';
+          document.getElementById('error-state').style.display = 'block';
+          return;
+        }
+
+        const { user } = json.data;
+        renderProfile(user, user.tasteProfile);
+
+        // Load compatibility if viewing another user
+        if (token && currentUser && user.id !== currentUser.id) {
+          loadCompatibility(user.id);
+        }
+
+        // Load party history (only own profile)
+        if (!currentUser || user.id === currentUser.id) {
+          loadPartyHistory();
+        }
+
+      } catch (err) {
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('error-state').style.display = 'block';
+      }
+    }
+
+    async function showOwnProfile() {
+      try {
+        const res = await fetch(`${API}/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const json = await res.json();
+        if (!json.success) { location.href = '/login.html'; return; }
+        const { user } = json.data;
+        renderProfile(user, user.tasteProfile);
+        loadPartyHistory();
+      } catch {
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('error-state').style.display = 'block';
+      }
+    }
+
+    function renderProfile(user, taste) {
+      document.title = `${user.displayName} — Rendezvous`;
+
+      // Avatar
+      const avatarEl = document.getElementById('avatar-el');
+      if (user.avatarUrl) {
+        avatarEl.innerHTML = `<img class="avatar" src="${user.avatarUrl}" alt="${user.displayName}"/>`;
+      } else {
+        const initial = (user.displayName || 'R')[0].toUpperCase();
+        avatarEl.innerHTML = `<div class="avatar-placeholder">${initial}</div>`;
+      }
+
+      document.getElementById('display-name').textContent = user.displayName;
+      document.getElementById('handle-el').textContent = `@${user.handle}`;
+
+      if (user.locationCity) {
+        document.getElementById('city-el').style.display = 'flex';
+        document.getElementById('city-text').textContent = user.locationCity;
+      }
+
+      const counts = user._count || {};
+      document.getElementById('stat-nights').textContent = counts.partiesHosted != null ? (counts.partiesHosted + (user.recentParties || 0)) : '—';
+      document.getElementById('stat-memories').textContent = counts.memoriesCreated ?? '—';
+      document.getElementById('stat-hosted').textContent = counts.partiesHosted ?? '—';
+
+      document.getElementById('joined-badge').innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Member since ${formatRelTime(user.createdAt)}
+      `;
+
+      // Taste profile bars
+      if (taste) {
+        document.getElementById('taste-section').style.display = 'block';
+        const fields = [
+          ['bar-energy', 'bar-energy-val', taste.energyLevel],
+          ['bar-night', 'bar-night-val', taste.nightOwlScore],
+          ['bar-social', 'bar-social-val', taste.socialOpenness],
+          ['bar-spont', 'bar-spont-val', taste.spontaneity],
+        ];
+        setTimeout(() => {
+          fields.forEach(([barId, valId, val]) => {
+            const p = pct(val);
+            document.getElementById(barId).style.width = `${p}%`;
+            document.getElementById(valId).textContent = p + '%';
+          });
+        }, 100);
+
+        // Vibe tags
+        if (taste.vibeTags?.length) {
+          document.getElementById('vibes-section').style.display = 'block';
+          document.getElementById('vibe-tags').innerHTML = taste.vibeTags.map(t =>
+            `<span class="vibe-tag">${t}</span>`
+          ).join('');
+        }
+
+        // Activity tags
+        if (taste.activities?.length) {
+          document.getElementById('acts-section').style.display = 'block';
+          document.getElementById('act-tags').innerHTML = taste.activities.map(a =>
+            `<span class="act-tag">${a}</span>`
+          ).join('');
+        }
+      }
+
+      // Year in nights (mock monthly breakdown from total)
+      const total = counts.partiesHosted || 0;
+      if (total > 0) {
+        buildNightsRecap(total);
+      }
+
+      // Show content
+      document.getElementById('loading-state').style.display = 'none';
+      document.getElementById('profile-content').style.display = 'block';
+
+      // Show actions bar only if viewing another user
+      if (currentUser && user.id !== currentUser.id) {
+        document.getElementById('bottom-bar').style.display = 'block';
+        document.getElementById('party-btn').dataset.userId = user.id;
+      }
+    }
+
+    function buildNightsRecap(total) {
+      document.getElementById('nights-section').style.display = 'block';
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const now = new Date();
+      const scroll = document.getElementById('nights-scroll');
+
+      // Distribute nights across last 6 months with slight randomness
+      const monthData = [];
+      let remaining = total;
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const count = i === 0 ? Math.min(remaining, Math.floor(Math.random() * 3) + 1) : Math.floor(Math.random() * Math.max(1, Math.floor(total / 6)));
+        remaining = Math.max(0, remaining - count);
+        monthData.push({ month: months[d.getMonth()], count: Math.max(0, count) });
+      }
+
+      const maxCount = Math.max(...monthData.map(m => m.count), 1);
+      scroll.innerHTML = monthData.map(m => `
+        <div class="night-card">
+          <div class="night-month">${m.month}</div>
+          <div class="night-count">${m.count}</div>
+          <div class="night-label">night${m.count !== 1 ? 's' : ''} out</div>
+          <div class="night-bar"><div class="night-bar-fill" style="width:${Math.round(m.count/maxCount*100)}%"></div></div>
+        </div>
+      `).join('');
+    }
+
+    async function loadCompatibility(otherUserId) {
+      if (!currentUser) return;
+      try {
+        const res = await fetch(`${API}/users/${currentUser.id}/compatibility/${otherUserId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (!json.success || json.data.score == null) return;
+
+        const { score, label, sharedTags, sharedActivities } = json.data;
+        document.getElementById('compat-score').textContent = `${score}%`;
+        document.getElementById('compat-label').textContent = label;
+
+        const tagContainer = document.getElementById('compat-tags');
+        const shared = [...(sharedTags || []), ...(sharedActivities || [])].slice(0, 5);
+        if (shared.length) {
+          tagContainer.innerHTML = shared.map(t => `<span class="compat-tag">${t}</span>`).join('');
+        }
+
+        document.getElementById('compat-banner').classList.add('show');
+      } catch {}
+    }
+
+    async function loadPartyHistory() {
+      if (!token) return;
+      try {
+        const res = await fetch(`${API}/parties/history`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (!json.success) return;
+
+        const { parties } = json.data;
+        if (!parties?.length) return;
+
+        document.getElementById('parties-section').style.display = 'block';
+        const list = document.getElementById('party-list');
+        list.innerHTML = parties.slice(0, 5).map(p => {
+          const plan = p.generatedPlans?.[p.confirmedPlanIndex];
+          const icon = p.status === 'CONFIRMED' ? '✦' : p.wasHost ? '👑' : '✌';
+          return `
+            <div class="party-item">
+              <div class="party-icon">${icon}</div>
+              <div class="party-meta">
+                <div class="party-name">${plan ? plan.label : p.code}</div>
+                <div class="party-sub">${formatPartyDate(p.joinedAt)} · ${p._count?.members || p.members?.length || 0} people</div>
+              </div>
+              <span class="party-badge ${p.wasHost ? 'badge-host' : 'badge-member'}">${p.wasHost ? 'Host' : 'Guest'}</span>
+            </div>
+          `;
+        }).join('');
+      } catch {}
+    }
+
+    function shareProfile() {
+      const handle = targetHandle || currentUser?.handle;
+      const url = `${location.origin}/profile.html?handle=${handle}`;
+      if (navigator.share) {
+        navigator.share({ title: 'Rendezvous', text: `Check out @${handle} on Rendezvous`, url });
+      } else {
+        navigator.clipboard.writeText(url).then(() => showToast('Link copied!'));
+      }
+    }
+
+    function startParty() {
+      location.href = '/party.html';
+    }
+
+    // Run
+    loadProfile();
+  </script>
+</body>
+</html>

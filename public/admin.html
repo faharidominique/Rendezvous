@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rendezvous — Spot Review Dashboard</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0f0e0c; --bg2: #1a1814; --bg3: #232018; --bg4: #2c2820;
+  --gold: #E8A135; --gold2: #f5c46a; --gold-pale: rgba(232,161,53,0.13);
+  --white: #f5f0e8; --white2: #cec8bc; --muted: #7a7060;
+  --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+  --green: #1D9E75; --green-pale: rgba(29,158,117,0.15);
+  --amber: #E67E22; --amber-pale: rgba(230,126,34,0.15);
+  --red: #e74c3c; --red-pale: rgba(231,76,60,0.15);
+  --blue: #2980b9; --blue-pale: rgba(41,128,185,0.15);
+  --r: 12px; --font: 'system-ui', sans-serif;
+}
+body { background: var(--bg); color: var(--white); font-family: var(--font); min-height: 100vh; }
+
+/* ── NAV ── */
+.nav { background: var(--bg2); border-bottom: 1px solid var(--border2); padding: 0 28px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 50; }
+.nav-brand { font-size: 18px; font-weight: 800; color: var(--gold); letter-spacing: -0.02em; }
+.nav-stats { display: flex; gap: 20px; }
+.nav-stat { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.nav-stat strong { color: var(--white); font-weight: 700; font-size: 14px; }
+.stat-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ── TOOLBAR ── */
+.toolbar { padding: 16px 28px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.filter-btn { padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border2); background: var(--bg3); color: var(--muted); transition: all 0.15s; letter-spacing: 0.04em; }
+.filter-btn.active { background: var(--gold); border-color: var(--gold); color: var(--bg); }
+.filter-btn:hover:not(.active) { border-color: var(--white2); color: var(--white2); }
+.toolbar-search { flex: 1; min-width: 200px; background: var(--bg3); border: 1px solid var(--border2); color: var(--white); padding: 8px 14px; border-radius: var(--r); font-size: 13px; outline: none; caret-color: var(--gold); }
+.toolbar-search::placeholder { color: var(--muted); }
+.city-toggle { display: flex; gap: 1px; background: var(--bg3); border-radius: 20px; padding: 3px; border: 1px solid var(--border2); }
+.city-btn { padding: 5px 14px; border-radius: 17px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: none; color: var(--muted); transition: all 0.15s; }
+.city-btn.active { background: var(--gold); color: var(--bg); }
+
+/* ── MAIN LAYOUT ── */
+.main { display: flex; height: calc(100vh - 113px); overflow: hidden; }
+.spot-list { width: 380px; flex-shrink: 0; overflow-y: auto; border-right: 1px solid var(--border); scrollbar-width: thin; scrollbar-color: var(--bg4) transparent; }
+.detail-panel { flex: 1; overflow-y: auto; padding: 24px; scrollbar-width: thin; scrollbar-color: var(--bg4) transparent; }
+
+/* ── SPOT LIST ITEMS ── */
+.spot-item { padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; display: flex; gap: 12px; align-items: flex-start; }
+.spot-item:hover { background: var(--bg2); }
+.spot-item.selected { background: var(--gold-pale); border-left: 3px solid var(--gold); }
+.spot-thumb { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.spot-item-info { flex: 1; min-width: 0; }
+.spot-item-name { font-size: 13px; font-weight: 600; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+.spot-item-meta { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.spot-item-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+.badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: 0.04em; }
+.badge.needs-review { background: var(--amber-pale); color: var(--amber); border: 1px solid rgba(230,126,34,0.3); }
+.badge.auto-approved { background: var(--green-pale); color: var(--green); border: 1px solid rgba(29,158,117,0.3); }
+.badge.reviewed { background: var(--blue-pale); color: var(--blue); border: 1px solid rgba(41,128,185,0.3); }
+.badge.rejected { background: var(--red-pale); color: var(--red); border: 1px solid rgba(231,76,60,0.3); }
+.conf-bar-wrap { width: 100%; height: 3px; background: var(--bg4); border-radius: 2px; margin-top: 4px; }
+.conf-bar { height: 100%; border-radius: 2px; transition: width 0.3s; }
+
+/* ── DETAIL PANEL ── */
+.detail-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--muted); gap: 12px; }
+.detail-empty-icon { font-size: 48px; opacity: 0.4; }
+.detail-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 16px; }
+.detail-name { font-size: 22px; font-weight: 800; color: var(--white); margin-bottom: 4px; }
+.detail-meta { font-size: 13px; color: var(--muted); }
+.detail-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.btn { padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+.btn-approve { background: var(--green); color: #fff; }
+.btn-reject  { background: var(--red-pale); color: var(--red); border: 1px solid rgba(231,76,60,0.3); }
+.btn-save    { background: var(--gold); color: var(--bg); }
+.btn:active  { transform: scale(0.96); }
+
+.photos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+.photo-thumb { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; background: var(--bg3); }
+.photo-thumb.placeholder { display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--muted); }
+
+.section-title { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+.scores-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+.score-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 12px 14px; }
+.score-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+.score-slider-wrap { display: flex; align-items: center; gap: 10px; }
+.score-slider { flex: 1; -webkit-appearance: none; height: 4px; background: var(--bg4); border-radius: 2px; outline: none; }
+.score-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--gold); cursor: pointer; }
+.score-val { font-size: 13px; font-weight: 700; color: var(--gold); min-width: 32px; text-align: right; }
+
+.tags-area { margin-bottom: 20px; }
+.tag-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.tag-chip { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1.5px solid var(--border2); background: var(--bg3); color: var(--white2); transition: all 0.12s; }
+.tag-chip.on { background: var(--gold-pale); border-color: rgba(232,161,53,0.4); color: var(--gold2); font-weight: 600; }
+.tag-chip.remove::after { content: ' ×'; }
+.tag-add { display: flex; gap: 8px; margin-top: 8px; }
+.tag-input { flex: 1; background: var(--bg3); border: 1px solid var(--border2); color: var(--white); padding: 7px 12px; border-radius: 8px; font-size: 12px; outline: none; caret-color: var(--gold); }
+.tag-add-btn { background: var(--bg3); border: 1px solid var(--border2); color: var(--white2); font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: 8px; cursor: pointer; }
+.tag-add-btn:hover { background: var(--bg4); }
+
+.notes-area { margin-bottom: 20px; }
+.review-textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border2); color: var(--white); padding: 10px 14px; border-radius: var(--r); font-size: 13px; resize: vertical; min-height: 80px; outline: none; caret-color: var(--gold); font-family: var(--font); line-height: 1.5; }
+
+.confidence-banner { padding: 12px 16px; border-radius: var(--r); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+.confidence-banner.low { background: var(--amber-pale); border: 1px solid rgba(230,126,34,0.3); }
+.confidence-banner.high { background: var(--green-pale); border: 1px solid rgba(29,158,117,0.3); }
+.confidence-banner-icon { font-size: 20px; }
+.confidence-banner-text { font-size: 13px; line-height: 1.5; }
+.confidence-banner-text strong { font-weight: 700; }
+
+.progress-row { display: flex; justify-content: space-between; padding: 8px 16px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); position: sticky; bottom: 0; background: var(--bg); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">✦ Rendezvous — Spot Review</div>
+  <div class="nav-stats">
+    <div class="nav-stat"><div class="stat-dot" style="background:#E8A135;"></div>Pending <strong id="count-pending">0</strong></div>
+    <div class="nav-stat"><div class="stat-dot" style="background:#E67E22;"></div>Needs Review <strong id="count-review">0</strong></div>
+    <div class="nav-stat"><div class="stat-dot" style="background:#1D9E75;"></div>Approved <strong id="count-approved">0</strong></div>
+    <div class="nav-stat"><div class="stat-dot" style="background:#2980b9;"></div>Reviewed <strong id="count-reviewed">0</strong></div>
+  </div>
+</nav>
+
+<div class="toolbar">
+  <div class="city-toggle">
+    <button class="city-btn active" onclick="setCity('all')">All</button>
+    <button class="city-btn" onclick="setCity('dc')">DC</button>
+    <button class="city-btn" onclick="setCity('la')">LA</button>
+  </div>
+  <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+  <button class="filter-btn" onclick="setFilter('NEEDS_REVIEW', this)">Needs Review</button>
+  <button class="filter-btn" onclick="setFilter('AUTO_APPROVED', this)">Auto-Approved</button>
+  <button class="filter-btn" onclick="setFilter('REVIEWED', this)">Reviewed</button>
+  <button class="filter-btn" onclick="setFilter('REJECTED', this)">Rejected</button>
+  <input class="toolbar-search" type="text" placeholder="Search by name or neighborhood…" oninput="filterSpots(this.value)" id="search-input">
+  <button class="btn btn-save" onclick="exportApproved()" style="font-size:12px;padding:7px 14px;">⬇ Export seed file</button>
+</div>
+
+<div class="main">
+  <div class="spot-list" id="spot-list"></div>
+  <div class="detail-panel" id="detail-panel">
+    <div class="detail-empty">
+      <div class="detail-empty-icon">🗺</div>
+      <div style="font-size:14px;font-weight:600;">Select a spot to review</div>
+      <div style="font-size:12px;text-align:center;max-width:240px;">Spots flagged for review have AI confidence below 80%. Approve, adjust scores, or reject.</div>
+    </div>
+  </div>
+</div>
+
+<div class="progress-row">
+  <span id="progress-label">Loading spots…</span>
+  <span id="keyboard-hint" style="opacity:0.6;">← → arrow keys to navigate · A = approve · R = reject</span>
+</div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────────────
+let spots = [];
+let filteredSpots = [];
+let activeSpotId = null;
+let filterStatus = 'all';
+let filterCity   = 'all';
+let searchQuery  = '';
+
+const VIBE_TAGS_ALL = [
+  'cozy','lively','hidden gem','underground','outdoor','late-night','daytime',
+  'creative','intimate','social','communal','trendy','divey','upscale','artsy',
+  'casual','romantic','group-friendly','quick','browsable','active','scenic',
+  'historic','noisy','quiet','local fave','cultural','competitive','fun',
+];
+
+const CATEGORY_EMOJI = {
+  RESTAURANT:'🍜', CAFE:'☕', BAR:'🍺', BEER_GARDEN:'🌿', MUSIC_VENUE:'🎵',
+  RECORD_STORE:'🎵', ART_SPACE:'🎨', GALLERY:'🖼', MUSEUM:'🏛', BOOKSTORE:'📚',
+  MARKET:'🛍', ARCADE_BAR:'🎮', PARK:'🌳', HIKING_TRAIL:'🥾', THRIFT_STORE:'👗',
+  COMEDY_VENUE:'🎭', ROOFTOP:'🌆', BREWERY:'🍻', NIGHT_CLUB:'💃',
+  MOVIE_SHOWING:'🎬', CONCERT:'🎤', SPORTS_EVENT:'⚽', POP_UP:'✨',
+  COMMUNITY_EVENT:'🤝', NATURE_SPOT:'🌲', DEFAULT:'📍',
+};
+
+// ── LOAD SPOTS ─────────────────────────────────────────────────────────
+// In production this fetches from /api/v1/admin/spots
+// For standalone use, loads from a JSON file or the window.__SPOTS__ variable
+async function loadSpots() {
+  try {
+    const res = await fetch('/api/v1/admin/spots?limit=500');
+    const data = await res.json();
+    spots = data.data?.spots || [];
+  } catch {
+    // Fallback: use demo data if API not available
+    spots = window.__DEMO_SPOTS__ || getDemoSpots();
+  }
+  rebuildFilteredList();
+  updateCounts();
+  updateProgress();
+}
+
+function getDemoSpots() {
+  return [
+    { id:'demo-1', name:'Vinyl District', category:'RECORD_STORE', neighborhood:'U Street', city:'Washington DC', aiScoringStatus:'NEEDS_REVIEW', aiConfidenceScore:0.62, energyScore:0.35, socialDensity:0.40, noveltyScore:0.75, vibeTags:['cozy','hidden gem'], aiScoringNotes:'exterior-only photos', priceTier:2, description:'A legendary crate-digging spot.', heroPhotoUrl:null, photos:[], isEvent:false },
+    { id:'demo-2', name:'Wunder Garten', category:'BEER_GARDEN', neighborhood:'NoMa', city:'Washington DC', aiScoringStatus:'AUTO_APPROVED', aiConfidenceScore:0.91, energyScore:0.72, socialDensity:0.85, noveltyScore:0.55, vibeTags:['outdoor','social','lively'], priceTier:2, description:'DC\'s largest beer garden.', heroPhotoUrl:null, photos:[], isEvent:false },
+    { id:'demo-3', name:'Runyon Canyon Trail', category:'HIKING_TRAIL', neighborhood:'West Hollywood', city:'Los Angeles', aiScoringStatus:'AUTO_APPROVED', aiConfidenceScore:0.90, energyScore:0.60, socialDensity:0.35, noveltyScore:0.60, vibeTags:['outdoor','nature','active'], priceTier:1, description:'The social hike of LA.', heroPhotoUrl:null, photos:[], isEvent:false },
+    { id:'demo-4', name:'Comedy Store', category:'COMEDY_VENUE', neighborhood:'West Hollywood', city:'Los Angeles', aiScoringStatus:'NEEDS_REVIEW', aiConfidenceScore:0.55, energyScore:0.70, socialDensity:0.75, noveltyScore:0.65, vibeTags:['lively','social'], aiScoringNotes:'dark interior photos, crowd not visible', priceTier:2, description:null, heroPhotoUrl:null, photos:[], isEvent:false },
+  ];
+}
+
+// ── FILTERING ─────────────────────────────────────────────────────────
+function rebuildFilteredList() {
+  filteredSpots = spots.filter(s => {
+    if (filterStatus !== 'all' && s.aiScoringStatus !== filterStatus) return false;
+    if (filterCity !== 'all') {
+      if (filterCity === 'dc' && !s.city?.includes('Washington')) return false;
+      if (filterCity === 'la' && !s.city?.includes('Los Angeles')) return false;
+    }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      if (!s.name?.toLowerCase().includes(q) && !s.neighborhood?.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+  renderSpotList();
+  updateProgress();
+}
+
+function setFilter(status, btn) {
+  filterStatus = status;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  rebuildFilteredList();
+}
+
+function setCity(city) {
+  filterCity = city;
+  document.querySelectorAll('.city-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  rebuildFilteredList();
+}
+
+function filterSpots(query) {
+  searchQuery = query;
+  rebuildFilteredList();
+}
+
+// ── RENDER LIST ────────────────────────────────────────────────────────
+function renderSpotList() {
+  const el = document.getElementById('spot-list');
+  if (!filteredSpots.length) {
+    el.innerHTML = '<div style="padding:32px 16px;text-align:center;color:var(--muted);font-size:13px;">No spots match this filter</div>';
+    return;
+  }
+
+  el.innerHTML = filteredSpots.map(s => {
+    const emoji   = CATEGORY_EMOJI[s.category] || CATEGORY_EMOJI.DEFAULT;
+    const conf    = s.aiConfidenceScore || 0;
+    const confPct = Math.round(conf * 100);
+    const barColor= conf >= 0.8 ? '#1D9E75' : conf >= 0.6 ? '#E67E22' : '#e74c3c';
+    return `
+      <div class="spot-item ${s.id === activeSpotId ? 'selected' : ''}" onclick="selectSpot('${s.id}')">
+        <div class="spot-thumb">${emoji}</div>
+        <div class="spot-item-info">
+          <div class="spot-item-name">${s.name}</div>
+          <div class="spot-item-meta">${s.neighborhood} · ${s.city?.split(' ')[0]}</div>
+          <div class="spot-item-badges">
+            <span class="badge ${s.aiScoringStatus?.toLowerCase().replace('_','-')}">${s.aiScoringStatus?.replace('_',' ')}</span>
+            <span style="font-size:10px;color:var(--muted);padding:2px 0;">${s.category?.replace('_',' ')}</span>
+          </div>
+          <div class="conf-bar-wrap"><div class="conf-bar" style="width:${confPct}%;background:${barColor};"></div></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);padding-top:2px;flex-shrink:0;">${confPct}%</div>
+      </div>`;
+  }).join('');
+}
+
+// ── SELECT SPOT ────────────────────────────────────────────────────────
+function selectSpot(id) {
+  activeSpotId = id;
+  renderSpotList();
+  renderDetail(spots.find(s => s.id === id));
+}
+
+function renderDetail(spot) {
+  if (!spot) return;
+  const el = document.getElementById('detail-panel');
+  const conf = spot.aiConfidenceScore || 0;
+  const confPct = Math.round(conf * 100);
+  const isLowConf = conf < 0.8;
+  const activeTags = new Set(spot.vibeTags || []);
+
+  el.innerHTML = `
+    <div class="detail-header">
+      <div>
+        <div class="detail-name">${spot.name} ${spot.isEvent ? '📅' : ''}</div>
+        <div class="detail-meta">${spot.category?.replace(/_/g,' ')} · ${spot.neighborhood} · ${spot.city}</div>
+      </div>
+      <div class="detail-actions">
+        <button class="btn btn-reject" onclick="rejectSpot('${spot.id}')">✕ Reject</button>
+        <button class="btn btn-approve" onclick="approveSpot('${spot.id}')">✓ Approve</button>
+      </div>
+    </div>
+
+    <div class="confidence-banner ${isLowConf ? 'low' : 'high'}">
+      <div class="confidence-banner-icon">${isLowConf ? '⚠' : '✓'}</div>
+      <div class="confidence-banner-text">
+        <strong>AI Confidence: ${confPct}%</strong><br>
+        ${isLowConf ? (spot.aiScoringNotes || 'Below 80% threshold — review scores before approving.') : 'High confidence — auto-approved. Quick review recommended.'}
+      </div>
+    </div>
+
+    <div class="photos-grid">
+      ${(spot.photos?.slice(0,3) || []).map(p => `<img class="photo-thumb" src="${p.url}" onerror="this.classList.add('placeholder');this.textContent='📷'">`).join('')}
+      ${spot.photos?.length === 0 ? `<div class="photo-thumb placeholder">📷</div><div class="photo-thumb placeholder" style="opacity:0.4;">📷</div>` : ''}
+    </div>
+
+    <div class="section-title">Vibe Scores — drag sliders to adjust</div>
+    <div class="scores-grid">
+      ${[
+        ['energyScore', 'Energy Level', spot.energyScore],
+        ['socialDensity', 'Social Density', spot.socialDensity],
+        ['noveltyScore', 'Novelty Score', spot.noveltyScore],
+        ['outdoorScore', 'Outdoor Score', spot.outdoorScore || 0],
+        ['physicalActivityScore', 'Physical Activity', spot.physicalActivityScore || 0],
+        ['culturalDepth', 'Cultural Depth', spot.culturalDepth || 0.5],
+      ].map(([key, label, val]) => `
+        <div class="score-card">
+          <div class="score-label">${label}</div>
+          <div class="score-slider-wrap">
+            <input type="range" class="score-slider" min="0" max="100" value="${Math.round((val||0)*100)}"
+              oninput="updateScore('${spot.id}','${key}',this.value/100);this.nextElementSibling.textContent=parseFloat(this.value/100).toFixed(2)">
+            <div class="score-val">${(val||0).toFixed(2)}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div class="tags-area">
+      <div class="section-title">Vibe Tags</div>
+      <div class="tag-chips" id="tag-chips-${spot.id}">
+        ${VIBE_TAGS_ALL.map(tag => `
+          <div class="tag-chip ${activeTags.has(tag) ? 'on' : ''}" onclick="toggleTag('${spot.id}','${tag}',this)">${tag}</div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="notes-area">
+      <div class="section-title">Review Notes</div>
+      <textarea class="review-textarea" id="notes-${spot.id}" placeholder="Optional: add notes about this spot or the scoring…">${spot.reviewNotes || ''}</textarea>
+    </div>
+
+    ${spot.description ? `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:20px;font-size:13px;color:var(--white2);line-height:1.6;">${spot.description}</div>` : ''}
+
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-reject" style="flex:1;" onclick="rejectSpot('${spot.id}')">✕ Reject</button>
+      <button class="btn btn-save" style="flex:1;" onclick="saveChanges('${spot.id}')">💾 Save changes</button>
+      <button class="btn btn-approve" style="flex:1;" onclick="approveSpot('${spot.id}')">✓ Approve</button>
+    </div>
+  `;
+}
+
+// ── ACTIONS ────────────────────────────────────────────────────────────
+function updateScore(spotId, key, value) {
+  const spot = spots.find(s => s.id === spotId);
+  if (spot) spot[key] = parseFloat(value);
+}
+
+function toggleTag(spotId, tag, el) {
+  const spot = spots.find(s => s.id === spotId);
+  if (!spot) return;
+  if (!spot.vibeTags) spot.vibeTags = [];
+  if (spot.vibeTags.includes(tag)) {
+    spot.vibeTags = spot.vibeTags.filter(t => t !== tag);
+    el.classList.remove('on');
+  } else {
+    spot.vibeTags.push(tag);
+    el.classList.add('on');
+  }
+}
+
+function approveSpot(id) {
+  const spot = spots.find(s => s.id === id);
+  if (!spot) return;
+  spot.aiScoringStatus = 'REVIEWED';
+  spot.manuallyReviewed = true;
+  spot.reviewedAt = new Date().toISOString();
+  spot.reviewNotes = document.getElementById(`notes-${id}`)?.value || '';
+  syncToAPI(spot);
+  const nextIdx = filteredSpots.findIndex(s => s.id === id);
+  rebuildFilteredList();
+  updateCounts();
+  // Advance to next spot
+  const nextSpot = filteredSpots[nextIdx] || filteredSpots[nextIdx - 1];
+  if (nextSpot) selectSpot(nextSpot.id);
+  showToast('✓ Spot approved');
+}
+
+function rejectSpot(id) {
+  const spot = spots.find(s => s.id === id);
+  if (!spot) return;
+  spot.aiScoringStatus = 'REJECTED';
+  spot.manuallyReviewed = true;
+  spot.reviewNotes = document.getElementById(`notes-${id}`)?.value || '';
+  syncToAPI(spot);
+  rebuildFilteredList();
+  updateCounts();
+  showToast('✕ Spot rejected');
+}
+
+function saveChanges(id) {
+  const spot = spots.find(s => s.id === id);
+  if (!spot) return;
+  spot.reviewNotes = document.getElementById(`notes-${id}`)?.value || '';
+  syncToAPI(spot);
+  showToast('💾 Changes saved');
+}
+
+// In production, this PATCHes to /api/v1/admin/spots/:id
+async function syncToAPI(spot) {
+  try {
+    await fetch(`/api/v1/admin/spots/${spot.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.__ADMIN_TOKEN__}` },
+      body: JSON.stringify({
+        energyScore: spot.energyScore, socialDensity: spot.socialDensity,
+        noveltyScore: spot.noveltyScore, outdoorScore: spot.outdoorScore,
+        physicalActivityScore: spot.physicalActivityScore, culturalDepth: spot.culturalDepth,
+        vibeTags: spot.vibeTags, aiScoringStatus: spot.aiScoringStatus,
+        manuallyReviewed: spot.manuallyReviewed, reviewNotes: spot.reviewNotes,
+      })
+    });
+  } catch { /* standalone mode — changes stored in memory only */ }
+}
+
+function exportApproved() {
+  const approved = spots.filter(s => ['REVIEWED','AUTO_APPROVED'].includes(s.aiScoringStatus));
+  const seed = approved.map(s => ({
+    name: s.name, category: s.category, neighborhood: s.neighborhood, city: s.city,
+    lat: s.lat, lng: s.lng, vibeTags: s.vibeTags, energyScore: s.energyScore,
+    socialDensity: s.socialDensity, noveltyScore: s.noveltyScore, priceTier: s.priceTier,
+    visitDuration: s.visitDuration, groupSizeMin: s.groupSizeMin, groupSizeMax: s.groupSizeMax,
+    hours: s.hours, description: s.description,
+  }));
+  const blob = new Blob([JSON.stringify(seed, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `rendezvous_seed_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  showToast(`⬇ Exported ${seed.length} approved spots`);
+}
+
+// ── COUNTS & PROGRESS ──────────────────────────────────────────────────
+function updateCounts() {
+  document.getElementById('count-pending').textContent  = spots.filter(s => s.aiScoringStatus === 'PENDING').length;
+  document.getElementById('count-review').textContent   = spots.filter(s => s.aiScoringStatus === 'NEEDS_REVIEW').length;
+  document.getElementById('count-approved').textContent = spots.filter(s => ['AUTO_APPROVED','REVIEWED'].includes(s.aiScoringStatus)).length;
+  document.getElementById('count-reviewed').textContent = spots.filter(s => s.aiScoringStatus === 'REVIEWED').length;
+}
+
+function updateProgress() {
+  const total    = filteredSpots.length;
+  const reviewed = filteredSpots.filter(s => ['REVIEWED','AUTO_APPROVED','REJECTED'].includes(s.aiScoringStatus)).length;
+  document.getElementById('progress-label').textContent = `Showing ${total} spots · ${reviewed} reviewed`;
+}
+
+// ── KEYBOARD NAVIGATION ────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  const idx = filteredSpots.findIndex(s => s.id === activeSpotId);
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+    const next = filteredSpots[idx + 1];
+    if (next) selectSpot(next.id);
+  } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+    const prev = filteredSpots[idx - 1];
+    if (prev) selectSpot(prev.id);
+  } else if (e.key === 'a' || e.key === 'A') {
+    if (activeSpotId) approveSpot(activeSpotId);
+  } else if (e.key === 'r' || e.key === 'R') {
+    if (activeSpotId) rejectSpot(activeSpotId);
+  }
+});
+
+// ── TOAST ──────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    Object.assign(toast.style, { position:'fixed',bottom:'20px',right:'20px',background:'#2c2820',border:'1px solid rgba(255,255,255,0.14)',color:'#f5f0e8',padding:'10px 18px',borderRadius:'10px',fontSize:'13px',fontWeight:'500',zIndex:999,opacity:'0',transform:'translateY(8px)',transition:'all 0.25s',pointerEvents:'none' });
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateY(0)';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(8px)'; }, 2500);
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────
+loadSpots();
+</script>
+</body>
+</html>

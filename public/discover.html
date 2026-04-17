@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>Discover — Rendezvous</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --bg:#0f0e0c;--bg2:#1a1814;--bg3:#232018;--bg4:#2c2820;
+      --gold:#E8A135;--gold2:#f5c46a;--gold-pale:rgba(232,161,53,0.13);--gold-border:rgba(232,161,53,0.28);
+      --white:#f5f0e8;--white2:#cec8bc;--muted:#7a7060;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+      --green:#1D9E75;--green-pale:rgba(29,158,117,0.12);--red:#e74c3c;
+      --font-d:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;--r:14px;
+    }
+    body{background:var(--bg);color:var(--white);font-family:var(--font-b);min-height:100vh;padding-bottom:90px;}
+
+    /* ── NAV ── */
+    .nav{position:sticky;top:0;z-index:100;background:rgba(15,14,12,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 16px;height:60px;display:flex;align-items:center;gap:12px;}
+    .nav-logo{font-family:var(--font-d);font-size:18px;font-weight:800;color:var(--gold);text-decoration:none;letter-spacing:-0.02em;white-space:nowrap;}
+    .search-wrap{flex:1;position:relative;}
+    .search-input{width:100%;background:var(--bg3);border:1.5px solid var(--border2);color:var(--white);padding:10px 14px 10px 38px;border-radius:50px;font-family:var(--font-b);font-size:14px;outline:none;caret-color:var(--gold);transition:border-color 0.2s;}
+    .search-input:focus{border-color:var(--gold-border);}
+    .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+    .search-icon svg{width:16px;height:16px;}
+
+    /* ── FILTER BAR ── */
+    .filter-bar{padding:12px 16px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border);}
+    .filter-bar::-webkit-scrollbar{display:none;}
+    .filter-pill{flex-shrink:0;background:var(--bg3);border:1.5px solid var(--border2);color:var(--white2);border-radius:50px;padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+    .filter-pill.active{background:var(--gold-pale);border-color:var(--gold-border);color:var(--gold);}
+
+    /* ── TABS ── */
+    .view-tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);}
+    .view-tab{flex:1;padding:12px;border:none;background:none;color:var(--muted);font-family:var(--font-d);font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.02em;border-bottom:2px solid transparent;transition:all 0.2s;}
+    .view-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+    /* ── TRENDING HEADER ── */
+    .trending-header{padding:20px 16px 8px;display:flex;align-items:center;justify-content:space-between;}
+    .trending-title{font-family:var(--font-d);font-size:18px;font-weight:800;letter-spacing:-0.02em;}
+    .trending-sub{font-size:12px;color:var(--muted);}
+    .pulse-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:5px;animation:pulse 2s infinite;}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(0.8)}}
+
+    /* ── SPOT CARDS ── */
+    .spots-grid{padding:12px 16px;display:flex;flex-direction:column;gap:12px;}
+    .spot-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform 0.15s,border-color 0.2s;}
+    .spot-card:hover{transform:translateY(-2px);border-color:var(--border2);}
+    .spot-card:active{transform:scale(0.98);}
+    .spot-img{width:100%;height:160px;object-fit:cover;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:48px;}
+    .spot-body{padding:14px 16px;}
+    .spot-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+    .spot-name{font-family:var(--font-d);font-size:16px;font-weight:700;letter-spacing:-0.01em;}
+    .spot-price{font-size:12px;color:var(--muted);}
+    .spot-meta{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+    .spot-meta-dot{width:3px;height:3px;border-radius:50%;background:var(--muted);}
+    .spot-tags{display:flex;flex-wrap:wrap;gap:5px;}
+    .spot-tag{background:var(--bg3);border:1px solid var(--border);color:var(--white2);border-radius:50px;padding:3px 10px;font-size:11px;}
+    .spot-tag-gold{background:var(--gold-pale);border-color:var(--gold-border);color:var(--gold2);}
+    .spot-footer{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 14px;}
+    .spot-heat{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--green);}
+    .spot-heat svg{width:14px;height:14px;}
+    .add-to-shelf{background:var(--gold-pale);border:1px solid var(--gold-border);color:var(--gold);border-radius:50px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+    .add-to-shelf:hover{background:var(--gold);color:#0f0e0c;}
+
+    /* ── HORIZONTAL SCROLL ── */
+    .h-scroll-section{padding:0 0 16px;}
+    .h-scroll-header{padding:16px 16px 12px;display:flex;justify-content:space-between;align-items:baseline;}
+    .h-scroll-title{font-family:var(--font-d);font-size:15px;font-weight:700;}
+    .h-scroll-see-all{font-size:12px;color:var(--gold);}
+    .h-scroll{display:flex;gap:12px;overflow-x:auto;padding:0 16px;scrollbar-width:none;}
+    .h-scroll::-webkit-scrollbar{display:none;}
+    .h-card{flex-shrink:0;width:160px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;}
+    .h-card-img{width:100%;height:100px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:32px;}
+    .h-card-body{padding:10px;}
+    .h-card-name{font-family:var(--font-d);font-size:13px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .h-card-sub{font-size:11px;color:var(--muted);}
+
+    /* ── RANK ── */
+    .rank-badge{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-size:12px;font-weight:800;flex-shrink:0;}
+    .rank-1{background:var(--gold);color:#0f0e0c;}
+    .rank-2{background:var(--bg4);color:var(--white);}
+    .rank-3{background:var(--bg4);color:var(--white);}
+
+    /* ── MAP VIEW ── */
+    #map-view{display:none;padding:16px;}
+    .map-placeholder{background:var(--bg2);border:1px solid var(--border);border-radius:16px;height:400px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--muted);}
+    .map-placeholder .icon{font-size:48px;}
+    .map-placeholder p{font-size:14px;text-align:center;line-height:1.5;max-width:240px;}
+    .map-spots-list{margin-top:16px;display:flex;flex-direction:column;gap:8px;}
+    .map-spot-row{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:center;cursor:pointer;}
+    .map-spot-icon{width:36px;height:36px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+    .map-spot-name{font-family:var(--font-d);font-size:14px;font-weight:700;}
+    .map-spot-sub{font-size:12px;color:var(--muted);}
+
+    /* ── EMPTY / LOADING ── */
+    .empty-state{padding:60px 20px;text-align:center;color:var(--muted);}
+    .empty-icon{font-size:40px;margin-bottom:12px;}
+    .skeleton{background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px;}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    /* ── MODAL ── */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;}
+    .modal-handle{width:36px;height:4px;border-radius:2px;background:var(--border2);margin:0 auto 20px;}
+    .modal-spot-name{font-family:var(--font-d);font-size:22px;font-weight:800;margin-bottom:4px;}
+    .modal-spot-meta{font-size:13px;color:var(--muted);margin-bottom:16px;}
+    .modal-section{margin-bottom:20px;}
+    .modal-section-title{font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:8px;}
+    .modal-desc{font-size:14px;color:var(--white2);line-height:1.6;}
+    .modal-actions{display:flex;gap:10px;margin-top:20px;}
+    .btn{padding:14px 24px;border-radius:50px;border:none;font-family:var(--font-d);font-size:14px;font-weight:700;cursor:pointer;transition:opacity 0.15s;}
+    .btn-gold{background:var(--gold);color:#0f0e0c;}
+    .btn-outline{background:transparent;border:1.5px solid var(--border2);color:var(--white2);}
+    .btn:hover{opacity:0.85;}
+    .btn-full{width:100%;}
+
+    /* ── BOTTOM NAV ── */
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(15,14,12,0.96);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom);}
+    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0;cursor:pointer;color:var(--muted);text-decoration:none;transition:color 0.15s;}
+    .nav-item.active{color:var(--gold);}
+    .nav-item svg{width:22px;height:22px;}
+    .nav-item span{font-size:10px;font-weight:600;letter-spacing:0.04em;}
+
+    /* ── TOAST ── */
+    .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border2);border-radius:50px;padding:12px 20px;font-size:13px;font-weight:500;white-space:nowrap;opacity:0;transition:all 0.3s;z-index:300;pointer-events:none;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="nav-logo" href="/">✦</a>
+    <div class="search-wrap">
+      <div class="search-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </div>
+      <input class="search-input" id="search-input" type="search" placeholder="Search spots, vibes, cities…" oninput="onSearch(this.value)"/>
+    </div>
+  </nav>
+
+  <div class="filter-bar" id="filter-bar">
+    <button class="filter-pill active" onclick="setFilter('all', this)">All</button>
+    <button class="filter-pill" onclick="setFilter('bar', this)">Bars</button>
+    <button class="filter-pill" onclick="setFilter('restaurant', this)">Restaurants</button>
+    <button class="filter-pill" onclick="setFilter('club', this)">Clubs</button>
+    <button class="filter-pill" onclick="setFilter('lounge', this)">Lounges</button>
+    <button class="filter-pill" onclick="setFilter('rooftop', this)">Rooftops</button>
+    <button class="filter-pill" onclick="setFilter('experience', this)">Experiences</button>
+  </div>
+
+  <div class="view-tabs">
+    <button class="view-tab active" onclick="switchView('list', this)">Browse</button>
+    <button class="view-tab" onclick="switchView('trending', this)">Trending</button>
+    <button class="view-tab" onclick="switchView('map', this)">Map</button>
+  </div>
+
+  <!-- LIST VIEW -->
+  <div id="list-view">
+    <!-- Trending this week -->
+    <div class="h-scroll-section" id="trending-section">
+      <div class="h-scroll-header">
+        <div>
+          <div class="h-scroll-title">
+            <span class="pulse-dot"></span>Hot this week
+          </div>
+        </div>
+      </div>
+      <div class="h-scroll" id="trending-scroll"></div>
+    </div>
+
+    <!-- Main spots grid -->
+    <div class="trending-header">
+      <div>
+        <div class="trending-title" id="grid-title">All Spots</div>
+        <div class="trending-sub" id="grid-sub"></div>
+      </div>
+    </div>
+    <div class="spots-grid" id="spots-grid">
+      <!-- Skeleton -->
+      <div class="spot-card" style="padding:16px;">
+        <div class="skeleton" style="height:160px;border-radius:10px;margin-bottom:12px;"></div>
+        <div class="skeleton" style="height:16px;width:65%;margin-bottom:8px;"></div>
+        <div class="skeleton" style="height:12px;width:45%;"></div>
+      </div>
+      <div class="spot-card" style="padding:16px;">
+        <div class="skeleton" style="height:160px;border-radius:10px;margin-bottom:12px;"></div>
+        <div class="skeleton" style="height:16px;width:55%;margin-bottom:8px;"></div>
+        <div class="skeleton" style="height:12px;width:40%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRENDING VIEW -->
+  <div id="trending-view" style="display:none;">
+    <div class="spots-grid" id="trending-full-grid"></div>
+  </div>
+
+  <!-- MAP VIEW -->
+  <div id="map-view">
+    <div class="map-placeholder">
+      <div class="icon">🗺</div>
+      <p>Interactive map coming soon. Browse spots by location and see where the group has been.</p>
+    </div>
+    <div class="map-spots-list" id="map-spots-list"></div>
+  </div>
+
+  <!-- Spot Detail Modal -->
+  <div class="modal-overlay" id="spot-modal" onclick="closeModal(event)">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <a class="nav-item" href="/party.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Party</span>
+    </a>
+    <a class="nav-item active" href="/discover.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <span>Discover</span>
+    </a>
+    <a class="nav-item" href="/profile.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Profile</span>
+    </a>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API = '/api/v1';
+    const token = localStorage.getItem('rdv_token');
+    const currentUser = JSON.parse(localStorage.getItem('rdv_user') || 'null');
+
+    if (!token) location.href = '/login.html?next=/discover.html';
+
+    let allSpots = [];
+    let trendingSpots = [];
+    let activeFilter = 'all';
+    let activeView = 'list';
+    let searchTimeout = null;
+
+    const CATEGORY_EMOJI = {
+      bar: '🍸', restaurant: '🍽', club: '🎵', lounge: '🥂',
+      rooftop: '🌆', experience: '✨', default: '✦'
+    };
+
+    const PRICE_LABELS = { 1: '$', 2: '$$', 3: '$$$', 4: '$$$$' };
+
+    function showToast(msg, dur = 2500) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), dur);
+    }
+
+    function getEmoji(spot) {
+      if (!spot.category) return CATEGORY_EMOJI.default;
+      for (const [key, emoji] of Object.entries(CATEGORY_EMOJI)) {
+        if (spot.category.toLowerCase().includes(key)) return emoji;
+      }
+      return CATEGORY_EMOJI.default;
+    }
+
+    function priceDots(tier) {
+      if (!tier) return '';
+      return PRICE_LABELS[tier] || '$'.repeat(tier);
+    }
+
+    function renderSpotCard(spot, rank = null) {
+      const emoji = getEmoji(spot);
+      const tags = (spot.vibeTags || []).slice(0, 3);
+      return `
+        <div class="spot-card" onclick="openModal('${spot.id}')">
+          <div class="spot-img" style="font-size:48px;">${emoji}</div>
+          <div class="spot-body">
+            <div class="spot-header">
+              <div style="display:flex;align-items:center;gap:8px;">
+                ${rank ? `<div class="rank-badge rank-${rank}">${rank}</div>` : ''}
+                <div class="spot-name">${spot.name}</div>
+              </div>
+              <div class="spot-price">${priceDots(spot.priceTier)}</div>
+            </div>
+            <div class="spot-meta">
+              <span>${spot.category || 'Spot'}</span>
+              ${spot.city ? `<div class="spot-meta-dot"></div><span>${spot.city}</span>` : ''}
+              ${spot.recentMemories ? `<div class="spot-meta-dot"></div><span>${spot.recentMemories} recent</span>` : ''}
+            </div>
+            <div class="spot-tags">
+              ${tags.map(t => `<span class="spot-tag spot-tag-gold">${t}</span>`).join('')}
+            </div>
+          </div>
+          <div class="spot-footer">
+            <div class="spot-heat">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              ${spot.recentMemories ? `${spot.recentMemories} memories this week` : 'Popular spot'}
+            </div>
+            <button class="add-to-shelf" onclick="addToShelf(event, '${spot.id}')">+ Shelf</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderHCard(spot) {
+      return `
+        <div class="h-card" onclick="openModal('${spot.id}')">
+          <div class="h-card-img">${getEmoji(spot)}</div>
+          <div class="h-card-body">
+            <div class="h-card-name">${spot.name}</div>
+            <div class="h-card-sub">${spot.city || spot.category || 'Spot'}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function loadTrending() {
+      try {
+        const res = await fetch(`${API}/spots/trending`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (!json.success) return;
+        trendingSpots = json.data.spots || [];
+
+        // Horizontal scroll (top 6)
+        const scroll = document.getElementById('trending-scroll');
+        if (trendingSpots.length) {
+          scroll.innerHTML = trendingSpots.slice(0, 8).map(renderHCard).join('');
+        } else {
+          document.getElementById('trending-section').style.display = 'none';
+        }
+
+        // Trending full grid
+        const trendingGrid = document.getElementById('trending-full-grid');
+        trendingGrid.innerHTML = trendingSpots.map((s, i) => renderSpotCard(s, i < 3 ? i + 1 : null)).join('');
+
+        // Map list
+        const mapList = document.getElementById('map-spots-list');
+        mapList.innerHTML = trendingSpots.slice(0, 8).map(s => `
+          <div class="map-spot-row" onclick="openModal('${s.id}')">
+            <div class="map-spot-icon">${getEmoji(s)}</div>
+            <div>
+              <div class="map-spot-name">${s.name}</div>
+              <div class="map-spot-sub">${s.city || ''} ${s.category ? '· ' + s.category : ''}</div>
+            </div>
+          </div>
+        `).join('');
+      } catch {}
+    }
+
+    async function loadSpots(category = null, q = '') {
+      const grid = document.getElementById('spots-grid');
+      grid.innerHTML = `
+        <div class="spot-card" style="padding:16px;">
+          <div class="skeleton" style="height:160px;border-radius:10px;margin-bottom:12px;"></div>
+          <div class="skeleton" style="height:16px;width:65%;margin-bottom:8px;"></div>
+        </div>
+      `;
+
+      try {
+        const params = new URLSearchParams({ limit: 20, offset: 0 });
+        if (category && category !== 'all') params.set('category', category);
+        if (q) params.set('q', q);
+
+        const res = await fetch(`${API}/spots?${params}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (!json.success) return;
+
+        allSpots = json.data.spots || [];
+        const total = json.data.total || 0;
+
+        document.getElementById('grid-title').textContent = category && category !== 'all'
+          ? category.charAt(0).toUpperCase() + category.slice(1) + 's'
+          : q ? `Results for "${q}"` : 'All Spots';
+        document.getElementById('grid-sub').textContent = `${total} spots`;
+
+        if (!allSpots.length) {
+          grid.innerHTML = `<div class="empty-state"><div class="empty-icon">✦</div><div>No spots found</div></div>`;
+          return;
+        }
+
+        grid.innerHTML = allSpots.map(s => renderSpotCard(s)).join('');
+      } catch {
+        grid.innerHTML = `<div class="empty-state"><div class="empty-icon">⚡</div><div>Couldn't load spots</div></div>`;
+      }
+    }
+
+    function setFilter(cat, btn) {
+      activeFilter = cat;
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      loadSpots(cat, document.getElementById('search-input').value);
+    }
+
+    function onSearch(val) {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        loadSpots(activeFilter === 'all' ? null : activeFilter, val);
+      }, 350);
+    }
+
+    function switchView(view, btn) {
+      activeView = view;
+      document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('list-view').style.display = view === 'list' ? 'block' : 'none';
+      document.getElementById('trending-view').style.display = view === 'trending' ? 'block' : 'none';
+      document.getElementById('map-view').style.display = view === 'map' ? 'block' : 'none';
+      document.getElementById('filter-bar').style.display = view === 'map' ? 'none' : 'flex';
+    }
+
+    async function openModal(spotId) {
+      const modal = document.getElementById('spot-modal');
+      const content = document.getElementById('modal-content');
+
+      modal.classList.add('open');
+      content.innerHTML = `<div class="skeleton" style="height:20px;width:60%;margin-bottom:12px;"></div><div class="skeleton" style="height:100px;border-radius:10px;"></div>`;
+
+      try {
+        // Find in already-loaded data
+        let spot = [...allSpots, ...trendingSpots].find(s => s.id === spotId);
+
+        if (!spot) {
+          const res = await fetch(`${API}/spots/${spotId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+          const json = await res.json();
+          if (json.success) spot = json.data.spot;
+        }
+
+        if (!spot) {
+          content.innerHTML = `<p style="color:var(--muted)">Spot not found.</p>`;
+          return;
+        }
+
+        const tags = (spot.vibeTags || []).slice(0, 6);
+        content.innerHTML = `
+          <div style="font-size:56px;text-align:center;margin-bottom:16px;">${getEmoji(spot)}</div>
+          <div class="modal-spot-name">${spot.name}</div>
+          <div class="modal-spot-meta">${spot.category || 'Spot'} · ${spot.city || ''} ${spot.priceTier ? '· ' + priceDots(spot.priceTier) : ''}</div>
+
+          ${spot.description ? `
+          <div class="modal-section">
+            <div class="modal-section-title">About</div>
+            <div class="modal-desc">${spot.description}</div>
+          </div>` : ''}
+
+          ${tags.length ? `
+          <div class="modal-section">
+            <div class="modal-section-title">Vibes</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              ${tags.map(t => `<span class="spot-tag spot-tag-gold">${t}</span>`).join('')}
+            </div>
+          </div>` : ''}
+
+          ${spot.address ? `
+          <div class="modal-section">
+            <div class="modal-section-title">Location</div>
+            <div style="font-size:14px;color:var(--white2);">${spot.address}</div>
+          </div>` : ''}
+
+          <div class="modal-actions">
+            <button class="btn btn-outline" onclick="closeModal()">Close</button>
+            <button class="btn btn-gold btn-full" onclick="addToShelf(null, '${spot.id}', true)">Add to Shelf</button>
+          </div>
+        `;
+      } catch {
+        content.innerHTML = `<p style="color:var(--muted)">Couldn't load spot details.</p>`;
+      }
+    }
+
+    function closeModal(e) {
+      if (!e || e.target === document.getElementById('spot-modal')) {
+        document.getElementById('spot-modal').classList.remove('open');
+      }
+    }
+
+    async function addToShelf(e, spotId, fromModal = false) {
+      if (e) { e.stopPropagation(); }
+      if (!token) { location.href = '/login.html?next=/discover.html'; return; }
+
+      try {
+        const res = await fetch(`${API}/shelf`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ spotId, status: 'WANT' })
+        });
+        const json = await res.json();
+        if (json.success) {
+          showToast('Added to your shelf ✦');
+          if (fromModal) closeModal();
+        } else {
+          showToast(json.error?.message || 'Already on shelf');
+        }
+      } catch {
+        showToast('Could not add to shelf');
+      }
+    }
+
+    // Init
+    loadTrending();
+    loadSpots();
+  </script>
+</body>
+</html>

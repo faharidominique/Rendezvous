@@ -1,0 +1,307 @@
+// Rendezvous — Prisma Database Schema
+// Run: npx prisma migrate dev --name init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── USERS ─────────────────────────────────────────────────────────────
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  hashedPassword  String?
+  displayName     String
+  handle          String   @unique
+  avatarUrl       String?
+  locationCity    String?
+  locationLat     Float?
+  locationLng     Float?
+  createdAt       DateTime @default(now())
+  lastActiveAt    DateTime @default(now())
+  isMinor         Boolean  @default(false)
+  parentConsent   Boolean  @default(false)
+
+  // Relations
+  tasteProfile      TasteProfile?
+  partiesHosted     Party[]           @relation("HostedParties")
+  partyMemberships  PartyMember[]
+  votes             PartyVote[]
+  shelfItems        ShelfItem[]
+  memoriesCreated   Memory[]
+  memoryReactions   MemoryReaction[]
+  friendsRequested  Friendship[]      @relation("Requester")
+  friendsReceived   Friendship[]      @relation("Addressee")
+  pushTokens        PushToken[]
+  appConnections    AppConnection[]
+  notifPreferences  NotifPreference?
+
+  @@map("users")
+}
+
+// ── TASTE PROFILE ─────────────────────────────────────────────────────
+model TasteProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Activity preferences
+  activities    String[] // e.g. ["food", "music", "art"]
+  vibeTags      String[] // e.g. ["chill", "spontaneous"]
+
+  // Budget
+  budgetMin Int @default(0)
+  budgetMax Int @default(50)
+
+  // MBTI
+  mbtiType   String? // e.g. "ENFP"
+  mbtiSource String? // "imported" | "full_quiz" | "short_quiz"
+
+  // Taste vector dimensions (0.0 - 1.0)
+  energyLevel       Float @default(0.5)
+  socialOpenness    Float @default(0.5)
+  spontaneity       Float @default(0.5)
+  culturalAppetite  Float @default(0.5)
+  foodPriority      Float @default(0.5)
+  outdoorPreference Float @default(0.5)
+  budgetSensitivity Float @default(0.5)
+  nightOwlScore     Float @default(0.5)
+  activityDiversity Float @default(0.5)
+
+  // Signal confidence (0.0 - 1.0, higher = more data)
+  signalConfidence  Float @default(0.1)
+
+  // Connected app signals (raw JSON from each platform)
+  spotifySignals    Json?
+  appleMusicSignals Json?
+  instagramSignals  Json?
+  tiktokSignals     Json?
+  pinterestSignals  Json?
+
+  updatedAt DateTime @updatedAt
+
+  @@map("taste_profiles")
+}
+
+// ── PARTIES ───────────────────────────────────────────────────────────
+model Party {
+  id          String      @id @default(uuid())
+  hostId      String
+  host        User        @relation("HostedParties", fields: [hostId], references: [id])
+  code        String      @unique // e.g. "RNDVZ-4827"
+  status      PartyStatus @default(ACTIVE)
+  generatedPlans Json?    // Array of 3 plan objects; when confirmed, includes confirmedIndex field
+  locationLat Float?
+  locationLng Float?
+  locationCity String?
+  createdAt   DateTime    @default(now())
+  expiresAt   DateTime
+  completedAt DateTime?
+
+  members PartyMember[]
+  votes   PartyVote[]
+
+  @@map("parties")
+}
+
+enum PartyStatus {
+  ACTIVE
+  GENERATING
+  VOTING
+  CONFIRMED
+  COMPLETED
+  EXPIRED
+}
+
+model PartyMember {
+  id          String   @id @default(uuid())
+  partyId     String
+  party       Party    @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  energyLevel String?  // "low" | "medium" | "high"
+  budget      Int?
+  availableFrom String? // e.g. "19:00"
+  checkedInAt DateTime?
+  joinedAt    DateTime @default(now())
+  isConnected Boolean  @default(false)
+
+  @@unique([partyId, userId])
+  @@map("party_members")
+}
+
+model PartyVote {
+  id        String   @id @default(uuid())
+  partyId   String
+  party     Party    @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  planIndex Int      // 0, 1, or 2
+  votedAt   DateTime @default(now())
+
+  @@unique([partyId, userId])
+  @@map("party_votes")
+}
+
+// ── SPOTS ─────────────────────────────────────────────────────────────
+model Spot {
+  id             String   @id @default(uuid())
+  name           String
+  category       String   // "Record Store" | "Café" | "Restaurant" | etc.
+  neighborhood   String
+  city           String
+  address        String?
+  lat            Float
+  lng            Float
+  vibeTags       String[] // ["cozy", "hidden gem", "late night"]
+  priceTier      Int      // 1-4
+  energyScore    Float    @default(0.5)
+  socialScore    Float    @default(0.5)
+  hours          Json     // { mon: "10:00-22:00", ... }
+  visitDuration  Int      @default(90) // minutes
+  groupSizeMin   Int      @default(2)
+  groupSizeMax   Int      @default(20)
+  bookingRequired Boolean @default(false)
+  bookingUrl     String?
+  websiteUrl     String?
+  phoneNumber    String?
+  photoUrl       String?
+  description    String?
+  isActive       Boolean  @default(true)
+  lastVerifiedAt DateTime @default(now())
+  source         String   @default("manual") // "manual" | "google" | "yelp"
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  shelfItems ShelfItem[]
+  memories   Memory[]
+
+  @@map("spots")
+}
+
+// ── SHELF ─────────────────────────────────────────────────────────────
+model ShelfItem {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spotId           String
+  spot             Spot     @relation(fields: [spotId], references: [id])
+  addedFromPartyId String?
+  addedAt          DateTime @default(now())
+
+  @@unique([userId, spotId])
+  @@map("shelf_items")
+}
+
+// ── MEMORIES ──────────────────────────────────────────────────────────
+model Memory {
+  id        String   @id @default(uuid())
+  partyId   String?
+  creatorId String
+  creator   User     @relation(fields: [creatorId], references: [id])
+  spotId    String?
+  spot      Spot?    @relation(fields: [spotId], references: [id])
+  photoUrl  String?
+  caption   String?
+  isPublic  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  reactions MemoryReaction[]
+
+  @@map("memories")
+}
+
+model MemoryReaction {
+  id           String       @id @default(uuid())
+  memoryId     String
+  memory       Memory       @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User         @relation(fields: [userId], references: [id])
+  reactionType ReactionType
+  createdAt    DateTime     @default(now())
+
+  @@unique([memoryId, userId])
+  @@map("memory_reactions")
+}
+
+enum ReactionType {
+  HEART
+  REPEAT
+}
+
+// ── FRIENDSHIPS ───────────────────────────────────────────────────────
+model Friendship {
+  id          String           @id @default(uuid())
+  requesterId String
+  requester   User             @relation("Requester", fields: [requesterId], references: [id])
+  addresseeId String
+  addressee   User             @relation("Addressee", fields: [addresseeId], references: [id])
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([requesterId, addresseeId])
+  @@map("friendships")
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  BLOCKED
+}
+
+// ── PUSH TOKENS ───────────────────────────────────────────────────────
+model PushToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId  String
+  platform  String   // "ios" | "android"
+  token     String   @unique
+  createdAt DateTime @default(now())
+
+  @@unique([userId, deviceId])
+  @@map("push_tokens")
+}
+
+// ── APP CONNECTIONS ───────────────────────────────────────────────────
+model AppConnection {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider     String   // "spotify" | "apple_music" | "instagram" | "tiktok" | "pinterest"
+  accessToken  String   // encrypted
+  refreshToken String?  // encrypted
+  scopes       String[]
+  expiresAt    DateTime?
+  lastSyncedAt DateTime?
+  createdAt    DateTime @default(now())
+
+  @@unique([userId, provider])
+  @@map("app_connections")
+}
+
+// ── NOTIFICATION PREFERENCES ──────────────────────────────────────────
+model NotifPreference {
+  id             String  @id @default(uuid())
+  userId         String  @unique
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  partyInvite    Boolean @default(true)
+  checkinNudge   Boolean @default(true)
+  plansReady     Boolean @default(true)
+  voteReminder   Boolean @default(true)
+  planConfirmed  Boolean @default(true)
+  prosocialNudge Boolean @default(true)
+  nudgeDays      Int     @default(7)
+  memoryReaction Boolean @default(true)
+  friendRequest  Boolean @default(true)
+  quietHoursStart Int    @default(23) // 11pm
+  quietHoursEnd   Int    @default(9)  // 9am
+
+  @@map("notif_preferences")
+}

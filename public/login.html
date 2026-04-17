@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>Rendezvous — Sign in</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --bg:#0f0e0c;--bg2:#1a1814;--bg3:#232018;--bg4:#2c2820;
+      --gold:#E8A135;--gold2:#f5c46a;--gold-pale:rgba(232,161,53,0.13);--gold-border:rgba(232,161,53,0.28);
+      --white:#f5f0e8;--white2:#cec8bc;--muted:#7a7060;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+      --green:#1D9E75;--red:#e74c3c;--font-d:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;--r:14px;
+    }
+    body{background:var(--bg);color:var(--white);font-family:var(--font-b);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+    .logo{font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--gold);margin-bottom:40px;letter-spacing:-0.02em;}
+    .card{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:36px 32px;width:100%;max-width:420px;}
+    .tabs{display:flex;gap:2px;background:var(--bg3);border-radius:10px;padding:3px;margin-bottom:28px;}
+    .tab{flex:1;padding:9px;border-radius:8px;border:none;background:none;color:var(--muted);font-family:var(--font-d);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.02em;}
+    .tab.active{background:var(--bg2);color:var(--white);box-shadow:0 1px 4px rgba(0,0,0,0.3);}
+    .form{display:flex;flex-direction:column;gap:14px;}
+    .form-group{display:flex;flex-direction:column;gap:6px;}
+    label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+    input{background:var(--bg3);border:1.5px solid var(--border2);color:var(--white);padding:13px 16px;border-radius:var(--r);font-family:var(--font-b);font-size:15px;outline:none;caret-color:var(--gold);transition:border-color 0.2s;}
+    input::placeholder{color:var(--muted);}
+    input:focus{border-color:var(--gold-border);}
+    .btn-gold{background:var(--gold);color:#0f0e0c;border:none;font-family:var(--font-d);font-size:15px;font-weight:700;padding:15px;border-radius:50px;cursor:pointer;width:100%;letter-spacing:0.02em;transition:opacity 0.15s,transform 0.12s;margin-top:4px;}
+    .btn-gold:hover{opacity:0.88;}
+    .btn-gold:active{transform:scale(0.98);}
+    .btn-gold:disabled{opacity:0.5;cursor:not-allowed;}
+    .divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;margin:4px 0;}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+    .error-msg{background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);color:#e74c3c;padding:10px 14px;border-radius:var(--r);font-size:13px;display:none;}
+    .footer-note{margin-top:20px;text-align:center;font-size:13px;color:var(--muted);}
+    .footer-note a{color:var(--gold);text-decoration:none;}
+    .hidden{display:none!important;}
+    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+    .shake{animation:shake 0.3s ease;}
+  </style>
+</head>
+<body>
+  <div class="logo">✦ Rendezvous</div>
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Sign in</button>
+      <button class="tab" onclick="switchTab('register')">Create account</button>
+    </div>
+
+    <div id="error-msg" class="error-msg"></div>
+
+    <!-- LOGIN -->
+    <form class="form" id="login-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="your@email.com" required autocomplete="email"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password"/>
+      </div>
+      <button type="submit" class="btn-gold" id="login-btn">Sign in →</button>
+    </form>
+
+    <!-- REGISTER -->
+    <form class="form hidden" id="register-form" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <label>Display name</label>
+        <input type="text" id="reg-name" placeholder="Your name" required maxlength="50"/>
+      </div>
+      <div class="form-group">
+        <label>Handle</label>
+        <input type="text" id="reg-handle" placeholder="yourhandle" required maxlength="30" pattern="[a-zA-Z0-9_]+"/>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="your@email.com" required autocomplete="email"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-password" placeholder="Min. 8 characters" required minlength="8" autocomplete="new-password"/>
+      </div>
+      <button type="submit" class="btn-gold" id="register-btn">Create account →</button>
+    </form>
+  </div>
+  <div class="footer-note">
+    <a href="/">← Back to home</a>
+  </div>
+
+  <script>
+    const API = '/api/v1';
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register')));
+      document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
+      document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
+      hideError();
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error-msg');
+      el.textContent = msg; el.style.display = 'block';
+      el.classList.remove('shake');
+      requestAnimationFrame(() => el.classList.add('shake'));
+    }
+    function hideError() { document.getElementById('error-msg').style.display = 'none'; }
+
+    function saveAuth(data) {
+      localStorage.setItem('rdv_token', data.accessToken);
+      localStorage.setItem('rdv_refresh', data.refreshToken);
+      localStorage.setItem('rdv_user', JSON.stringify(data.user));
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault(); hideError();
+      const btn = document.getElementById('login-btn');
+      btn.disabled = true; btn.textContent = 'Signing in…';
+      try {
+        const res = await fetch(`${API}/auth/login`, {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ email: document.getElementById('login-email').value, password: document.getElementById('login-password').value })
+        });
+        const json = await res.json();
+        if (!json.success) { showError(json.error?.message || 'Invalid email or password.'); return; }
+        saveAuth(json.data);
+        const next = new URLSearchParams(location.search).get('next') || '/party.html';
+        location.href = next;
+      } catch { showError('Something went wrong. Try again.'); }
+      finally { btn.disabled = false; btn.textContent = 'Sign in →'; }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault(); hideError();
+      const btn = document.getElementById('register-btn');
+      btn.disabled = true; btn.textContent = 'Creating account…';
+      try {
+        const res = await fetch(`${API}/auth/register`, {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            email: document.getElementById('reg-email').value,
+            password: document.getElementById('reg-password').value,
+            displayName: document.getElementById('reg-name').value,
+            handle: document.getElementById('reg-handle').value,
+          })
+        });
+        const json = await res.json();
+        if (!json.success) { showError(json.error?.message || 'Registration failed.'); return; }
+        saveAuth(json.data);
+        location.href = '/party.html';
+      } catch { showError('Something went wrong. Try again.'); }
+      finally { btn.disabled = false; btn.textContent = 'Create account →'; }
+    }
+
+    // Redirect if already logged in
+    if (localStorage.getItem('rdv_token')) location.href = '/party.html';
+  </script>
+</body>
+</html>

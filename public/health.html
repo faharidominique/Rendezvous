@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rendezvous — System Health</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f0e0c; --bg2: #1a1814; --bg3: #232018;
+      --gold: #E8A135; --white: #f5f0e8; --white2: #cec8bc; --muted: #7a7060;
+      --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+      --green: #1D9E75; --green-pale: rgba(29,158,117,0.15);
+      --red: #e74c3c; --red-pale: rgba(231,76,60,0.15);
+      --amber: #E67E22; --amber-pale: rgba(230,126,34,0.15);
+    }
+    body { background: var(--bg); color: var(--white); font-family: system-ui, sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: var(--bg2); border-bottom: 1px solid var(--border2); padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .brand { font-size: 18px; font-weight: 800; color: var(--gold); }
+    .back { color: var(--muted); font-size: 13px; text-decoration: none; }
+    .back:hover { color: var(--white2); }
+    main { flex: 1; padding: 48px 28px; max-width: 600px; margin: 0 auto; width: 100%; }
+    h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 8px; }
+    .sub { color: var(--muted); font-size: 14px; margin-bottom: 40px; }
+    .cards { display: flex; flex-direction: column; gap: 12px; }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .card-left { display: flex; flex-direction: column; gap: 4px; }
+    .card-name { font-weight: 700; font-size: 15px; }
+    .card-desc { font-size: 12px; color: var(--muted); }
+    .status-pill { font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 20px; }
+    .status-checking { background: var(--amber-pale); color: var(--amber); }
+    .status-ok { background: var(--green-pale); color: var(--green); }
+    .status-error { background: var(--red-pale); color: var(--red); }
+    .refresh-btn { display: block; margin: 32px auto 0; background: none; border: 1.5px solid var(--border2); color: var(--white2); font-size: 14px; font-weight: 600; padding: 10px 28px; border-radius: 24px; cursor: pointer; transition: all 0.15s; }
+    .refresh-btn:hover { border-color: var(--white2); color: var(--white); }
+    .last-checked { text-align: center; color: var(--muted); font-size: 12px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">Rendezvous Admin</div>
+    <a href="/admin" class="back">← Dashboard</a>
+  </header>
+  <main>
+    <h1>System Health</h1>
+    <p class="sub">Live status of all Rendezvous services.</p>
+    <div class="cards">
+      <div class="card" id="card-server">
+        <div class="card-left">
+          <div class="card-name">Server</div>
+          <div class="card-desc">Express API — port availability</div>
+        </div>
+        <div class="status-pill status-checking" id="status-server">Checking…</div>
+      </div>
+      <div class="card" id="card-database">
+        <div class="card-left">
+          <div class="card-name">Database</div>
+          <div class="card-desc">PostgreSQL via Supabase</div>
+        </div>
+        <div class="status-pill status-checking" id="status-database">Checking…</div>
+      </div>
+      <div class="card" id="card-redis">
+        <div class="card-left">
+          <div class="card-name">Redis / Cache</div>
+          <div class="card-desc">Upstash — sessions & rate limiting</div>
+        </div>
+        <div class="status-pill status-checking" id="status-redis">Checking…</div>
+      </div>
+      <div class="card">
+        <div class="card-left">
+          <div class="card-name">Live Events</div>
+          <div class="card-desc">Socket.io WebSocket server</div>
+        </div>
+        <div class="status-pill status-checking" id="status-ws">Checking…</div>
+      </div>
+    </div>
+    <button class="refresh-btn" onclick="checkHealth()">Refresh status</button>
+    <div class="last-checked" id="last-checked"></div>
+  </main>
+
+  <script>
+    async function checkHealth() {
+      const ids = ['server', 'database', 'redis', 'ws'];
+      ids.forEach(id => {
+        const el = document.getElementById('status-' + id);
+        el.className = 'status-pill status-checking';
+        el.textContent = 'Checking…';
+      });
+
+      try {
+        const res = await fetch('/admin/api/health', {
+          headers: { 'x-admin-secret': localStorage.getItem('adminSecret') || '' }
+        });
+        const json = await res.json();
+        const data = json.data || {};
+
+        function setStatus(id, val) {
+          const el = document.getElementById('status-' + id);
+          if (val === 'ok') {
+            el.className = 'status-pill status-ok';
+            el.textContent = 'Operational';
+          } else if (val === 'error') {
+            el.className = 'status-pill status-error';
+            el.textContent = 'Error';
+          } else {
+            el.className = 'status-pill status-checking';
+            el.textContent = val || 'Unknown';
+          }
+        }
+
+        setStatus('server', data.server);
+        setStatus('database', data.database);
+        setStatus('redis', data.redis);
+        // WS check: if server is ok, assume WS is up
+        setStatus('ws', data.server === 'ok' ? 'ok' : 'error');
+
+        document.getElementById('last-checked').textContent =
+          'Last checked: ' + new Date().toLocaleTimeString();
+      } catch (err) {
+        ids.forEach(id => {
+          const el = document.getElementById('status-' + id);
+          el.className = 'status-pill status-error';
+          el.textContent = 'Unreachable';
+        });
+      }
+    }
+
+    checkHealth();
+    setInterval(checkHealth, 30000);
+  </script>
+</body>
+</html>
