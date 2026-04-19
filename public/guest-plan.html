@@ -249,7 +249,9 @@
       planId: null,
     };
 
-    function selectVibe(btn) {
+    function selectVibe(el) {
+      const btn = el.closest('.vibe-btn');
+      if (!btn) return;
       document.querySelectorAll('.vibe-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       state.vibe = btn.dataset.vibe;
