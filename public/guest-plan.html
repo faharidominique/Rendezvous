@@ -43,9 +43,9 @@
     .vibe-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; cursor: pointer; text-align: left; transition: border-color 0.15s, background 0.15s; }
     .vibe-btn:hover { border-color: var(--gold-border); }
     .vibe-btn.selected { border-color: var(--gold); background: var(--gold-pale); }
-    .vibe-btn .emoji { font-size: 24px; display: block; margin-bottom: 6px; }
-    .vibe-btn .label { font-family: var(--font-d); font-size: 14px; font-weight: 700; color: var(--white); display: block; }
-    .vibe-btn .desc { font-size: 12px; color: var(--muted); margin-top: 2px; display: block; }
+    .vibe-btn .vibe-emoji { font-size: 24px; display: block; margin-bottom: 6px; }
+    .vibe-btn .vibe-label { font-family: var(--font-d); font-size: 14px; font-weight: 700; color: var(--white); display: block; }
+    .vibe-btn .vibe-desc { font-size: 12px; color: var(--muted); margin-top: 2px; display: block; }
 
     .input-row { display: flex; gap: 12px; margin-bottom: 12px; }
     .input-group { flex: 1; }
@@ -102,35 +102,35 @@
       <h2>What's the vibe tonight?</h2>
       <p class="step-sub">Pick the mood that fits your group.</p>
       <div class="vibe-grid">
-        <button class="vibe-btn" data-vibe="chill" onclick="selectVibe(this)">
-          <span class="emoji">🌙</span>
-          <span class="label">Chill & low-key</span>
-          <span class="desc">Easy conversation, good drinks</span>
+        <button class="vibe-btn" data-vibe="chill">
+          <span class="vibe-emoji">🌙</span>
+          <span class="vibe-label">Chill & low-key</span>
+          <span class="vibe-desc">Easy conversation, good drinks</span>
         </button>
-        <button class="vibe-btn" data-vibe="lively" onclick="selectVibe(this)">
-          <span class="emoji">🔥</span>
-          <span class="label">Lively & social</span>
-          <span class="desc">Energy, music, good crowd</span>
+        <button class="vibe-btn" data-vibe="lively">
+          <span class="vibe-emoji">🔥</span>
+          <span class="vibe-label">Lively & social</span>
+          <span class="vibe-desc">Energy, music, good crowd</span>
         </button>
-        <button class="vibe-btn" data-vibe="cultural" onclick="selectVibe(this)">
-          <span class="emoji">🎭</span>
-          <span class="label">Cultural & artsy</span>
-          <span class="desc">Museums, galleries, live shows</span>
+        <button class="vibe-btn" data-vibe="cultural">
+          <span class="vibe-emoji">🎭</span>
+          <span class="vibe-label">Cultural & artsy</span>
+          <span class="vibe-desc">Museums, galleries, live shows</span>
         </button>
-        <button class="vibe-btn" data-vibe="foodie" onclick="selectVibe(this)">
-          <span class="emoji">🍽️</span>
-          <span class="label">Foodie night</span>
-          <span class="desc">Great food is the main event</span>
+        <button class="vibe-btn" data-vibe="foodie">
+          <span class="vibe-emoji">🍽️</span>
+          <span class="vibe-label">Foodie night</span>
+          <span class="vibe-desc">Great food is the main event</span>
         </button>
-        <button class="vibe-btn" data-vibe="active" onclick="selectVibe(this)">
-          <span class="emoji">⚡</span>
-          <span class="label">Active & adventurous</span>
-          <span class="desc">Moving around, trying things</span>
+        <button class="vibe-btn" data-vibe="active">
+          <span class="vibe-emoji">⚡</span>
+          <span class="vibe-label">Active & adventurous</span>
+          <span class="vibe-desc">Moving around, trying things</span>
         </button>
-        <button class="vibe-btn" data-vibe="spontaneous" onclick="selectVibe(this)">
-          <span class="emoji">🎲</span>
-          <span class="label">Surprise me</span>
-          <span class="desc">Whatever feels right tonight</span>
+        <button class="vibe-btn" data-vibe="spontaneous">
+          <span class="vibe-emoji">🎲</span>
+          <span class="vibe-label">Surprise me</span>
+          <span class="vibe-desc">Whatever feels right tonight</span>
         </button>
       </div>
       <button class="btn-gold" id="step1-next" onclick="goStep(2)" disabled>Next →</button>
@@ -249,14 +249,14 @@
       planId: null,
     };
 
-    function selectVibe(el) {
-      const btn = el.closest('.vibe-btn');
-      if (!btn) return;
-      document.querySelectorAll('.vibe-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      state.vibe = btn.dataset.vibe;
-      document.getElementById('step1-next').disabled = false;
-    }
+    document.querySelectorAll('.vibe-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.vibe-btn').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+        state.vibe = this.dataset.vibe;
+        document.getElementById('step1-next').disabled = false;
+      });
+    });
 
     function goStep(step) {
       document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
