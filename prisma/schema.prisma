@@ -25,6 +25,8 @@ model User {
   lastActiveAt    DateTime @default(now())
   isMinor         Boolean  @default(false)
   parentConsent   Boolean  @default(false)
+  emailVerified   Boolean  @default(false)
+  emailVerifiedAt DateTime?
 
   // Relations
   tasteProfile      TasteProfile?
@@ -284,6 +286,20 @@ model AppConnection {
 
   @@unique([userId, provider])
   @@map("app_connections")
+}
+
+// ── ANALYTICS EVENTS ──────────────────────────────────────────────────
+model AnalyticsEvent {
+  id         String   @id @default(uuid())
+  userId     String
+  eventType  String
+  properties Json     @default("{}")
+  clientTs   DateTime @default(now())
+  serverTs   DateTime @default(now())
+
+  @@index([userId, eventType])
+  @@index([eventType, serverTs])
+  @@map("analytics_events")
 }
 
 // ── NOTIFICATION PREFERENCES ──────────────────────────────────────────
