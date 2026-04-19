@@ -131,15 +131,31 @@ initSocket(server);
 const PORT = process.env.PORT || 3000;
 
 async function start() {
+  console.log(`Starting Rendezvous v2 on port ${PORT}...`);
   try {
     await connectRedis();
+    console.log('Redis connected.');
   } catch (err) {
     console.error('Redis connection failed, continuing without it:', err.message);
   }
   server.listen(PORT, '0.0.0.0', () => {
     console.log(`Rendezvous v2 running on port ${PORT} [${process.env.NODE_ENV}]`);
   });
+  server.on('error', (err) => {
+    console.error('Server error:', err.message);
+    process.exit(1);
+  });
 }
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err.message, err.stack);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled rejection:', err);
+  process.exit(1);
+});
 
 start();
 module.exports = app;
