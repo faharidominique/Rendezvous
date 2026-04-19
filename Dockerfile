@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-RUN apk add --no-cache openssl openssl-dev
+RUN apk add --no-cache openssl openssl-dev openssl1.1
 
 WORKDIR /app
 
