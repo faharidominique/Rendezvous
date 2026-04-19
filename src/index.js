@@ -1,4 +1,5 @@
 // Rendezvous v2 — API Server Entry Point
+console.log('index.js loaded, PORT:', process.env.PORT);
 require('dotenv').config();
 const express    = require('express');
 const http       = require('http');
