@@ -182,6 +182,7 @@ model Spot {
   shelfItems ShelfItem[]
   memories   Memory[]
 
+  @@unique([name, neighborhood])
   @@map("spots")
 }
 
