@@ -1,675 +1,730 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rendezvous — Stop arguing. Start going.</title>
-  <meta name="description" content="AI-powered group outing plans for your friend group — delivered in 90 seconds." />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    :root {
-      --bg:          #0f0e0c;
-      --bg2:         #1a1814;
-      --bg3:         #232018;
-      --bg4:         #2c2820;
-      --bg5:         #353028;
-      --gold:        #E8A135;
-      --gold2:       #f5c46a;
-      --gold-pale:   rgba(232,161,53,0.13);
-      --gold-border: rgba(232,161,53,0.28);
-      --white:       #f5f0e8;
-      --white2:      #cec8bc;
-      --muted:       #7a7060;
-      --muted2:      #4e4840;
-      --border:      rgba(255,255,255,0.07);
-      --border2:     rgba(255,255,255,0.13);
-      --green:       #1D9E75;
-      --green-pale:  rgba(29,158,117,0.14);
-      --red:         #e74c3c;
-      --font-d:      'Syne', sans-serif;
-      --font-b:      'DM Sans', sans-serif;
-      --r:           14px;
-    }
-    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
-    body { background: var(--bg); color: var(--white); font-family: var(--font-b); line-height: 1.6; overflow-x: hidden; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rendezvous — For the friend who makes it happen</title>
+<meta name="description" content="You already make the plans. Rendezvous makes it easier. Live in Washington DC.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0A08;
+  --bg2:#141410;
+  --bg3:#1c1b16;
+  --gold:#E8A135;
+  --gold2:#f0b45a;
+  --gold-dim:rgba(232,161,53,0.15);
+  --gold-border:rgba(232,161,53,0.28);
+  --cream:#F5F0E8;
+  --cream2:rgba(245,240,232,0.6);
+  --cream3:rgba(245,240,232,0.3);
+  --cream4:rgba(245,240,232,0.06);
+  --border:rgba(245,240,232,0.09);
+  --border2:rgba(245,240,232,0.16);
+  --font-d:'Playfair Display',Georgia,serif;
+  --font-b:'DM Sans',system-ui,sans-serif;
+}
+html{background:var(--bg);color:var(--cream);font-family:var(--font-b);scroll-behavior:smooth}
+body{overflow-x:hidden}
+a{color:inherit;text-decoration:none}
 
-    /* ── NAV ── */
-    nav {
-      position: fixed; top: 0; width: 100%; z-index: 100;
-      background: rgba(15,14,12,0.82); backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border); height: 68px;
-      display: flex; align-items: center; justify-content: space-between; padding: 0 5vw;
-    }
-    .nav-logo { font-family: var(--font-d); font-size: 18px; font-weight: 800; color: var(--gold); letter-spacing: -0.02em; display: flex; align-items: center; gap: 7px; }
-    .nav-links { display: flex; gap: 28px; align-items: center; }
-    .nav-links a { font-family: var(--font-b); color: var(--white2); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.15s; }
-    .nav-links a:hover { color: var(--white); }
-    .nav-cta { font-family: var(--font-d); background: var(--gold); color: #0f0e0c; font-weight: 700; font-size: 13px; padding: 9px 20px; border-radius: 50px; text-decoration: none; letter-spacing: 0.02em; transition: opacity 0.15s; }
-    .nav-cta:hover { opacity: 0.88; color: #0f0e0c; }
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.25rem 2.5rem;
+  background:rgba(10,10,8,0.88);
+  backdrop-filter:blur(20px);
+  border-bottom:0.5px solid var(--border);
+}
+.nav-logo{font-family:var(--font-d);font-size:1.1rem;color:var(--gold);letter-spacing:0.02em}
+.nav-links{display:flex;gap:2rem;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--cream3)}
+.nav-links a:hover{color:var(--cream);transition:color 0.15s}
+.nav-cta{
+  font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:500;
+  padding:0.55rem 1.4rem;border:0.5px solid var(--gold);color:var(--gold);border-radius:2px;
+  transition:background 0.2s,color 0.2s;
+}
+.nav-cta:hover{background:var(--gold);color:var(--bg)}
 
-    /* ── HERO ── */
-    .hero {
-      min-height: 100vh; display: flex; flex-direction: column; align-items: center;
-      justify-content: center; text-align: center; padding: 130px 5vw 100px;
-      position: relative; overflow: hidden;
-    }
-    .hero::before {
-      content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
-      width: 700px; height: 700px;
-      background: radial-gradient(circle, rgba(232,161,53,0.10) 0%, transparent 65%);
-      pointer-events: none;
-    }
-    .hero-eyebrow {
-      font-family: var(--font-b); font-size: 11px; font-weight: 600; letter-spacing: 0.14em;
-      text-transform: uppercase; color: var(--gold); margin-bottom: 24px;
-      display: inline-flex; align-items: center; gap: 8px;
-    }
-    .eyebrow-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px rgba(29,158,117,0.7); animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-    .hero h1 {
-      font-family: var(--font-d); font-size: clamp(52px, 9vw, 108px); font-weight: 800;
-      letter-spacing: -0.04em; line-height: 0.95; margin-bottom: 28px; color: var(--white);
-    }
-    .hero h1 em { font-style: normal; color: var(--gold); }
-    .hero-sub {
-      font-family: var(--font-b); font-size: clamp(16px, 2vw, 20px); color: var(--white2);
-      font-weight: 300; max-width: 520px; margin: 0 auto 48px; line-height: 1.7;
-    }
-    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
-    .btn-gold {
-      font-family: var(--font-d); background: var(--gold); color: #0f0e0c; border: none;
-      font-weight: 700; font-size: 15px; padding: 15px 32px; border-radius: 50px;
-      cursor: pointer; text-decoration: none; letter-spacing: 0.02em;
-      transition: transform 0.12s, opacity 0.12s; display: inline-flex; align-items: center; gap: 8px;
-    }
-    .btn-gold:hover { opacity: 0.88; transform: translateY(-1px); }
-    .btn-ghost {
-      font-family: var(--font-b); background: transparent; color: var(--white2);
-      border: 1.5px solid var(--border2); font-weight: 500; font-size: 15px;
-      padding: 15px 32px; border-radius: 50px; cursor: pointer; text-decoration: none;
-      transition: all 0.15s; display: inline-flex; align-items: center; gap: 8px;
-    }
-    .btn-ghost:hover { border-color: var(--white2); color: var(--white); }
-    .hero-note { font-size: 12px; color: var(--muted); font-family: var(--font-b); }
-    .hero-note span { color: var(--green); }
+/* HERO */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  padding:9rem 2.5rem 5rem;max-width:960px;margin:0 auto;
+}
+.hero-live{
+  display:inline-flex;align-items:center;gap:0.6rem;
+  font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:2rem;
+  animation:fadeUp 0.5s 0.1s both;
+}
+.live-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--gold);
+  animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.hero-h1{
+  font-family:var(--font-d);
+  font-size:clamp(3rem,7vw,5.5rem);
+  font-weight:400;line-height:1.05;
+  color:var(--cream);margin-bottom:1.5rem;
+  animation:fadeUp 0.6s 0.2s both;
+}
+.hero-h1 em{font-style:italic;color:var(--gold)}
+.hero-sub{
+  font-size:1.1rem;font-weight:300;line-height:1.7;
+  color:var(--cream2);max-width:500px;margin-bottom:3rem;
+  animation:fadeUp 0.6s 0.3s both;
+}
+.hero-sub strong{font-weight:500;color:var(--cream)}
+.hero-cta{animation:fadeUp 0.6s 0.4s both;display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:0.5rem;
+  background:var(--gold);color:var(--bg);
+  font-size:0.82rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;
+  padding:0.95rem 2.25rem;border-radius:2px;
+  transition:opacity 0.2s,transform 0.15s;
+}
+.btn-primary:hover{opacity:0.85;transform:translateY(-1px)}
+.btn-text{
+  font-size:0.78rem;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--cream3);display:flex;align-items:center;gap:0.4rem;
+  transition:color 0.2s;
+}
+.btn-text:hover{color:var(--cream)}
 
-    /* ── STATS BAND ── */
-    .stats-band { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 52px 5vw; }
-    .stats-inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
-    .stat-item { text-align: center; padding: 0 20px; border-right: 1px solid var(--border); }
-    .stat-item:last-child { border-right: none; }
-    .stat-num { font-family: var(--font-d); font-size: clamp(36px, 5vw, 56px); font-weight: 800; color: var(--gold); letter-spacing: -0.04em; line-height: 1; margin-bottom: 6px; }
-    .stat-label { font-family: var(--font-b); font-size: 13px; color: var(--muted); font-weight: 400; }
+.hero-numbers{
+  display:flex;gap:3.5rem;flex-wrap:wrap;
+  margin-top:5rem;padding-top:2.5rem;
+  border-top:0.5px solid var(--border);
+  animation:fadeUp 0.6s 0.5s both;
+}
+.num-val{font-family:var(--font-d);font-size:2rem;font-weight:700;color:var(--gold);line-height:1}
+.num-label{font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--cream3);margin-top:0.4rem}
 
-    /* ── SECTIONS ── */
-    .section { padding: 100px 5vw; max-width: 1100px; margin: 0 auto; }
-    .section-eyebrow { font-family: var(--font-b); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
-    .section-title { font-family: var(--font-d); font-size: clamp(30px, 4vw, 52px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; margin-bottom: 14px; }
-    .section-sub { font-family: var(--font-b); font-size: 17px; color: var(--white2); font-weight: 300; max-width: 500px; margin-bottom: 56px; line-height: 1.7; }
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 
-    /* ── HOW IT WORKS ── */
-    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .step {
-      background: var(--bg2); border: 1px solid var(--border); border-radius: 18px;
-      padding: 32px 28px; position: relative; overflow: hidden; transition: border-color 0.2s;
-    }
-    .step:hover { border-color: var(--gold-border); }
-    .step::before { content: ''; position: absolute; top: -40px; right: -40px; width: 120px; height: 120px; background: radial-gradient(circle, var(--gold-pale) 0%, transparent 70%); }
-    .step-num { font-family: var(--font-d); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 20px; }
-    .step-icon { font-size: 32px; margin-bottom: 16px; }
-    .step h3 { font-family: var(--font-d); font-size: 20px; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.02em; }
-    .step p { font-family: var(--font-b); font-size: 14px; color: var(--white2); line-height: 1.7; font-weight: 300; }
+/* MARQUEE */
+.marquee-wrap{
+  border-top:0.5px solid var(--border);
+  border-bottom:0.5px solid var(--border);
+  padding:1rem 0;overflow:hidden;
+  background:var(--bg2);
+}
+.marquee-track{
+  display:flex;gap:0;white-space:nowrap;
+  animation:marquee 20s linear infinite;
+}
+.marquee-track:hover{animation-play-state:paused}
+.marquee-item{
+  font-family:var(--font-d);font-size:0.9rem;font-style:italic;
+  color:var(--cream3);padding:0 2rem;
+  display:flex;align-items:center;gap:2rem;
+}
+.marquee-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);display:inline-block}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-    /* ── LEADERBOARD ── */
-    .leaderboard-wrap { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .leaderboard-inner { max-width: 1100px; margin: 0 auto; padding: 100px 5vw; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
-    .leaderboard-list { display: flex; flex-direction: column; gap: 10px; }
-    .lb-item {
-      background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
-      padding: 16px 18px; display: flex; align-items: center; gap: 14px;
-      transition: border-color 0.2s; cursor: default;
-    }
-    .lb-item:hover { border-color: var(--gold-border); }
-    .lb-rank { font-family: var(--font-d); font-size: 13px; font-weight: 700; color: var(--muted); min-width: 20px; }
-    .lb-rank.top { color: var(--gold); }
-    .lb-info { flex: 1; }
-    .lb-name { font-family: var(--font-d); font-size: 14px; font-weight: 700; margin-bottom: 3px; }
-    .lb-meta { font-size: 12px; color: var(--muted); font-family: var(--font-b); }
-    .lb-stars { font-size: 12px; color: var(--gold); letter-spacing: 1px; }
-    .lb-loading { color: var(--muted); font-size: 14px; font-family: var(--font-b); padding: 20px 0; }
+/* FEATURE SECTIONS */
+.feature{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:0;min-height:90vh;
+  border-bottom:0.5px solid var(--border);
+}
+.feature.flip{direction:rtl}
+.feature.flip>*{direction:ltr}
+.feature-visual{
+  background:var(--bg2);
+  border-right:0.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  padding:4rem;min-height:90vh;
+  position:relative;overflow:hidden;
+}
+.feature.flip .feature-visual{border-right:none;border-left:0.5px solid var(--border)}
+.feature-copy{
+  display:flex;flex-direction:column;justify-content:center;
+  padding:5rem 4rem;
+}
+.feat-num{
+  font-size:0.68rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:1.5rem;
+  display:flex;align-items:center;gap:0.75rem;
+}
+.feat-num::before{content:'';display:block;width:20px;height:0.5px;background:var(--gold)}
+.feat-h{
+  font-family:var(--font-d);
+  font-size:clamp(2rem,3.5vw,3rem);
+  font-weight:400;line-height:1.15;
+  color:var(--cream);margin-bottom:1.25rem;
+}
+.feat-h em{font-style:italic;color:var(--gold)}
+.feat-p{
+  font-size:0.95rem;font-weight:300;line-height:1.8;
+  color:var(--cream2);max-width:420px;
+}
+.feat-p strong{font-weight:500;color:var(--cream)}
 
-    /* ── YOUR NIGHTS ── */
-    .nights-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
-    .night-card {
-      background: var(--bg2); border: 1px solid var(--border); border-radius: 18px;
-      padding: 20px; transition: border-color 0.2s, transform 0.2s;
-    }
-    .night-card:hover { border-color: var(--gold-border); transform: translateY(-2px); }
-    .night-label { font-family: var(--font-d); font-size: 15px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
-    .night-meta { font-size: 12px; color: var(--muted); font-family: var(--font-b); margin-bottom: 12px; }
-    .night-spots { display: flex; flex-direction: column; gap: 5px; }
-    .night-spot { font-size: 13px; color: var(--white2); font-family: var(--font-b); display: flex; align-items: center; gap: 7px; }
-    .night-spot::before { content: ''; width: 4px; height: 4px; background: var(--gold); border-radius: 50%; flex-shrink: 0; }
-    .night-stars { font-size: 11px; color: var(--gold); margin-top: 12px; }
+/* PHONE MOCKUP */
+.phone{
+  width:220px;height:420px;
+  background:var(--bg3);
+  border:1.5px solid var(--border2);
+  border-radius:28px;
+  overflow:hidden;position:relative;
+  box-shadow:0 0 80px rgba(232,161,53,0.06);
+}
+.phone-bar{
+  height:36px;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+}
+.phone-notch{width:80px;height:14px;background:var(--bg3);border-radius:0 0 10px 10px}
+.phone-screen{padding:1rem}
+.phone-label{
+  font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:0.75rem;
+}
+.phone-card{
+  background:var(--cream4);border:0.5px solid var(--border2);
+  border-radius:8px;padding:0.85rem;margin-bottom:0.5rem;
+}
+.phone-card-title{font-size:0.78rem;font-weight:500;color:var(--cream);margin-bottom:0.3rem}
+.phone-card-meta{font-size:0.65rem;color:var(--cream3);font-weight:300}
+.phone-card-tag{
+  display:inline-block;margin-top:0.4rem;
+  font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;
+  background:var(--gold-dim);color:var(--gold);
+  padding:0.15rem 0.5rem;border-radius:2px;
+}
+.phone-vote{
+  display:flex;gap:0.4rem;margin-top:0.75rem;
+}
+.vote-btn{
+  flex:1;padding:0.4rem;border-radius:4px;
+  font-size:0.6rem;letter-spacing:0.06em;text-transform:uppercase;
+  text-align:center;font-weight:500;
+  border:0.5px solid var(--border2);color:var(--cream3);
+  background:transparent;
+}
+.vote-btn.active{background:var(--gold);color:var(--bg);border-color:var(--gold)}
 
-    /* ── ABOUT ── */
-    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
-    .about-text { }
-    .about-quote {
-      font-family: var(--font-d); font-size: clamp(22px, 3vw, 36px); font-weight: 700;
-      letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 24px; color: var(--white);
-    }
-    .about-quote em { font-style: normal; color: var(--gold); }
-    .about-body { font-family: var(--font-b); font-size: 16px; color: var(--white2); line-height: 1.8; font-weight: 300; margin-bottom: 32px; }
-    .pillars { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .pillar { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 18px; }
-    .pillar h4 { font-family: var(--font-d); font-size: 13px; font-weight: 700; color: var(--gold); margin-bottom: 5px; }
-    .pillar p { font-family: var(--font-b); font-size: 12px; color: var(--muted); line-height: 1.5; }
+/* CHECKIN MOCKUP */
+.checkin-mock{
+  width:260px;
+  background:var(--bg3);border:1.5px solid var(--border2);
+  border-radius:16px;padding:1.5rem;
+  box-shadow:0 0 80px rgba(232,161,53,0.06);
+}
+.checkin-title{
+  font-family:var(--font-d);font-size:1rem;
+  color:var(--cream);margin-bottom:0.4rem;
+}
+.checkin-sub{font-size:0.72rem;color:var(--cream3);margin-bottom:1.25rem;font-weight:300}
+.checkin-label{font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.5rem}
+.checkin-pills{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1rem}
+.pill{
+  font-size:0.68rem;padding:0.3rem 0.75rem;border-radius:20px;
+  border:0.5px solid var(--border2);color:var(--cream3);
+  cursor:pointer;transition:all 0.15s;
+}
+.pill.on{background:var(--gold);color:var(--bg);border-color:var(--gold);font-weight:500}
+.checkin-timer{
+  margin-top:1rem;padding-top:1rem;border-top:0.5px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.timer-label{font-size:0.65rem;color:var(--cream3)}
+.timer-val{font-family:var(--font-d);font-size:1.1rem;color:var(--gold);font-weight:700}
 
-    /* ── CITIES ── */
-    .cities-band { background: var(--bg2); border-top: 1px solid var(--border); }
-    .cities-inner { max-width: 1100px; margin: 0 auto; padding: 80px 5vw; }
-    .cities-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 40px; }
-    .city-card {
-      background: var(--bg3); border: 1px solid var(--border); border-radius: 14px;
-      padding: 18px 22px; display: flex; align-items: center; gap: 12px; min-width: 200px;
-    }
-    .city-card.live { border-color: rgba(29,158,117,0.35); background: rgba(29,158,117,0.06); }
-    .city-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted2); flex-shrink: 0; }
-    .city-dot.live { background: var(--green); box-shadow: 0 0 10px rgba(29,158,117,0.6); }
-    .city-name { font-family: var(--font-d); font-size: 15px; font-weight: 700; }
-    .city-status { font-size: 11px; color: var(--muted); font-family: var(--font-b); margin-top: 2px; }
-    .city-card.live .city-status { color: var(--green); }
+/* PLAN MOCKUP */
+.plan-mock{
+  width:280px;
+  background:var(--bg3);border:1.5px solid var(--border2);
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 0 80px rgba(232,161,53,0.06);
+}
+.plan-mock-head{
+  padding:1.25rem 1.25rem 1rem;
+  border-bottom:0.5px solid var(--border);
+}
+.plan-mock-name{font-family:var(--font-d);font-size:1rem;font-style:italic;color:var(--cream)}
+.plan-mock-tag{
+  display:inline-block;margin-top:0.4rem;
+  font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;
+  background:var(--gold-dim);color:var(--gold);padding:0.15rem 0.5rem;border-radius:2px;
+}
+.plan-stop{
+  display:flex;gap:1rem;padding:0.85rem 1.25rem;
+  border-bottom:0.5px solid var(--border);
+  align-items:flex-start;
+}
+.plan-stop-time{font-size:0.65rem;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;min-width:40px;margin-top:2px}
+.plan-stop-name{font-size:0.8rem;font-weight:500;color:var(--cream)}
+.plan-stop-meta{font-size:0.68rem;color:var(--cream3);margin-top:0.15rem;font-weight:300}
+.plan-mock-foot{
+  padding:0.85rem 1.25rem;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.plan-mock-foot-label{font-size:0.65rem;color:var(--cream3)}
+.plan-mock-vote{
+  font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;
+  padding:0.3rem 0.85rem;border:0.5px solid var(--gold);
+  color:var(--gold);border-radius:2px;background:transparent;
+  font-family:var(--font-b);cursor:pointer;
+  transition:background 0.15s,color 0.15s;
+}
+.plan-mock-vote:hover{background:var(--gold);color:var(--bg)}
 
-    /* ── FAQ ── */
-    .faq-wrap { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 4px; }
-    .faq-item { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
-    .faq-q {
-      width: 100%; text-align: left; padding: 20px 24px; background: none; border: none;
-      color: var(--white); font-family: var(--font-d); font-size: 15px; font-weight: 600;
-      cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-      letter-spacing: -0.01em; transition: background 0.15s;
-    }
-    .faq-q:hover { background: var(--bg3); }
-    .faq-chevron { font-size: 11px; color: var(--gold); transition: transform 0.25s; flex-shrink: 0; margin-left: 16px; }
-    .faq-item.open .faq-chevron { transform: rotate(180deg); }
-    .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s; color: var(--white2); font-family: var(--font-b); font-size: 15px; line-height: 1.75; font-weight: 300; padding: 0 24px; }
-    .faq-item.open .faq-a { max-height: 300px; padding: 0 24px 22px; }
+/* QUOTE SECTION */
+.quote-section{
+  padding:7rem 2.5rem;text-align:center;
+  border-bottom:0.5px solid var(--border);
+  max-width:760px;margin:0 auto;
+}
+.quote-mark{font-family:var(--font-d);font-size:5rem;color:var(--gold);line-height:0.5;opacity:0.3;margin-bottom:1rem}
+.quote-text{
+  font-family:var(--font-d);font-size:clamp(1.4rem,3vw,2.2rem);
+  font-style:italic;line-height:1.5;color:var(--cream);margin-bottom:1.5rem;
+}
+.quote-attr{font-size:0.75rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--cream3)}
 
-    /* ── SIGNUP ── */
-    .signup-band {
-      background: linear-gradient(160deg, var(--bg2) 0%, var(--bg3) 100%);
-      border-top: 1px solid var(--border); padding: 110px 5vw; text-align: center;
-      position: relative; overflow: hidden;
-    }
-    .signup-band::before {
-      content: ''; position: absolute; bottom: -100px; left: 50%; transform: translateX(-50%);
-      width: 600px; height: 400px;
-      background: radial-gradient(ellipse, rgba(232,161,53,0.08) 0%, transparent 65%);
-      pointer-events: none;
-    }
-    .signup-inner { max-width: 560px; margin: 0 auto; position: relative; }
-    .signup-band h2 { font-family: var(--font-d); font-size: clamp(32px, 5vw, 56px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; margin-bottom: 14px; }
-    .signup-band p { font-family: var(--font-b); color: var(--white2); font-size: 17px; margin-bottom: 44px; font-weight: 300; line-height: 1.6; }
-    .signup-form { display: flex; gap: 10px; max-width: 460px; margin: 0 auto; }
-    .signup-input {
-      flex: 1; background: var(--bg4); border: 1.5px solid var(--border2); color: var(--white);
-      padding: 14px 18px; border-radius: 50px; font-family: var(--font-b); font-size: 15px;
-      outline: none; caret-color: var(--gold); transition: border-color 0.2s;
-    }
-    .signup-input::placeholder { color: var(--muted); }
-    .signup-input:focus { border-color: var(--gold-border); }
-    .signup-cities { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
-    .signup-city { font-family: var(--font-b); font-size: 12px; color: var(--muted); padding: 5px 14px; border-radius: 20px; background: var(--bg3); border: 1px solid var(--border); }
-    #signup-success { display: none; color: var(--gold2); font-size: 15px; margin-top: 16px; font-family: var(--font-b); }
+/* LEADERBOARD */
+.lb-section{padding:6rem 2.5rem;max-width:860px;margin:0 auto}
+.s-label{
+  font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:1rem;
+  display:flex;align-items:center;gap:0.75rem;
+}
+.s-label::before{content:'';display:block;width:20px;height:0.5px;background:var(--gold)}
+.s-h2{
+  font-family:var(--font-d);
+  font-size:clamp(1.8rem,4vw,2.6rem);
+  font-weight:400;line-height:1.15;
+  color:var(--cream);margin-bottom:0.75rem;
+}
+.s-h2 em{font-style:italic;color:var(--gold)}
+.s-sub{font-size:0.95rem;font-weight:300;color:var(--cream2);margin-bottom:2.5rem;line-height:1.7}
+.lb-list{display:flex;flex-direction:column;gap:0.5rem}
+.lb-row{
+  display:flex;align-items:center;gap:1.25rem;
+  padding:1.1rem 1.5rem;
+  border:0.5px solid var(--border);border-radius:2px;
+  background:var(--cream4);
+  transition:border-color 0.2s,background 0.15s;
+  opacity:0;transform:translateY(10px);
+  transition:opacity 0.4s ease, transform 0.4s ease, border-color 0.2s, background 0.15s;
+}
+.lb-row.visible{opacity:1;transform:translateY(0)}
+.lb-row:hover{border-color:var(--gold-border);background:rgba(232,161,53,0.04)}
+.lb-rank{font-family:var(--font-d);font-size:1.1rem;font-weight:700;color:var(--gold);min-width:28px}
+.lb-info{flex:1}
+.lb-name{font-size:0.92rem;font-weight:500;color:var(--cream)}
+.lb-meta{font-size:0.75rem;font-weight:300;color:var(--cream3);margin-top:0.2rem}
+.lb-stars{display:flex;gap:3px}
+.lb-star{width:10px;height:10px;background:var(--gold);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.lb-star.empty{background:var(--border2)}
+.lb-empty{text-align:center;padding:2rem;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--cream3)}
 
-    /* ── FOOTER ── */
-    footer {
-      background: var(--bg); border-top: 1px solid var(--border);
-      padding: 44px 5vw; display: grid;
-      grid-template-columns: 1fr auto; gap: 20px; align-items: center;
-    }
-    .footer-logo { font-family: var(--font-d); font-size: 17px; font-weight: 800; color: var(--gold); }
-    .footer-links { display: flex; gap: 24px; align-items: center; }
-    .footer-links a { font-family: var(--font-b); color: var(--muted); font-size: 13px; text-decoration: none; transition: color 0.15s; }
-    .footer-links a:hover { color: var(--white2); }
-    .footer-copy { grid-column: 1 / -1; font-family: var(--font-b); color: var(--muted2); font-size: 12px; }
+/* FAQ */
+.faq-section{padding:5rem 2.5rem 6rem;max-width:760px;margin:0 auto}
+.faqs{margin-top:2rem}
+.faq{border-bottom:0.5px solid var(--border)}
+.faq-q{
+  width:100%;background:none;border:none;text-align:left;
+  padding:1.25rem 0;cursor:pointer;
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--font-b);font-size:0.92rem;font-weight:400;
+  color:var(--cream);transition:color 0.15s;
+}
+.faq-q:hover{color:var(--gold)}
+.faq-icon{font-size:1.1rem;color:var(--gold);transition:transform 0.25s;flex-shrink:0;margin-left:1rem}
+.faq-icon.open{transform:rotate(45deg)}
+.faq-a{
+  max-height:0;overflow:hidden;transition:max-height 0.35s ease,padding 0.2s;
+  font-size:0.88rem;font-weight:300;line-height:1.8;color:var(--cream2);
+}
+.faq-a.open{max-height:200px;padding-bottom:1.25rem}
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
-      .nav-links { display: none; }
-      .steps { grid-template-columns: 1fr; }
-      .leaderboard-inner { grid-template-columns: 1fr; gap: 40px; }
-      .about-grid { grid-template-columns: 1fr; }
-      .stats-inner { grid-template-columns: repeat(2, 1fr); gap: 32px; }
-      .stat-item { border-right: none; }
-      .signup-form { flex-direction: column; }
-      footer { grid-template-columns: 1fr; }
-      .footer-links { flex-wrap: wrap; gap: 16px; }
-    }
-    @media (max-width: 480px) {
-      .stats-inner { grid-template-columns: 1fr 1fr; }
-      .pillars { grid-template-columns: 1fr; }
-      .nights-grid { grid-template-columns: 1fr; }
-    }
+/* CTA */
+.cta-section{
+  border-top:0.5px solid var(--border);
+  padding:7rem 2.5rem 8rem;text-align:center;
+}
+.cta-inner{max-width:580px;margin:0 auto}
+.cta-badge{
+  display:inline-flex;align-items:center;gap:0.5rem;
+  font-size:0.68rem;letter-spacing:0.16em;text-transform:uppercase;
+  color:var(--gold);border:0.5px solid var(--gold-border);
+  padding:0.35rem 1rem;border-radius:2px;margin-bottom:2.5rem;
+}
+.cta-h{
+  font-family:var(--font-d);
+  font-size:clamp(2.5rem,6vw,4rem);
+  font-weight:400;line-height:1.1;
+  color:var(--cream);margin-bottom:1.25rem;
+}
+.cta-h em{font-style:italic;color:var(--gold)}
+.cta-sub{font-size:1rem;font-weight:300;color:var(--cream2);margin-bottom:2.5rem;line-height:1.7}
+.cta-note{margin-top:1rem;font-size:0.75rem;color:var(--cream3);letter-spacing:0.04em}
 
-    /* ── ANIMATIONS ── */
-    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-    .fade-in { animation: fadeUp 0.6s ease both; }
-    .fade-in-2 { animation: fadeUp 0.6s 0.15s ease both; }
-    .fade-in-3 { animation: fadeUp 0.6s 0.3s ease both; }
-  </style>
+/* FOOTER */
+footer{
+  border-top:0.5px solid var(--border);
+  padding:2rem 2.5rem;
+  display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:1rem;
+}
+.footer-logo{font-family:var(--font-d);color:var(--gold);font-size:1rem}
+.footer-links{display:flex;gap:1.5rem;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--cream3)}
+.footer-links a:hover{color:var(--cream)}
+.footer-copy{font-size:0.72rem;color:var(--cream3)}
+
+/* MOBILE */
+@media(max-width:768px){
+  nav{padding:1rem 1.25rem}
+  .nav-links{display:none}
+  .hero{padding:7rem 1.25rem 4rem}
+  .hero-numbers{gap:2rem;margin-top:3rem}
+  .feature{grid-template-columns:1fr;min-height:auto}
+  .feature.flip{direction:ltr}
+  .feature-visual{min-height:320px;border-right:none;border-bottom:0.5px solid var(--border)}
+  .feature.flip .feature-visual{border-left:none;border-bottom:0.5px solid var(--border)}
+  .feature-copy{padding:3rem 1.5rem}
+  .quote-section{padding:4rem 1.5rem}
+  .lb-section{padding:4rem 1.25rem}
+  .faq-section{padding:4rem 1.25rem 5rem}
+  .cta-section{padding:5rem 1.25rem 6rem}
+  footer{padding:1.5rem 1.25rem;flex-direction:column;text-align:center}
+  .footer-links{justify-content:center}
+}
+</style>
 </head>
 <body>
 
-  <!-- ── NAV ── -->
-  <nav>
-    <div class="nav-logo">✦ Rendezvous</div>
-    <div class="nav-links">
-      <a href="#how">How it works</a>
-      <a href="#leaderboard">Leaderboard</a>
-      <a href="#about">About</a>
-      <a href="#faq">FAQ</a>
-    </div>
-    <a href="/login.html" class="nav-cta">Start a party →</a>
-  </nav>
+<nav>
+  <div class="nav-logo">✦ Rendezvous</div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#nights">Real nights</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <a href="https://rendezvous-production-408e.up.railway.app/host" class="nav-cta">Plan tonight →</a>
+</nav>
 
-  <!-- ── HERO ── -->
-  <section class="hero">
-    <div class="hero-eyebrow fade-in">
-      <span class="eyebrow-dot"></span>
-      Live in Washington DC
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-live">
+    <span class="live-dot"></span>
+    Live in Washington DC
+  </div>
+  <h1 class="hero-h1">
+    Planning for your<br>
+    crew just got<br>
+    <em>a co-pilot.</em>
+  </h1>
+  <p class="hero-sub">
+    You already make it happen.<br>
+    <strong>Rendezvous handles the back-and-forth.</strong><br>
+    Share a link. Get three plans. Everyone votes. Go.
+  </p>
+  <div class="hero-cta">
+    <a href="https://rendezvous-production-408e.up.railway.app/host" class="btn-primary">Plan tonight — free</a>
+    <a href="#how" class="btn-text">See how it works ↓</a>
+  </div>
+  <div class="hero-numbers">
+    <div>
+      <div class="num-val">90s</div>
+      <div class="num-label">Check-in time</div>
     </div>
-    <h1 class="fade-in-2">Stop arguing.<br/><em>Start going.</em></h1>
-    <p class="hero-sub fade-in-3">Tell us your vibe. We build the night.<br/>AI-powered outing plans for your friend group — delivered in 90 seconds via iMessage.</p>
-    <div class="hero-actions fade-in-3">
-      <a href="/guest-plan.html" class="btn-gold">Plan tonight →</a>
-      <a href="#how" class="btn-ghost">See how it works</a>
+    <div>
+      <div class="num-val">135</div>
+      <div class="num-label">DC venues</div>
     </div>
-    <p class="hero-note fade-in-3"><span>Free</span>, always &middot; No app download for guests &middot; Plans in 90 seconds</p>
-  </section>
+    <div>
+      <div class="num-val">3</div>
+      <div class="num-label">Plans per session</div>
+    </div>
+    <div>
+      <div class="num-val">$0</div>
+      <div class="num-label">Always free</div>
+    </div>
+  </div>
+</section>
 
-  <!-- ── STATS ── -->
-  <div class="stats-band">
-    <div class="stats-inner">
-      <div class="stat-item">
-        <div class="stat-num" id="stat-parties">—</div>
-        <div class="stat-label">plans generated</div>
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marquee">
+    <span class="marquee-item">No group chat debates <span class="marquee-dot"></span></span>
+    <span class="marquee-item">No app download for your crew <span class="marquee-dot"></span></span>
+    <span class="marquee-item">135 hand-picked DC spots <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Three plans. One vote. <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Built for DC organizers <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Gets smarter every session <span class="marquee-dot"></span></span>
+    <span class="marquee-item">No group chat debates <span class="marquee-dot"></span></span>
+    <span class="marquee-item">No app download for your crew <span class="marquee-dot"></span></span>
+    <span class="marquee-item">135 hand-picked DC spots <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Three plans. One vote. <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Built for DC organizers <span class="marquee-dot"></span></span>
+    <span class="marquee-item">Gets smarter every session <span class="marquee-dot"></span></span>
+  </div>
+</div>
+
+<!-- FEATURE 1 -->
+<div class="feature" id="how">
+  <div class="feature-visual">
+    <div class="checkin-mock">
+      <div class="checkin-title">Tonight's check-in</div>
+      <div class="checkin-sub">Shaw · Friday · 6 people checking in</div>
+      <div class="checkin-label">What's the vibe?</div>
+      <div class="checkin-pills">
+        <div class="pill on">Chill</div>
+        <div class="pill">Medium</div>
+        <div class="pill">Hype</div>
       </div>
-      <div class="stat-item">
-        <div class="stat-num" id="stat-confirmed">—</div>
-        <div class="stat-label">outings confirmed</div>
+      <div class="checkin-label">Budget cap?</div>
+      <div class="checkin-pills">
+        <div class="pill">$15</div>
+        <div class="pill on">$30</div>
+        <div class="pill">$50+</div>
       </div>
-      <div class="stat-item">
-        <div class="stat-num" id="stat-spots">—</div>
-        <div class="stat-label">DC venues</div>
+      <div class="checkin-label">Available from?</div>
+      <div class="checkin-pills">
+        <div class="pill">7pm</div>
+        <div class="pill on">8pm</div>
+        <div class="pill">9pm</div>
       </div>
-      <div class="stat-item">
-        <div class="stat-num">Free</div>
-        <div class="stat-label">always</div>
+      <div class="checkin-timer">
+        <div class="timer-label">Session closes in</div>
+        <div class="timer-val" id="timer">14:32</div>
       </div>
     </div>
   </div>
+  <div class="feature-copy">
+    <div class="feat-num">01 — You set it up</div>
+    <h2 class="feat-h">30 seconds.<br><em>That's your part.</em></h2>
+    <p class="feat-p">Pick the neighborhood, set a budget cap, drop the link in your group chat. <strong>Your crew taps it in iMessage — no app, no account, no friction.</strong> They're in in 90 seconds.</p>
+  </div>
+</div>
 
-  <!-- ── HOW IT WORKS ── -->
-  <div id="how">
-    <div class="section">
-      <div class="section-eyebrow">How it works</div>
-      <h2 class="section-title">Three steps to a perfect night.</h2>
-      <p class="section-sub">The host sets it up. The group just shows up.</p>
-      <div class="steps">
-        <div class="step">
-          <div class="step-num">01 — HOST</div>
-          <div class="step-icon">🎉</div>
-          <h3>Create the party</h3>
-          <p>Sign up, start a party, and share the code with your group. Takes 30 seconds.</p>
+<!-- FEATURE 2 -->
+<div class="feature flip">
+  <div class="feature-visual">
+    <div class="plan-mock">
+      <div class="plan-mock-head">
+        <div class="plan-mock-name">The Shaw Circuit</div>
+        <div class="plan-mock-tag">matched to your group's vibe</div>
+      </div>
+      <div class="plan-stop">
+        <div class="plan-stop-time">7:30p</div>
+        <div>
+          <div class="plan-stop-name">Compass Rose</div>
+          <div class="plan-stop-meta">Global street food · Shaw · $$</div>
         </div>
-        <div class="step">
-          <div class="step-num">02 — GROUP</div>
-          <div class="step-icon">📍</div>
-          <h3>Everyone checks in</h3>
-          <p>Friends join via iMessage or link — no app needed. They share their vibe, energy, and budget for the night.</p>
+      </div>
+      <div class="plan-stop">
+        <div class="plan-stop-time">9:15p</div>
+        <div>
+          <div class="plan-stop-name">Churchkey</div>
+          <div class="plan-stop-meta">555 craft beers · 14th St · $$</div>
         </div>
-        <div class="step">
-          <div class="step-num">03 — AI</div>
-          <div class="step-icon">✦</div>
-          <h3>Plans in 90 seconds</h3>
-          <p>Rendezvous reads everyone's taste and delivers three tailored options. Group votes. Night is set.</p>
+      </div>
+      <div class="plan-stop">
+        <div class="plan-stop-time">10:30p</div>
+        <div>
+          <div class="plan-stop-name">Soundcheck</div>
+          <div class="plan-stop-meta">Live music · Shaw · $</div>
         </div>
+      </div>
+      <div class="plan-mock-foot">
+        <div class="plan-mock-foot-label">Fits $30 · walkable · late night</div>
+        <button class="plan-mock-vote">Vote</button>
       </div>
     </div>
   </div>
-
-  <!-- ── LEADERBOARD ── -->
-  <div id="leaderboard" class="leaderboard-wrap">
-    <div class="leaderboard-inner">
-      <div>
-        <div class="section-eyebrow">Community</div>
-        <h2 class="section-title">Top nights in DC.</h2>
-        <p class="section-sub" style="margin-bottom:0">The best outings, ranked by the people who lived them.</p>
-      </div>
-      <div class="leaderboard-list" id="leaderboard-list">
-        <div class="lb-loading">Loading recent nights…</div>
-      </div>
-    </div>
+  <div class="feature-copy">
+    <div class="feat-num">02 — AI builds the night</div>
+    <h2 class="feat-h">Not a list.<br><em>An actual plan.</em></h2>
+    <p class="feat-p">Three complete itineraries — stops, sequence, timing — matched to your group's collective vibe. <strong>Real DC spots your group will actually want to go to.</strong> Not Service Bar for the 4th time.</p>
   </div>
+</div>
 
-  <!-- ── YOUR NIGHTS ── -->
-  <div id="your-nights">
-    <div class="section">
-      <div class="section-eyebrow">Your history</div>
-      <h2 class="section-title">Your nights.</h2>
-      <p class="section-sub">Every outing makes the next one better. Connect Spotify to unlock deeper recommendations.</p>
-      <div style="margin-bottom:40px">
-        <button class="btn-ghost" id="spotify-btn" onclick="connectSpotify()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-          Connect Spotify
-        </button>
-      </div>
-      <div class="nights-grid" id="nights-grid">
-        <div class="night-card">
-          <div class="night-label">The Shaw Circuit</div>
-          <div class="night-meta">Last Saturday &middot; 4 people</div>
-          <div class="night-spots">
-            <div class="night-spot">Compass Rose</div>
-            <div class="night-spot">Dacha Beer Garden</div>
-            <div class="night-spot">Songbyrd Music House</div>
-          </div>
-          <div class="night-stars">★★★★★</div>
+<!-- FEATURE 3 -->
+<div class="feature">
+  <div class="feature-visual">
+    <div class="phone">
+      <div class="phone-bar"><div class="phone-notch"></div></div>
+      <div class="phone-screen">
+        <div class="phone-label">Vote · 4 of 6 responded</div>
+        <div class="phone-card">
+          <div class="phone-card-title">The Shaw Circuit</div>
+          <div class="phone-card-meta">Compass Rose → Churchkey → Soundcheck</div>
+          <div class="phone-card-tag">3 votes</div>
         </div>
-        <div class="night-card">
-          <div class="night-label">Capitol Hill Crawl</div>
-          <div class="night-meta">Two weeks ago &middot; 6 people</div>
-          <div class="night-spots">
-            <div class="night-spot">Beuchert's Saloon</div>
-            <div class="night-spot">Taco Cat</div>
-            <div class="night-spot">The Pursuit</div>
-          </div>
-          <div class="night-stars">★★★★☆</div>
+        <div class="phone-card">
+          <div class="phone-card-title">Blagden After Dark</div>
+          <div class="phone-card-meta">Tail Up Goat → The Wydown → Decades</div>
+          <div class="phone-card-tag">1 vote</div>
         </div>
-        <div class="night-card">
-          <div class="night-label">14th Street Late</div>
-          <div class="night-meta">Last month &middot; 5 people</div>
-          <div class="night-spots">
-            <div class="night-spot">Nellie's Sports Bar</div>
-            <div class="night-spot">The Black Cat</div>
-            <div class="night-spot">El Tamarindo</div>
-          </div>
-          <div class="night-stars">★★★★★</div>
+        <div class="phone-card">
+          <div class="phone-card-title">Little Ethiopia First</div>
+          <div class="phone-card-meta">Lalibela → Right Proper → Flash</div>
+          <div class="phone-card-tag">0 votes</div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── ABOUT ── -->
-  <div id="about" style="background: var(--bg2); border-top: 1px solid var(--border);">
-    <div class="section">
-      <div class="about-grid">
-        <div class="about-text">
-          <div class="section-eyebrow">Why Rendezvous</div>
-          <div class="about-quote">The hardest part of going out isn't finding something to do — it's <em>getting six people to agree.</em></div>
-          <p class="about-body">Rendezvous solves the group chat problem. Instead of 47 unanswered messages and a plan that never happens, you get three curated options that actually fit your group — and a vote that settles it in minutes.</p>
-          <a href="/login.html" class="btn-gold" style="display:inline-flex; width:auto;">Try it tonight →</a>
-        </div>
-        <div class="pillars">
-          <div class="pillar">
-            <h4>Plans, not suggestions</h4>
-            <p>A full night out — spots, sequence, timing — not just a list of restaurants.</p>
-          </div>
-          <div class="pillar">
-            <h4>No app required</h4>
-            <p>Guests join via iMessage or link. Zero friction for the people who matter.</p>
-          </div>
-          <div class="pillar">
-            <h4>Actually DC</h4>
-            <p>135 hand-curated venues reviewed by people who actually go out in this city.</p>
-          </div>
-          <div class="pillar">
-            <h4>Gets smarter</h4>
-            <p>Every outing trains your taste profile. Plans improve the more you use it.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── CITIES ── -->
-  <div class="cities-band">
-    <div class="cities-inner">
-      <div class="section-eyebrow">Coverage</div>
-      <h2 class="section-title">Live in DC.<br/>Coming to your city.</h2>
-      <div class="cities-grid">
-        <div class="city-card live">
-          <div class="city-dot live"></div>
-          <div>
-            <div class="city-name">Washington, DC</div>
-            <div class="city-status">Live now — 135+ venues</div>
-          </div>
-        </div>
-        <div class="city-card">
-          <div class="city-dot"></div>
-          <div>
-            <div class="city-name">New York City</div>
-            <div class="city-status">Coming 2026</div>
-          </div>
-        </div>
-        <div class="city-card">
-          <div class="city-dot"></div>
-          <div>
-            <div class="city-name">Los Angeles</div>
-            <div class="city-status">Coming 2026</div>
-          </div>
-        </div>
-        <div class="city-card">
-          <div class="city-dot"></div>
-          <div>
-            <div class="city-name">Chicago</div>
-            <div class="city-status">Coming 2026</div>
-          </div>
+        <div class="phone-vote">
+          <div class="vote-btn active">Shaw Circuit ✓</div>
+          <div class="vote-btn">Change vote</div>
         </div>
       </div>
     </div>
   </div>
+  <div class="feature-copy">
+    <div class="feat-num">03 — Group votes. Winner locks.</div>
+    <h2 class="feat-h">Everyone has<br><em>a say. Finally.</em></h2>
+    <p class="feat-p">All three plans go to a group vote. <strong>No more "idk you pick."</strong> Everyone chooses. The winner confirms automatically. You stop being the only one with skin in the game.</p>
+  </div>
+</div>
 
-  <!-- ── FAQ ── -->
-  <div id="faq">
-    <div class="section" style="max-width:860px; margin: 0 auto;">
-      <div style="text-align:center; margin-bottom:56px;">
-        <div class="section-eyebrow" style="justify-content:center; display:flex;">FAQ</div>
-        <h2 class="section-title">Questions.</h2>
-      </div>
-      <div class="faq-wrap">
-        <div class="faq-item">
-          <button class="faq-q">Do my friends need to download an app? <span class="faq-chevron">▼</span></button>
-          <div class="faq-a">No. Only the host needs an account. Everyone else joins via a shared iMessage link or web link — no download, no signup required for guests.</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-q">How does the AI decide what to suggest? <span class="faq-chevron">▼</span></button>
-          <div class="faq-a">Rendezvous builds a taste vector for each person based on Spotify listening history, MBTI type, past outings, and their check-in preferences for the night. It finds the group's collective overlap and matches it against our venue database to generate three plans that actually fit everyone.</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-q">What does Spotify integration do? <span class="faq-chevron">▼</span></button>
-          <div class="faq-a">Connecting Spotify lets Rendezvous read your top artists and genres to calibrate your taste profile. Someone who listens to jazz gets different venue recommendations than someone who listens to hyperpop. The more signal, the better the match.</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-q">Is it really free? <span class="faq-chevron">▼</span></button>
-          <div class="faq-a">Yes — fully free during our DC launch phase. We'll introduce optional premium features later, but the core experience (creating parties, generating plans, voting) will always be free.</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-q">How are venues chosen? <span class="faq-chevron">▼</span></button>
-          <div class="faq-a">Every venue in our database is hand-reviewed — we assess hours, vibe tags, price tier, energy level, and group size fit. We don't just scrape Google Maps. A real person has evaluated every spot.</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-q">When are other cities launching? <span class="faq-chevron">▼</span></button>
-          <div class="faq-a">NYC, LA, and Chicago are targeted for 2026. Sign up below and select your city — the more signups a city gets, the faster we prioritize it.</div>
-        </div>
-      </div>
+<!-- QUOTE -->
+<div class="quote-section">
+  <div class="quote-mark">"</div>
+  <div class="quote-text">The hardest part of going out isn't finding something to do. It's getting six people to agree on what that something is.</div>
+  <div class="quote-attr">— why Rendezvous exists</div>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="lb-section" id="nights">
+  <div class="s-label">Real nights</div>
+  <h2 class="s-h2">DC's best sessions,<br><em>rated by the groups who went.</em></h2>
+  <p class="s-sub">Not demo plans. Real outings from real groups — rated after the night was done.</p>
+  <div class="lb-list" id="leaderboard">
+    <div class="lb-empty" id="lb-loading">Loading recent nights...</div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq-section" id="faq">
+  <div class="s-label">FAQ</div>
+  <h2 class="s-h2">Things you're<br><em>probably wondering.</em></h2>
+  <div class="faqs">
+    <div class="faq">
+      <button class="faq-q" onclick="toggleFaq(this)">Does my group need to download an app?<span class="faq-icon">+</span></button>
+      <div class="faq-a">No. You create the session here in 30 seconds. Everyone else taps a link in iMessage — Safari opens, they answer 4 questions, done. Zero downloads for anyone in your group.</div>
+    </div>
+    <div class="faq">
+      <button class="faq-q" onclick="toggleFaq(this)">How does the AI pick the spots?<span class="faq-icon">+</span></button>
+      <div class="faq-a">Everyone's energy level, budget, and availability feeds into a 7-dimension taste profile. We score 135 DC venues against your group's collective vibe, then generate three distinct plan types — each with real stops, real timing, and a narrative written for your group specifically.</div>
+    </div>
+    <div class="faq">
+      <button class="faq-q" onclick="toggleFaq(this)">What if my group has different budgets?<span class="faq-icon">+</span></button>
+      <div class="faq-a">Rendezvous uses the most budget-conscious person as the effective ceiling. Nobody gets a plan they can't afford. One option will always be the budget-optimized variant.</div>
+    </div>
+    <div class="faq">
+      <button class="faq-q" onclick="toggleFaq(this)">Which DC neighborhoods are covered?<span class="faq-icon">+</span></button>
+      <div class="faq-a">U Street, Shaw, Georgetown, Dupont Circle, Capitol Hill, Columbia Heights, Navy Yard, Adams Morgan, H Street, Brookland, Logan Circle, Penn Quarter, and more. 135 venues across 23 neighborhoods. 48 of them are free or under $15.</div>
+    </div>
+    <div class="faq">
+      <button class="faq-q" onclick="toggleFaq(this)">Is it actually free?<span class="faq-icon">+</span></button>
+      <div class="faq-a">Yes. Completely free during our DC launch. Three plans, group vote, confirmed night — the core experience will always have a free option. No paywall on the thing that matters.</div>
     </div>
   </div>
+</div>
 
-  <!-- ── SIGNUP ── -->
-  <div id="signup" class="signup-band">
-    <div class="signup-inner">
-      <h2>Ready to go? ✦</h2>
-      <p>Create an account and start planning your night in 30 seconds.</p>
-      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;">
-        <a href="/login.html" class="btn-gold" style="padding:15px 36px;border-radius:50px;font-family:var(--font-d);font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0.02em;">Create account →</a>
-        <a href="/login.html" style="padding:15px 28px;border-radius:50px;font-family:var(--font-d);font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0.02em;background:transparent;border:1.5px solid rgba(255,255,255,0.15);color:var(--white2);">Sign in</a>
-      </div>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:24px;">Or join a party as a guest — no account needed, just use a party code.</p>
-      <div class="signup-cities">
-        <div class="signup-city">🏛 DC — live now</div>
-        <div class="signup-city">🗽 NYC — 2026</div>
-        <div class="signup-city">🌴 LA — 2026</div>
-        <div class="signup-city">🌆 Chicago — 2026</div>
-      </div>
-      <p id="signup-success">You're on the list. We'll be in touch when your city launches.</p>
-    </div>
+<!-- CTA -->
+<div class="cta-section">
+  <div class="cta-inner">
+    <div class="cta-badge"><span class="live-dot"></span> Live in Washington DC</div>
+    <h2 class="cta-h">Stop carrying<br><em>the whole group.</em></h2>
+    <p class="cta-sub">You still make the call. Rendezvous handles everything in between.</p>
+    <a href="https://rendezvous-production-408e.up.railway.app/host" class="btn-primary">Plan tonight — it's free</a>
+    <div class="cta-note">30 seconds to set up. Your group needs no app.</div>
   </div>
+</div>
 
-  <!-- ── FOOTER ── -->
-  <footer>
-    <div class="footer-logo">✦ Rendezvous</div>
-    <div class="footer-links">
-      <a href="/admin">Admin</a>
-      <a href="/admin/health">System status</a>
-      <a href="mailto:hello@rendezvous.app">Contact</a>
-    </div>
-    <div class="footer-copy">&copy; 2026 Rendezvous. All rights reserved. Built in Washington, DC.</div>
-  </footer>
+<footer>
+  <div class="footer-logo">✦ Rendezvous</div>
+  <div class="footer-links">
+    <a href="#how">How it works</a>
+    <a href="#faq">FAQ</a>
+    <a href="mailto:hello@rendezvous.app">Contact</a>
+  </div>
+  <div class="footer-copy">© 2026 Rendezvous · Washington DC</div>
+</footer>
 
-  <script>
-    // ── LOAD LIVE STATS ──────────────────────────────────────────────
-    async function loadStats() {
-      try {
-        const res = await fetch('/admin/api/stats?secret=rendezvous-admin-v2');
-        const json = await res.json();
-        if (!json.success) return;
-        const d = json.data;
-        animateCount('stat-parties', d.partyCount);
-        animateCount('stat-confirmed', Math.round(d.partyCount * 0.68));
-        animateCount('stat-spots', d.spotCount);
-      } catch (e) {}
+<script>
+const API = 'https://rendezvous-production-408e.up.railway.app';
+
+async function loadLeaderboard() {
+  const list = document.getElementById('leaderboard');
+  const loading = document.getElementById('lb-loading');
+  try {
+    const res = await fetch(API + '/api/leaderboard?limit=5');
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const items = data.data || data.leaderboard || data.plans || data || [];
+    if (!Array.isArray(items) || !items.length) throw new Error();
+    loading.remove();
+    items.slice(0,5).forEach((item, i) => {
+      const rating = Math.round(Math.min(5, Math.max(0, item.rating || item.averageRating || item.stars || 5)));
+      const starsHtml = Array.from({length:5},(_,s) => `<div class="lb-star${s < rating ? '' : ' empty'}"></div>`).join('');
+      const date = item.date ? new Date(item.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : 'Recent';
+      const row = document.createElement('div');
+      row.className = 'lb-row';
+      row.innerHTML = `
+        <div class="lb-rank">${String(i+1).padStart(2,'0')}</div>
+        <div class="lb-info">
+          <div class="lb-name">${item.planName||item.name||item.label||'Unnamed session'}</div>
+          <div class="lb-meta">${item.neighborhood||item.city||'Washington DC'} · ${item.groupSize||item.memberCount||'?'} people · ${date}</div>
+        </div>
+        <div class="lb-stars">${starsHtml}</div>`;
+      list.appendChild(row);
+      setTimeout(() => row.classList.add('visible'), i * 100);
+    });
+  } catch {
+    loading.textContent = 'Recent sessions coming soon — be the first to rate yours.';
+  }
+}
+
+function toggleFaq(btn) {
+  const a = btn.nextElementSibling;
+  const icon = btn.querySelector('.faq-icon');
+  const isOpen = a.classList.contains('open');
+  document.querySelectorAll('.faq-a.open').forEach(el => {
+    el.classList.remove('open');
+    el.previousElementSibling.querySelector('.faq-icon').classList.remove('open');
+  });
+  if (!isOpen) { a.classList.add('open'); icon.classList.add('open'); }
+}
+
+// countdown timer animation
+function startTimer() {
+  const el = document.getElementById('timer');
+  let mins = 14, secs = 32;
+  setInterval(() => {
+    secs--;
+    if (secs < 0) { secs = 59; mins--; }
+    if (mins < 0) { mins = 14; secs = 32; }
+    el.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+  }, 1000);
+}
+
+// scroll reveal
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
     }
+  });
+}, {threshold: 0.08});
 
-    function animateCount(id, target) {
-      const el = document.getElementById(id);
-      if (!el || !target) return;
-      let current = 0;
-      const step = Math.ceil(target / 40);
-      const timer = setInterval(() => {
-        current = Math.min(current + step, target);
-        el.textContent = current.toLocaleString();
-        if (current >= target) clearInterval(timer);
-      }, 30);
-    }
+document.querySelectorAll('.feature-copy, .quote-section, .feat-h, .feat-p').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  observer.observe(el);
+});
 
-    // ── LOAD LEADERBOARD ─────────────────────────────────────────────
-    async function loadLeaderboard() {
-      try {
-        const res = await fetch('/admin/api/parties?secret=rendezvous-admin-v2&limit=6');
-        const json = await res.json();
-        if (!json.success) return;
-        const parties = json.data.parties.filter(p => p.status === 'COMPLETED').slice(0, 6);
-        if (!parties.length) return;
-
-        const list = document.getElementById('leaderboard-list');
-        const names = ['The Shaw Circuit','Capitol Hill Crawl','14th Street Late','Dupont After Hours','U Street Revival','Logan Circle Night'];
-        list.innerHTML = parties.map((p, i) => `
-          <div class="lb-item">
-            <div class="lb-rank ${i < 3 ? 'top' : ''}">${i + 1}</div>
-            <div class="lb-info">
-              <div class="lb-name">${names[i] || 'DC Night Out'}</div>
-              <div class="lb-meta">${p._count?.members || 4} people &middot; ${new Date(p.createdAt).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</div>
-            </div>
-            <div class="lb-stars">${'★'.repeat(Math.floor(Math.random() * 2) + 4)}</div>
-          </div>
-        `).join('');
-      } catch (e) {}
-    }
-
-    // ── FAQ ACCORDION ────────────────────────────────────────────────
-    document.querySelectorAll('.faq-q').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const item = btn.closest('.faq-item');
-        const wasOpen = item.classList.contains('open');
-        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
-        if (!wasOpen) item.classList.add('open');
-      });
-    });
-
-    // ── SIGNUP FORM ──────────────────────────────────────────────────
-    document.getElementById('signup-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = e.target.querySelector('button');
-      btn.disabled = true;
-      btn.textContent = 'Joining…';
-      setTimeout(() => {
-        document.getElementById('signup-form').style.display = 'none';
-        document.getElementById('signup-success').style.display = 'block';
-      }, 700);
-    });
-
-    // ── SPOTIFY CONNECT ──────────────────────────────────────────────
-    function connectSpotify() {
-      const btn = document.getElementById('spotify-btn');
-      btn.textContent = '✓ Spotify connected';
-      btn.style.borderColor = '#1DB954';
-      btn.style.color = '#1DB954';
-    }
-
-    // ── SCROLL ANIMATIONS ────────────────────────────────────────────
-    const animObserver = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.style.opacity = 1;
-          e.target.style.transform = 'translateY(0)';
-          animObserver.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-
-    document.querySelectorAll('.step, .night-card, .pillar, .city-card').forEach(el => {
-      el.style.opacity = 0;
-      el.style.transform = 'translateY(16px)';
-      el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-      animObserver.observe(el);
-    });
-
-    // ── ACTIVE NAV HIGHLIGHTING ───────────────────────────────────────
-    const sections = ['how','leaderboard','your-nights','about','faq','signup'];
-    const navLinks = document.querySelectorAll('.nav-links a');
-
-    const navObserver = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          navLinks.forEach(a => a.style.color = '');
-          const active = document.querySelector(`.nav-links a[href="#${e.target.id}"]`);
-          if (active) active.style.color = 'var(--gold)';
-        }
-      });
-    }, { threshold: 0.3 });
-
-    sections.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) navObserver.observe(el);
-    });
-
-    // ── SMOOTH SCROLL FOR NAV LINKS ───────────────────────────────────
-    document.querySelectorAll('a[href^="#"]').forEach(link => {
-      link.addEventListener('click', e => {
-        const target = document.querySelector(link.getAttribute('href'));
-        if (!target) return;
-        e.preventDefault();
-        const top = target.getBoundingClientRect().top + window.scrollY - 80;
-        window.scrollTo({ top, behavior: 'smooth' });
-      });
-    });
-
-    // ── INIT ─────────────────────────────────────────────────────────
-    loadStats();
-    loadLeaderboard();
-  </script>
+loadLeaderboard();
+startTimer();
+</script>
 </body>
 </html>
