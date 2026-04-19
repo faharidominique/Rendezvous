@@ -182,7 +182,7 @@ const CATEGORY_EMOJI = {
 // For standalone use, loads from a JSON file or the window.__SPOTS__ variable
 async function loadSpots() {
   try {
-    const res = await fetch('/api/v1/admin/spots?limit=500');
+    const res = await fetch('/admin/api/spots?limit=500');
     const data = await res.json();
     spots = data.data?.spots || [];
   } catch {
@@ -413,7 +413,7 @@ function saveChanges(id) {
 // In production, this PATCHes to /api/v1/admin/spots/:id
 async function syncToAPI(spot) {
   try {
-    await fetch(`/api/v1/admin/spots/${spot.id}`, {
+    await fetch(`/admin/api/spots/${spot.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.__ADMIN_TOKEN__}` },
       body: JSON.stringify({
