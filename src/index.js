@@ -133,13 +133,12 @@ const PORT = process.env.PORT || 3000;
 async function start() {
   try {
     await connectRedis();
-    server.listen(PORT, () => {
-      logger.info(`Rendezvous v2 running on port ${PORT} [${process.env.NODE_ENV}]`);
-    });
   } catch (err) {
-    logger.error('Failed to start server:', err);
-    process.exit(1);
+    console.error('Redis connection failed, continuing without it:', err.message);
   }
+  server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Rendezvous v2 running on port ${PORT} [${process.env.NODE_ENV}]`);
+  });
 }
 
 start();
