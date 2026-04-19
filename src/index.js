@@ -29,6 +29,7 @@ const analyticsRoutes   = require('./routes/analytics');
 const mediaRoutes       = require('./routes/media');
 const gdprRoutes        = require('./routes/gdpr');
 const adminRoutes       = require('./routes/admin');
+const guestPlanRoutes   = require('./routes/guestPlan');
 
 const app    = express();
 const server = http.createServer(app);
@@ -91,6 +92,7 @@ app.use('/api/v1/notifications', notifRoutes);
 app.use('/api/v1/analytics',     analyticsRoutes);
 app.use('/api/v1/media',         mediaRoutes);
 app.use('/admin',                adminRoutes);
+app.use('/api/v1/guest',         guestPlanRoutes);
 
 // ── HEALTH CHECK ─────────────────────────────────────────────────────
 app.get('/health', (req, res) => {

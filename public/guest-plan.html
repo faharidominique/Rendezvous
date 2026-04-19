@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plan Tonight — Rendezvous</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:          #0f0e0c;
+      --bg2:         #1a1814;
+      --bg3:         #232018;
+      --bg4:         #2c2820;
+      --gold:        #E8A135;
+      --gold2:       #f5c46a;
+      --gold-pale:   rgba(232,161,53,0.13);
+      --gold-border: rgba(232,161,53,0.28);
+      --white:       #f5f0e8;
+      --white2:      #cec8bc;
+      --muted:       #7a7060;
+      --border:      rgba(255,255,255,0.07);
+      --border2:     rgba(255,255,255,0.13);
+      --green:       #1D9E75;
+      --font-d:      'Syne', sans-serif;
+      --font-b:      'DM Sans', sans-serif;
+      --r:           14px;
+    }
+    body { background: var(--bg); color: var(--white); font-family: var(--font-b); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 40px 20px 80px; }
+
+    .logo { font-family: var(--font-d); font-size: 20px; font-weight: 800; color: var(--gold); letter-spacing: -0.02em; margin-bottom: 48px; text-decoration: none; display: block; }
+
+    .card { background: var(--bg2); border: 1px solid var(--border2); border-radius: 20px; padding: 40px; max-width: 560px; width: 100%; }
+
+    .step { display: none; }
+    .step.active { display: block; }
+
+    .step-label { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+    h2 { font-family: var(--font-d); font-size: 26px; font-weight: 700; line-height: 1.2; margin-bottom: 8px; }
+    .step-sub { color: var(--white2); font-size: 15px; margin-bottom: 32px; }
+
+    .vibe-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 32px; }
+    .vibe-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; cursor: pointer; text-align: left; transition: border-color 0.15s, background 0.15s; }
+    .vibe-btn:hover { border-color: var(--gold-border); }
+    .vibe-btn.selected { border-color: var(--gold); background: var(--gold-pale); }
+    .vibe-btn .emoji { font-size: 24px; display: block; margin-bottom: 6px; }
+    .vibe-btn .label { font-family: var(--font-d); font-size: 14px; font-weight: 700; color: var(--white); display: block; }
+    .vibe-btn .desc { font-size: 12px; color: var(--muted); margin-top: 2px; display: block; }
+
+    .input-row { display: flex; gap: 12px; margin-bottom: 12px; }
+    .input-group { flex: 1; }
+    label { display: block; font-size: 13px; font-weight: 500; color: var(--white2); margin-bottom: 6px; }
+    input, select { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: 10px; color: var(--white); font-family: var(--font-b); font-size: 15px; padding: 12px 14px; outline: none; transition: border-color 0.15s; }
+    input:focus, select:focus { border-color: var(--gold); }
+    select option { background: var(--bg3); }
+
+    .btn-gold { display: block; width: 100%; background: var(--gold); color: #0f0e0c; font-family: var(--font-d); font-weight: 700; font-size: 15px; border: none; border-radius: 50px; padding: 16px; cursor: pointer; transition: opacity 0.15s; margin-top: 24px; text-align: center; }
+    .btn-gold:hover { opacity: 0.88; }
+    .btn-gold:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-ghost { display: block; width: 100%; background: transparent; color: var(--white2); font-family: var(--font-b); font-size: 14px; border: 1px solid var(--border2); border-radius: 50px; padding: 14px; cursor: pointer; transition: border-color 0.15s; margin-top: 12px; text-align: center; }
+    .btn-ghost:hover { border-color: var(--border2); color: var(--white); }
+
+    /* Plans */
+    .plans-grid { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+    .plan-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; cursor: pointer; transition: border-color 0.15s; }
+    .plan-card:hover { border-color: var(--gold-border); }
+    .plan-card.selected { border-color: var(--gold); }
+    .plan-title { font-family: var(--font-d); font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .plan-meta { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+    .plan-stops { display: flex; flex-direction: column; gap: 8px; }
+    .stop { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; }
+    .stop-num { width: 22px; height: 22px; background: var(--gold-pale); border: 1px solid var(--gold-border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gold); flex-shrink: 0; margin-top: 1px; }
+    .stop-name { color: var(--white); font-weight: 500; }
+    .stop-cat { color: var(--muted); font-size: 12px; }
+
+    .loading { text-align: center; padding: 40px 0; }
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--border2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading p { color: var(--white2); font-size: 15px; }
+
+    .save-options { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
+    .share-link { background: var(--bg3); border: 1px solid var(--border2); border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--muted); word-break: break-all; }
+    .share-link span { color: var(--gold); cursor: pointer; }
+
+    .progress { display: flex; gap: 6px; margin-bottom: 32px; }
+    .progress-dot { height: 3px; flex: 1; border-radius: 2px; background: var(--border2); transition: background 0.3s; }
+    .progress-dot.done { background: var(--gold); }
+  </style>
+</head>
+<body>
+  <a class="logo" href="/">✦ Rendezvous</a>
+
+  <div class="card">
+    <!-- Step 1: Vibe -->
+    <div class="step active" id="step-1">
+      <div class="progress">
+        <div class="progress-dot done" id="dot-1"></div>
+        <div class="progress-dot" id="dot-2"></div>
+        <div class="progress-dot" id="dot-3"></div>
+      </div>
+      <div class="step-label">Step 1 of 3</div>
+      <h2>What's the vibe tonight?</h2>
+      <p class="step-sub">Pick the mood that fits your group.</p>
+      <div class="vibe-grid">
+        <button class="vibe-btn" data-vibe="chill" onclick="selectVibe(this)">
+          <span class="emoji">🌙</span>
+          <span class="label">Chill & low-key</span>
+          <span class="desc">Easy conversation, good drinks</span>
+        </button>
+        <button class="vibe-btn" data-vibe="lively" onclick="selectVibe(this)">
+          <span class="emoji">🔥</span>
+          <span class="label">Lively & social</span>
+          <span class="desc">Energy, music, good crowd</span>
+        </button>
+        <button class="vibe-btn" data-vibe="cultural" onclick="selectVibe(this)">
+          <span class="emoji">🎭</span>
+          <span class="label">Cultural & artsy</span>
+          <span class="desc">Museums, galleries, live shows</span>
+        </button>
+        <button class="vibe-btn" data-vibe="foodie" onclick="selectVibe(this)">
+          <span class="emoji">🍽️</span>
+          <span class="label">Foodie night</span>
+          <span class="desc">Great food is the main event</span>
+        </button>
+        <button class="vibe-btn" data-vibe="active" onclick="selectVibe(this)">
+          <span class="emoji">⚡</span>
+          <span class="label">Active & adventurous</span>
+          <span class="desc">Moving around, trying things</span>
+        </button>
+        <button class="vibe-btn" data-vibe="spontaneous" onclick="selectVibe(this)">
+          <span class="emoji">🎲</span>
+          <span class="label">Surprise me</span>
+          <span class="desc">Whatever feels right tonight</span>
+        </button>
+      </div>
+      <button class="btn-gold" id="step1-next" onclick="goStep(2)" disabled>Next →</button>
+    </div>
+
+    <!-- Step 2: Group details -->
+    <div class="step" id="step-2">
+      <div class="progress">
+        <div class="progress-dot done"></div>
+        <div class="progress-dot done"></div>
+        <div class="progress-dot" id="dot-3b"></div>
+      </div>
+      <div class="step-label">Step 2 of 3</div>
+      <h2>Tell us about your group.</h2>
+      <p class="step-sub">This helps us find the right spots.</p>
+      <div class="input-row">
+        <div class="input-group">
+          <label>Group size</label>
+          <select id="group-size">
+            <option value="2">2 people</option>
+            <option value="3">3 people</option>
+            <option value="4" selected>4 people</option>
+            <option value="6">5–6 people</option>
+            <option value="8">7–8 people</option>
+            <option value="10">9–10 people</option>
+            <option value="15">11–15 people</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Budget per person</label>
+          <select id="budget">
+            <option value="25">Under $25</option>
+            <option value="50" selected>$25–$50</option>
+            <option value="75">$50–$75</option>
+            <option value="100">$75–$100</option>
+            <option value="150">$100+</option>
+          </select>
+        </div>
+      </div>
+      <div class="input-group" style="margin-bottom:12px">
+        <label>Neighborhood (optional)</label>
+        <input type="text" id="neighborhood" placeholder="e.g. Shaw, Capitol Hill, U Street…" />
+      </div>
+      <div class="input-group">
+        <label>Starting time</label>
+        <select id="start-time">
+          <option value="18:00">6:00 PM</option>
+          <option value="19:00">7:00 PM</option>
+          <option value="20:00" selected>8:00 PM</option>
+          <option value="21:00">9:00 PM</option>
+          <option value="22:00">10:00 PM</option>
+        </select>
+      </div>
+      <button class="btn-gold" onclick="generatePlans()">Generate my plans →</button>
+      <button class="btn-ghost" onclick="goStep(1)">← Back</button>
+    </div>
+
+    <!-- Step 3: Loading -->
+    <div class="step" id="step-loading">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Building 3 plans for your night…</p>
+      </div>
+    </div>
+
+    <!-- Step 4: Plans -->
+    <div class="step" id="step-plans">
+      <div class="step-label">Your plans are ready</div>
+      <h2>Pick your night.</h2>
+      <p class="step-sub">3 options tailored to your group. Tap to select.</p>
+      <div class="plans-grid" id="plans-container"></div>
+      <button class="btn-gold" id="btn-select-plan" onclick="selectPlan()" disabled>This is the one →</button>
+      <button class="btn-ghost" onclick="reshuffle()">🔀 Reshuffle plans</button>
+    </div>
+
+    <!-- Step 5: Save / Share -->
+    <div class="step" id="step-save">
+      <div class="step-label">You're set</div>
+      <h2>Your night is locked in.</h2>
+      <p class="step-sub">Share with your group or save it for later.</p>
+      <div class="share-link" id="share-link-box">Generating link…</div>
+      <div class="save-options">
+        <button class="btn-gold" onclick="copyLink()">Copy link to share</button>
+        <button class="btn-ghost" onclick="showSignup()">Save this plan (create account)</button>
+        <a href="/" class="btn-ghost" style="text-decoration:none">Back to home</a>
+      </div>
+    </div>
+
+    <!-- Step 6: Optional signup -->
+    <div class="step" id="step-signup">
+      <div class="step-label">Optional</div>
+      <h2>Save your plans.</h2>
+      <p class="step-sub">Create a free account to save this plan and build a taste profile over time.</p>
+      <div class="input-group" style="margin-bottom:12px">
+        <label>Email</label>
+        <input type="email" id="signup-email" placeholder="you@example.com" />
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="signup-password" placeholder="Choose a password" />
+      </div>
+      <button class="btn-gold" onclick="createAccount()">Create account & save plan</button>
+      <button class="btn-ghost" onclick="goStep('save')">Skip for now</button>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      vibe: null,
+      groupSize: 4,
+      budget: 50,
+      neighborhood: '',
+      startTime: '20:00',
+      plans: [],
+      selectedPlan: null,
+      planId: null,
+    };
+
+    function selectVibe(btn) {
+      document.querySelectorAll('.vibe-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.vibe = btn.dataset.vibe;
+      document.getElementById('step1-next').disabled = false;
+    }
+
+    function goStep(step) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      const el = typeof step === 'number' ? document.getElementById('step-' + step) : document.getElementById('step-' + step);
+      if (el) el.classList.add('active');
+    }
+
+    async function generatePlans() {
+      state.groupSize = parseInt(document.getElementById('group-size').value);
+      state.budget = parseInt(document.getElementById('budget').value);
+      state.neighborhood = document.getElementById('neighborhood').value.trim();
+      state.startTime = document.getElementById('start-time').value;
+
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step-loading').classList.add('active');
+
+      try {
+        const res = await fetch('/api/v1/guest/plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            vibe: state.vibe,
+            groupSize: state.groupSize,
+            budget: state.budget,
+            neighborhood: state.neighborhood,
+            startTime: state.startTime,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          state.plans = data.plans;
+          state.planId = data.planId;
+          renderPlans();
+        } else {
+          alert('Something went wrong. Please try again.');
+          goStep(2);
+        }
+      } catch (err) {
+        alert('Could not connect. Please try again.');
+        goStep(2);
+      }
+    }
+
+    function renderPlans() {
+      const container = document.getElementById('plans-container');
+      container.innerHTML = '';
+      state.plans.forEach((plan, i) => {
+        const stops = (plan.stops || []).map((s, j) => `
+          <div class="stop">
+            <div class="stop-num">${j + 1}</div>
+            <div>
+              <div class="stop-name">${s.name}</div>
+              <div class="stop-cat">${s.category || ''} ${s.neighborhood ? '· ' + s.neighborhood : ''}</div>
+            </div>
+          </div>
+        `).join('');
+        const card = document.createElement('div');
+        card.className = 'plan-card';
+        card.dataset.index = i;
+        card.innerHTML = `
+          <div class="plan-title">${plan.title || 'Option ' + (i + 1)}</div>
+          <div class="plan-meta">${plan.tagline || ''}</div>
+          <div class="plan-stops">${stops}</div>
+        `;
+        card.onclick = () => {
+          document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          state.selectedPlan = i;
+          document.getElementById('btn-select-plan').disabled = false;
+        };
+        container.appendChild(card);
+      });
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step-plans').classList.add('active');
+    }
+
+    async function reshuffle() {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step-loading').classList.add('active');
+      try {
+        const res = await fetch(`/api/v1/guest/plan/${state.planId}/reshuffle`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          state.plans = data.plans;
+          renderPlans();
+        } else {
+          goStep('plans');
+        }
+      } catch {
+        goStep('plans');
+      }
+    }
+
+    function selectPlan() {
+      const shareUrl = `${window.location.origin}/guest-plan.html?plan=${state.planId}&pick=${state.selectedPlan}`;
+      document.getElementById('share-link-box').innerHTML = shareUrl + ' <span onclick="copyLink()">Copy</span>';
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step-save').classList.add('active');
+    }
+
+    function copyLink() {
+      const url = `${window.location.origin}/guest-plan.html?plan=${state.planId}&pick=${state.selectedPlan}`;
+      navigator.clipboard.writeText(url).then(() => {
+        const btn = document.querySelector('#step-save .btn-gold');
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = orig, 2000);
+      });
+    }
+
+    function showSignup() {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step-signup').classList.add('active');
+    }
+
+    async function createAccount() {
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      if (!email || !password) return alert('Please fill in both fields.');
+      try {
+        const res = await fetch('/api/v1/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, displayName: email.split('@')[0], handle: email.split('@')[0] + Math.floor(Math.random()*999) }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+          document.getElementById('step-save').classList.add('active');
+        } else {
+          alert(data.error?.message || 'Could not create account.');
+        }
+      } catch {
+        alert('Something went wrong.');
+      }
+    }
+  </script>
+</body>
+</html>
