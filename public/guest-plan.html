@@ -7,392 +7,531 @@
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg:          #0f0e0c;
-      --bg2:         #1a1814;
-      --bg3:         #232018;
-      --bg4:         #2c2820;
-      --gold:        #E8A135;
-      --gold2:       #f5c46a;
-      --gold-pale:   rgba(232,161,53,0.13);
-      --gold-border: rgba(232,161,53,0.28);
-      --white:       #f5f0e8;
-      --white2:      #cec8bc;
-      --muted:       #7a7060;
-      --border:      rgba(255,255,255,0.07);
-      --border2:     rgba(255,255,255,0.13);
-      --green:       #1D9E75;
-      --font-d:      'Syne', sans-serif;
-      --font-b:      'DM Sans', sans-serif;
-      --r:           14px;
+      --bg:     #0f0e0c;
+      --bg2:    #1a1814;
+      --bg3:    #232018;
+      --gold:   #E8A135;
+      --gold-p: rgba(232,161,53,0.13);
+      --gold-b: rgba(232,161,53,0.30);
+      --white:  #f5f0e8;
+      --dim:    #cec8bc;
+      --muted:  #7a7060;
+      --border: rgba(255,255,255,0.10);
     }
-    body { background: var(--bg); color: var(--white); font-family: var(--font-b); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 40px 20px 80px; }
 
-    .logo { font-family: var(--font-d); font-size: 20px; font-weight: 800; color: var(--gold); letter-spacing: -0.02em; margin-bottom: 48px; text-decoration: none; display: block; }
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 80px;
+    }
 
-    .card { background: var(--bg2); border: 1px solid var(--border2); border-radius: 20px; padding: 40px; max-width: 560px; width: 100%; }
+    a.logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--gold);
+      text-decoration: none;
+      margin-bottom: 40px;
+    }
 
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      max-width: 540px;
+      width: 100%;
+    }
+
+    /* Progress bar */
+    .progress {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+    .progress span {
+      height: 3px;
+      flex: 1;
+      border-radius: 2px;
+      background: var(--border);
+    }
+    .progress span.on { background: var(--gold); }
+
+    /* Step wrapper */
     .step { display: none; }
-    .step.active { display: block; }
+    .step.show { display: block; }
 
-    .step-label { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
-    h2 { font-family: var(--font-d); font-size: 26px; font-weight: 700; line-height: 1.2; margin-bottom: 8px; }
-    .step-sub { color: var(--white2); font-size: 15px; margin-bottom: 32px; }
+    .step-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      line-height: 1.25;
+    }
+    .sub {
+      font-size: 14px;
+      color: var(--dim);
+      margin-bottom: 24px;
+    }
 
-    .vibe-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 32px; }
-    .vibe-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; cursor: pointer; text-align: left; transition: border-color 0.15s, background 0.15s; }
-    .vibe-btn:hover { border-color: var(--gold-border); }
-    .vibe-btn.selected { border-color: var(--gold); background: var(--gold-pale); }
-    .vibe-btn .vibe-emoji { font-size: 24px; display: block; margin-bottom: 6px; }
-    .vibe-btn .vibe-label { font-family: var(--font-d); font-size: 14px; font-weight: 700; color: var(--white); display: block; }
-    .vibe-btn .vibe-desc { font-size: 12px; color: var(--muted); margin-top: 2px; display: block; }
+    /* ── Vibe grid ── */
+    .vibe-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
 
-    .input-row { display: flex; gap: 12px; margin-bottom: 12px; }
-    .input-group { flex: 1; }
-    label { display: block; font-size: 13px; font-weight: 500; color: var(--white2); margin-bottom: 6px; }
-    input, select { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: 10px; color: var(--white); font-family: var(--font-b); font-size: 15px; padding: 12px 14px; outline: none; transition: border-color 0.15s; }
-    input:focus, select:focus { border-color: var(--gold); }
-    select option { background: var(--bg3); }
+    .vibe-option {
+      background: var(--bg3);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .vibe-option:hover { border-color: var(--gold-b); }
+    .vibe-option.sel  { border-color: var(--gold); background: var(--gold-p); }
 
-    .btn-gold { display: block; width: 100%; background: var(--gold); color: #0f0e0c; font-family: var(--font-d); font-weight: 700; font-size: 15px; border: none; border-radius: 50px; padding: 16px; cursor: pointer; transition: opacity 0.15s; margin-top: 24px; text-align: center; }
-    .btn-gold:hover { opacity: 0.88; }
-    .btn-gold:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-ghost { display: block; width: 100%; background: transparent; color: var(--white2); font-family: var(--font-b); font-size: 14px; border: 1px solid var(--border2); border-radius: 50px; padding: 14px; cursor: pointer; transition: border-color 0.15s; margin-top: 12px; text-align: center; }
-    .btn-ghost:hover { border-color: var(--border2); color: var(--white); }
+    .vibe-emoji { font-size: 22px; display: block; margin-bottom: 8px; }
+    .vibe-name  { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; display: block; margin-bottom: 2px; }
+    .vibe-desc  { font-size: 12px; color: var(--muted); display: block; }
 
-    /* Plans */
-    .plans-grid { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
-    .plan-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; cursor: pointer; transition: border-color 0.15s; }
-    .plan-card:hover { border-color: var(--gold-border); }
-    .plan-card.selected { border-color: var(--gold); }
-    .plan-title { font-family: var(--font-d); font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-    .plan-meta { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
-    .plan-stops { display: flex; flex-direction: column; gap: 8px; }
-    .stop { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; }
-    .stop-num { width: 22px; height: 22px; background: var(--gold-pale); border: 1px solid var(--gold-border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--gold); flex-shrink: 0; margin-top: 1px; }
-    .stop-name { color: var(--white); font-weight: 500; }
-    .stop-cat { color: var(--muted); font-size: 12px; }
+    /* ── Form ── */
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 13px; color: var(--dim); margin-bottom: 6px; }
+    .field select,
+    .field input {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      padding: 12px 14px;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .field select:focus,
+    .field input:focus { border-color: var(--gold); }
+    .field select option { background: #232018; }
 
-    .loading { text-align: center; padding: 40px 0; }
-    .spinner { width: 40px; height: 40px; border: 3px solid var(--border2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+    .row { display: flex; gap: 12px; }
+    .row .field { flex: 1; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: block;
+      width: 100%;
+      border: none;
+      border-radius: 50px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 15px;
+      cursor: pointer;
+      text-align: center;
+      margin-top: 14px;
+      -webkit-appearance: none;
+      appearance: none;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-gold { background: var(--gold); color: #0f0e0c; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--dim);
+      border: 1px solid var(--border);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+    }
+
+    /* ── Error ── */
+    .err {
+      color: #e05c4b;
+      font-size: 13px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    /* ── Loading ── */
+    .loading {
+      text-align: center;
+      padding: 56px 0;
+    }
+    .spinner {
+      width: 34px;
+      height: 34px;
+      border: 3px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin: 0 auto 16px;
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .loading p { color: var(--white2); font-size: 15px; }
+    .loading p { color: var(--dim); font-size: 14px; }
 
-    .save-options { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
-    .share-link { background: var(--bg3); border: 1px solid var(--border2); border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--muted); word-break: break-all; }
-    .share-link span { color: var(--gold); cursor: pointer; }
+    /* ── Plans ── */
+    .plans-wrap { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
 
-    .progress { display: flex; gap: 6px; margin-bottom: 32px; }
-    .progress-dot { height: 3px; flex: 1; border-radius: 2px; background: var(--border2); transition: background 0.3s; }
-    .progress-dot.done { background: var(--gold); }
+    .plan-card {
+      background: var(--bg3);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      padding: 18px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .plan-card:hover { border-color: var(--gold-b); }
+    .plan-card.sel  { border-color: var(--gold); }
+
+    .plan-title   { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .plan-tagline { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+
+    .stop {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+    .stop-num {
+      min-width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--gold-p);
+      border: 1px solid var(--gold-b);
+      color: var(--gold);
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+    .stop-name { font-weight: 600; }
+    .stop-meta { font-size: 12px; color: var(--muted); }
+
+    /* ── Share ── */
+    .share-url {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--muted);
+      word-break: break-all;
+      margin-bottom: 16px;
+    }
   </style>
 </head>
 <body>
-  <a class="logo" href="/">✦ Rendezvous</a>
 
-  <div class="card">
-    <!-- Step 1: Vibe -->
-    <div class="step active" id="step-1">
-      <div class="progress">
-        <div class="progress-dot done" id="dot-1"></div>
-        <div class="progress-dot" id="dot-2"></div>
-        <div class="progress-dot" id="dot-3"></div>
-      </div>
-      <div class="step-label">Step 1 of 3</div>
-      <h2>What's the vibe tonight?</h2>
-      <p class="step-sub">Pick the mood that fits your group.</p>
-      <div class="vibe-grid">
-        <button class="vibe-btn" data-vibe="chill">
-          <span class="vibe-emoji">🌙</span>
-          <span class="vibe-label">Chill & low-key</span>
-          <span class="vibe-desc">Easy conversation, good drinks</span>
-        </button>
-        <button class="vibe-btn" data-vibe="lively">
-          <span class="vibe-emoji">🔥</span>
-          <span class="vibe-label">Lively & social</span>
-          <span class="vibe-desc">Energy, music, good crowd</span>
-        </button>
-        <button class="vibe-btn" data-vibe="cultural">
-          <span class="vibe-emoji">🎭</span>
-          <span class="vibe-label">Cultural & artsy</span>
-          <span class="vibe-desc">Museums, galleries, live shows</span>
-        </button>
-        <button class="vibe-btn" data-vibe="foodie">
-          <span class="vibe-emoji">🍽️</span>
-          <span class="vibe-label">Foodie night</span>
-          <span class="vibe-desc">Great food is the main event</span>
-        </button>
-        <button class="vibe-btn" data-vibe="active">
-          <span class="vibe-emoji">⚡</span>
-          <span class="vibe-label">Active & adventurous</span>
-          <span class="vibe-desc">Moving around, trying things</span>
-        </button>
-        <button class="vibe-btn" data-vibe="spontaneous">
-          <span class="vibe-emoji">🎲</span>
-          <span class="vibe-label">Surprise me</span>
-          <span class="vibe-desc">Whatever feels right tonight</span>
-        </button>
-      </div>
-      <button class="btn-gold" id="step1-next" onclick="goStep(2)" disabled>Next →</button>
+<a class="logo" href="/">✦ Rendezvous</a>
+
+<div class="card">
+
+  <!-- ── STEP 1: Vibe ── -->
+  <div class="step show" id="s1">
+    <div class="progress">
+      <span class="on"></span><span></span><span></span>
     </div>
+    <div class="step-label">Step 1 of 3</div>
+    <h2>What's the vibe tonight?</h2>
+    <p class="sub">Pick the mood that fits your group.</p>
 
-    <!-- Step 2: Group details -->
-    <div class="step" id="step-2">
-      <div class="progress">
-        <div class="progress-dot done"></div>
-        <div class="progress-dot done"></div>
-        <div class="progress-dot" id="dot-3b"></div>
-      </div>
-      <div class="step-label">Step 2 of 3</div>
-      <h2>Tell us about your group.</h2>
-      <p class="step-sub">This helps us find the right spots.</p>
-      <div class="input-row">
-        <div class="input-group">
-          <label>Group size</label>
-          <select id="group-size">
-            <option value="2">2 people</option>
-            <option value="3">3 people</option>
-            <option value="4" selected>4 people</option>
-            <option value="6">5–6 people</option>
-            <option value="8">7–8 people</option>
-            <option value="10">9–10 people</option>
-            <option value="15">11–15 people</option>
-          </select>
-        </div>
-        <div class="input-group">
-          <label>Budget per person</label>
-          <select id="budget">
-            <option value="25">Under $25</option>
-            <option value="50" selected>$25–$50</option>
-            <option value="75">$50–$75</option>
-            <option value="100">$75–$100</option>
-            <option value="150">$100+</option>
-          </select>
-        </div>
-      </div>
-      <div class="input-group" style="margin-bottom:12px">
-        <label>Neighborhood (optional)</label>
-        <input type="text" id="neighborhood" placeholder="e.g. Shaw, Capitol Hill, U Street…" />
-      </div>
-      <div class="input-group">
-        <label>Starting time</label>
-        <select id="start-time">
-          <option value="18:00">6:00 PM</option>
-          <option value="19:00">7:00 PM</option>
-          <option value="20:00" selected>8:00 PM</option>
-          <option value="21:00">9:00 PM</option>
-          <option value="22:00">10:00 PM</option>
+    <div class="vibe-grid" id="vibe-grid"></div>
+
+    <p class="err" id="err1">Please pick a vibe to continue.</p>
+    <button class="btn btn-gold" id="btn-next1">Next →</button>
+  </div>
+
+  <!-- ── STEP 2: Group details ── -->
+  <div class="step" id="s2">
+    <div class="progress">
+      <span class="on"></span><span class="on"></span><span></span>
+    </div>
+    <div class="step-label">Step 2 of 3</div>
+    <h2>Tell us about your group.</h2>
+    <p class="sub">We'll find spots that fit everyone.</p>
+
+    <div class="row">
+      <div class="field">
+        <label for="f-size">Group size</label>
+        <select id="f-size">
+          <option value="2">2 people</option>
+          <option value="3">3 people</option>
+          <option value="4" selected>4 people</option>
+          <option value="6">5–6 people</option>
+          <option value="8">7–8 people</option>
+          <option value="12">9–12 people</option>
         </select>
       </div>
-      <button class="btn-gold" onclick="generatePlans()">Generate my plans →</button>
-      <button class="btn-ghost" onclick="goStep(1)">← Back</button>
-    </div>
-
-    <!-- Step 3: Loading -->
-    <div class="step" id="step-loading">
-      <div class="loading">
-        <div class="spinner"></div>
-        <p>Building 3 plans for your night…</p>
+      <div class="field">
+        <label for="f-budget">Budget / person</label>
+        <select id="f-budget">
+          <option value="25">Under $25</option>
+          <option value="50" selected>$25–$50</option>
+          <option value="75">$50–$75</option>
+          <option value="100">$75–$100</option>
+          <option value="150">$100+</option>
+        </select>
       </div>
     </div>
 
-    <!-- Step 4: Plans -->
-    <div class="step" id="step-plans">
-      <div class="step-label">Your plans are ready</div>
-      <h2>Pick your night.</h2>
-      <p class="step-sub">3 options tailored to your group. Tap to select.</p>
-      <div class="plans-grid" id="plans-container"></div>
-      <button class="btn-gold" id="btn-select-plan" onclick="selectPlan()" disabled>This is the one →</button>
-      <button class="btn-ghost" onclick="reshuffle()">🔀 Reshuffle plans</button>
+    <div class="field">
+      <label for="f-hood">Neighborhood (optional)</label>
+      <input id="f-hood" type="text" placeholder="e.g. Shaw, U Street, Capitol Hill…" />
     </div>
 
-    <!-- Step 5: Save / Share -->
-    <div class="step" id="step-save">
-      <div class="step-label">You're set</div>
-      <h2>Your night is locked in.</h2>
-      <p class="step-sub">Share with your group or save it for later.</p>
-      <div class="share-link" id="share-link-box">Generating link…</div>
-      <div class="save-options">
-        <button class="btn-gold" onclick="copyLink()">Copy link to share</button>
-        <button class="btn-ghost" onclick="showSignup()">Save this plan (create account)</button>
-        <a href="/" class="btn-ghost" style="text-decoration:none">Back to home</a>
-      </div>
+    <div class="field">
+      <label for="f-time">Starting time</label>
+      <select id="f-time">
+        <option value="18:00">6:00 PM</option>
+        <option value="19:00">7:00 PM</option>
+        <option value="20:00" selected>8:00 PM</option>
+        <option value="21:00">9:00 PM</option>
+        <option value="22:00">10:00 PM</option>
+      </select>
     </div>
 
-    <!-- Step 6: Optional signup -->
-    <div class="step" id="step-signup">
-      <div class="step-label">Optional</div>
-      <h2>Save your plans.</h2>
-      <p class="step-sub">Create a free account to save this plan and build a taste profile over time.</p>
-      <div class="input-group" style="margin-bottom:12px">
-        <label>Email</label>
-        <input type="email" id="signup-email" placeholder="you@example.com" />
-      </div>
-      <div class="input-group">
-        <label>Password</label>
-        <input type="password" id="signup-password" placeholder="Choose a password" />
-      </div>
-      <button class="btn-gold" onclick="createAccount()">Create account & save plan</button>
-      <button class="btn-ghost" onclick="goStep('save')">Skip for now</button>
+    <button class="btn btn-gold" id="btn-generate">Build my plans →</button>
+    <button class="btn btn-ghost" id="btn-back2">← Back</button>
+  </div>
+
+  <!-- ── LOADING ── -->
+  <div class="step" id="s-load">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Building 3 plans for your night…</p>
     </div>
   </div>
 
-  <script>
-    const state = {
-      vibe: null,
-      groupSize: 4,
-      budget: 50,
-      neighborhood: '',
-      startTime: '20:00',
-      plans: [],
-      selectedPlan: null,
-      planId: null,
-    };
+  <!-- ── STEP 3: Pick a plan ── -->
+  <div class="step" id="s3">
+    <div class="progress">
+      <span class="on"></span><span class="on"></span><span class="on"></span>
+    </div>
+    <div class="step-label">Step 3 of 3</div>
+    <h2>Pick your night.</h2>
+    <p class="sub">3 options tailored to your group. Tap to select.</p>
+    <div class="plans-wrap" id="plans-wrap"></div>
+    <p class="err" id="err3">Tap a plan to select it first.</p>
+    <button class="btn btn-gold" id="btn-pick">Lock it in →</button>
+    <button class="btn btn-ghost" id="btn-reshuffle">🔀 Reshuffle</button>
+  </div>
 
-    document.querySelectorAll('.vibe-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('.vibe-btn').forEach(b => b.classList.remove('selected'));
-        this.classList.add('selected');
-        state.vibe = this.dataset.vibe;
-        document.getElementById('step1-next').disabled = false;
-      });
+  <!-- ── SHARE ── -->
+  <div class="step" id="s-share">
+    <div class="step-label">You're set</div>
+    <h2>Your night is locked in.</h2>
+    <p class="sub">Share the link with your group.</p>
+    <div class="share-url" id="share-url"></div>
+    <button class="btn btn-gold" id="btn-copy">Copy link</button>
+    <a href="/" class="btn btn-ghost" style="text-decoration:none; display:block; margin-top:10px;">← Back to home</a>
+  </div>
+
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+var VIBES = [
+  { id: 'chill',       emoji: '🌙', name: 'Chill & low-key',       desc: 'Easy conversation, good drinks' },
+  { id: 'lively',      emoji: '🔥', name: 'Lively & social',        desc: 'Energy, music, great crowd' },
+  { id: 'cultural',    emoji: '🎭', name: 'Cultural & artsy',        desc: 'Museums, galleries, live shows' },
+  { id: 'foodie',      emoji: '🍽️', name: 'Foodie night',            desc: 'Great food is the main event' },
+  { id: 'active',      emoji: '⚡', name: 'Active & adventurous',    desc: 'Moving around, trying things' },
+  { id: 'spontaneous', emoji: '🎲', name: 'Surprise me',             desc: 'Whatever feels right tonight' }
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+var selectedVibe  = null;
+var selectedPlan  = null;
+var planId        = null;
+var plans         = [];
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function show(id) {
+  var all = document.querySelectorAll('.step');
+  for (var i = 0; i < all.length; i++) all[i].classList.remove('show');
+  document.getElementById(id).classList.add('show');
+}
+
+function hideErr(id) { document.getElementById(id).style.display = 'none'; }
+function showErr(id) { document.getElementById(id).style.display = 'block'; }
+
+// ─── STEP 1: Build vibe cards ─────────────────────────────────────────────────
+(function buildVibeGrid() {
+  var grid = document.getElementById('vibe-grid');
+  for (var i = 0; i < VIBES.length; i++) {
+    (function(vibe) {
+      var card = document.createElement('div');
+      card.className = 'vibe-option';
+      card.id = 'v-' + vibe.id;
+      card.innerHTML =
+        '<span class="vibe-emoji">' + vibe.emoji + '</span>' +
+        '<span class="vibe-name">'  + vibe.name  + '</span>' +
+        '<span class="vibe-desc">'  + vibe.desc  + '</span>';
+
+      card.onclick = function() {
+        // deselect all
+        for (var j = 0; j < VIBES.length; j++) {
+          var el = document.getElementById('v-' + VIBES[j].id);
+          if (el) el.className = 'vibe-option';
+        }
+        // select this one
+        card.className = 'vibe-option sel';
+        selectedVibe = vibe.id;
+        hideErr('err1');
+      };
+
+      grid.appendChild(card);
+    })(VIBES[i]);
+  }
+})();
+
+document.getElementById('btn-next1').onclick = function() {
+  if (!selectedVibe) { showErr('err1'); return; }
+  show('s2');
+};
+
+// ─── STEP 2 ───────────────────────────────────────────────────────────────────
+document.getElementById('btn-back2').onclick = function() { show('s1'); };
+
+document.getElementById('btn-generate').onclick = function() {
+  var size  = parseInt(document.getElementById('f-size').value);
+  var budget = parseInt(document.getElementById('f-budget').value);
+  var hood  = document.getElementById('f-hood').value.trim();
+  var time  = document.getElementById('f-time').value;
+
+  show('s-load');
+
+  fetch('/api/v1/guest/plan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      vibe:         selectedVibe,
+      groupSize:    size,
+      budget:       budget,
+      neighborhood: hood,
+      startTime:    time
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.success) {
+      plans  = d.plans;
+      planId = d.planId;
+      renderPlans();
+    } else {
+      alert('Could not generate plans. Try again.');
+      show('s2');
+    }
+  })
+  .catch(function() {
+    alert('Connection error. Try again.');
+    show('s2');
+  });
+};
+
+// ─── STEP 3: Render plans ─────────────────────────────────────────────────────
+function renderPlans() {
+  selectedPlan = null;
+  hideErr('err3');
+
+  var wrap = document.getElementById('plans-wrap');
+  wrap.innerHTML = '';
+
+  for (var i = 0; i < plans.length; i++) {
+    (function(plan, idx) {
+      var stops = plan.stops || [];
+      var stopsHtml = '';
+      for (var j = 0; j < stops.length; j++) {
+        var s = stops[j];
+        stopsHtml +=
+          '<div class="stop">' +
+            '<div class="stop-num">' + (j + 1) + '</div>' +
+            '<div>' +
+              '<div class="stop-name">' + (s.name || '') + '</div>' +
+              '<div class="stop-meta">' + (s.category || '') +
+                (s.neighborhood ? ' · ' + s.neighborhood : '') +
+              '</div>' +
+            '</div>' +
+          '</div>';
+      }
+
+      var card = document.createElement('div');
+      card.className = 'plan-card';
+      card.id = 'p-' + idx;
+      card.innerHTML =
+        '<div class="plan-title">'   + (plan.title   || 'Option ' + (idx + 1)) + '</div>' +
+        '<div class="plan-tagline">' + (plan.tagline || '') + '</div>' +
+        stopsHtml;
+
+      card.onclick = function() {
+        for (var k = 0; k < plans.length; k++) {
+          var el = document.getElementById('p-' + k);
+          if (el) el.className = 'plan-card';
+        }
+        card.className = 'plan-card sel';
+        selectedPlan = idx;
+        hideErr('err3');
+      };
+
+      wrap.appendChild(card);
+    })(plans[i], i);
+  }
+
+  show('s3');
+}
+
+document.getElementById('btn-pick').onclick = function() {
+  if (selectedPlan === null) { showErr('err3'); return; }
+  var url = window.location.origin + '/guest-plan.html?plan=' + planId + '&pick=' + selectedPlan;
+  document.getElementById('share-url').textContent = url;
+  show('s-share');
+};
+
+document.getElementById('btn-reshuffle').onclick = function() {
+  show('s-load');
+  fetch('/api/v1/guest/plan/' + planId + '/reshuffle', { method: 'POST' })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.success) { plans = d.plans; renderPlans(); }
+    else show('s3');
+  })
+  .catch(function() { show('s3'); });
+};
+
+// ─── SHARE ───────────────────────────────────────────────────────────────────
+document.getElementById('btn-copy').onclick = function() {
+  var url = document.getElementById('share-url').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(function() {
+      var btn = document.getElementById('btn-copy');
+      btn.textContent = 'Copied!';
+      setTimeout(function() { btn.textContent = 'Copy link'; }, 2000);
     });
-
-    function goStep(step) {
-      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-      const el = typeof step === 'number' ? document.getElementById('step-' + step) : document.getElementById('step-' + step);
-      if (el) el.classList.add('active');
-    }
-
-    async function generatePlans() {
-      state.groupSize = parseInt(document.getElementById('group-size').value);
-      state.budget = parseInt(document.getElementById('budget').value);
-      state.neighborhood = document.getElementById('neighborhood').value.trim();
-      state.startTime = document.getElementById('start-time').value;
-
-      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-      document.getElementById('step-loading').classList.add('active');
-
-      try {
-        const res = await fetch('/api/v1/guest/plan', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            vibe: state.vibe,
-            groupSize: state.groupSize,
-            budget: state.budget,
-            neighborhood: state.neighborhood,
-            startTime: state.startTime,
-          }),
-        });
-        const data = await res.json();
-        if (data.success) {
-          state.plans = data.plans;
-          state.planId = data.planId;
-          renderPlans();
-        } else {
-          alert('Something went wrong. Please try again.');
-          goStep(2);
-        }
-      } catch (err) {
-        alert('Could not connect. Please try again.');
-        goStep(2);
-      }
-    }
-
-    function renderPlans() {
-      const container = document.getElementById('plans-container');
-      container.innerHTML = '';
-      state.plans.forEach((plan, i) => {
-        const stops = (plan.stops || []).map((s, j) => `
-          <div class="stop">
-            <div class="stop-num">${j + 1}</div>
-            <div>
-              <div class="stop-name">${s.name}</div>
-              <div class="stop-cat">${s.category || ''} ${s.neighborhood ? '· ' + s.neighborhood : ''}</div>
-            </div>
-          </div>
-        `).join('');
-        const card = document.createElement('div');
-        card.className = 'plan-card';
-        card.dataset.index = i;
-        card.innerHTML = `
-          <div class="plan-title">${plan.title || 'Option ' + (i + 1)}</div>
-          <div class="plan-meta">${plan.tagline || ''}</div>
-          <div class="plan-stops">${stops}</div>
-        `;
-        card.onclick = () => {
-          document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
-          card.classList.add('selected');
-          state.selectedPlan = i;
-          document.getElementById('btn-select-plan').disabled = false;
-        };
-        container.appendChild(card);
-      });
-      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-      document.getElementById('step-plans').classList.add('active');
-    }
-
-    async function reshuffle() {
-      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-      document.getElementById('step-loading').classList.add('active');
-      try {
-        const res = await fetch(`/api/v1/guest/plan/${state.planId}/reshuffle`, { method: 'POST' });
-        const data = await res.json();
-        if (data.success) {
-          state.plans = data.plans;
-          renderPlans();
-        } else {
-          goStep('plans');
-        }
-      } catch {
-        goStep('plans');
-      }
-    }
-
-    function selectPlan() {
-      const shareUrl = `${window.location.origin}/guest-plan.html?plan=${state.planId}&pick=${state.selectedPlan}`;
-      document.getElementById('share-link-box').innerHTML = shareUrl + ' <span onclick="copyLink()">Copy</span>';
-      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-      document.getElementById('step-save').classList.add('active');
-    }
-
-    function copyLink() {
-      const url = `${window.location.origin}/guest-plan.html?plan=${state.planId}&pick=${state.selectedPlan}`;
-      navigator.clipboard.writeText(url).then(() => {
-        const btn = document.querySelector('#step-save .btn-gold');
-        const orig = btn.textContent;
-        btn.textContent = 'Copied!';
-        setTimeout(() => btn.textContent = orig, 2000);
-      });
-    }
-
-    function showSignup() {
-      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-      document.getElementById('step-signup').classList.add('active');
-    }
-
-    async function createAccount() {
-      const email = document.getElementById('signup-email').value.trim();
-      const password = document.getElementById('signup-password').value;
-      if (!email || !password) return alert('Please fill in both fields.');
-      try {
-        const res = await fetch('/api/v1/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, displayName: email.split('@')[0], handle: email.split('@')[0] + Math.floor(Math.random()*999) }),
-        });
-        const data = await res.json();
-        if (data.success) {
-          document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-          document.getElementById('step-save').classList.add('active');
-        } else {
-          alert(data.error?.message || 'Could not create account.');
-        }
-      } catch {
-        alert('Something went wrong.');
-      }
-    }
-  </script>
+  }
+};
+</script>
 </body>
 </html>
