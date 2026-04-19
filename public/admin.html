@@ -109,7 +109,88 @@ body { background: var(--bg); color: var(--white); font-family: var(--font); min
 .progress-row { display: flex; justify-content: space-between; padding: 8px 16px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); position: sticky; bottom: 0; background: var(--bg); }
 </style>
 </head>
+<style>
+#login-overlay {
+  position: fixed; inset: 0; background: var(--bg); z-index: 999;
+  display: flex; align-items: center; justify-content: center;
+}
+#login-box {
+  background: var(--bg2); border: 1px solid var(--border2); border-radius: 16px;
+  padding: 40px; width: 100%; max-width: 380px; text-align: center;
+}
+#login-box h2 { font-size: 20px; font-weight: 800; color: var(--gold); margin-bottom: 8px; }
+#login-box p { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+#login-secret {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--white); padding: 12px 14px; border-radius: 10px;
+  font-size: 15px; outline: none; margin-bottom: 12px; font-family: monospace;
+}
+#login-secret:focus { border-color: var(--gold); }
+#login-btn {
+  width: 100%; background: var(--gold); color: var(--bg); border: none;
+  border-radius: 50px; padding: 13px; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: opacity 0.15s;
+}
+#login-btn:hover { opacity: 0.88; }
+#login-error { color: var(--red); font-size: 13px; margin-top: 10px; display: none; }
+</style>
 <body>
+
+<div id="login-overlay">
+  <div id="login-box">
+    <h2>✦ Rendezvous Admin</h2>
+    <p>Enter your admin secret to continue.</p>
+    <input type="password" id="login-secret" placeholder="Admin secret" onkeydown="if(event.key==='Enter')doLogin()" />
+    <button id="login-btn" onclick="doLogin()">Sign in</button>
+    <div id="login-error">Incorrect secret. Try again.</div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const stored = sessionStorage.getItem('admin_secret');
+  if (stored) verifySecret(stored);
+
+  async function verifySecret(secret) {
+    try {
+      const res = await fetch('/admin/api/stats', { headers: { 'x-admin-secret': secret } });
+      if (res.ok) {
+        window.__ADMIN_SECRET__ = secret;
+        sessionStorage.setItem('admin_secret', secret);
+        document.getElementById('login-overlay').style.display = 'none';
+      } else {
+        sessionStorage.removeItem('admin_secret');
+      }
+    } catch {}
+  }
+
+  window.doLogin = async function() {
+    const secret = document.getElementById('login-secret').value.trim();
+    if (!secret) return;
+    const btn = document.getElementById('login-btn');
+    btn.textContent = 'Checking…';
+    btn.disabled = true;
+    try {
+      const res = await fetch('/admin/api/stats', { headers: { 'x-admin-secret': secret } });
+      if (res.ok) {
+        window.__ADMIN_SECRET__ = secret;
+        sessionStorage.setItem('admin_secret', secret);
+        document.getElementById('login-overlay').style.display = 'none';
+        loadSpots();
+      } else {
+        document.getElementById('login-error').style.display = 'block';
+        btn.textContent = 'Sign in';
+        btn.disabled = false;
+      }
+    } catch {
+      document.getElementById('login-error').textContent = 'Connection error. Try again.';
+      document.getElementById('login-error').style.display = 'block';
+      btn.textContent = 'Sign in';
+      btn.disabled = false;
+    }
+  };
+})();
+</script>
 
 <nav class="nav">
   <div class="nav-brand">✦ Rendezvous — Spot Review</div>
@@ -182,7 +263,7 @@ const CATEGORY_EMOJI = {
 // For standalone use, loads from a JSON file or the window.__SPOTS__ variable
 async function loadSpots() {
   try {
-    const res = await fetch('/admin/api/spots?limit=500');
+    const res = await fetch('/admin/api/spots?limit=500', { headers: { 'x-admin-secret': window.__ADMIN_SECRET__ } });
     const data = await res.json();
     spots = data.data?.spots || [];
   } catch {
@@ -415,7 +496,7 @@ async function syncToAPI(spot) {
   try {
     await fetch(`/admin/api/spots/${spot.id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.__ADMIN_TOKEN__}` },
+      headers: { 'Content-Type': 'application/json', 'x-admin-secret': window.__ADMIN_SECRET__ },
       body: JSON.stringify({
         energyScore: spot.energyScore, socialDensity: spot.socialDensity,
         noveltyScore: spot.noveltyScore, outdoorScore: spot.outdoorScore,
@@ -493,7 +574,7 @@ function showToast(msg) {
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────
-loadSpots();
+// loadSpots() is called after login succeeds
 </script>
 </body>
 </html>

@@ -11,16 +11,12 @@ const router = express.Router();
 function adminAuth(req, res, next) {
   const secret = req.headers['x-admin-secret'] || req.query.secret;
   if (!process.env.ADMIN_SECRET || secret !== process.env.ADMIN_SECRET) {
-    // For browser requests, serve the dashboard (auth handled client-side)
-    if (req.accepts('html') && !req.path.startsWith('/api')) {
-      return next();
-    }
     return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Admin access required.' } });
   }
   next();
 }
 
-// ── SERVE ADMIN DASHBOARD ─────────────────────────────────────────────
+// ── SERVE ADMIN DASHBOARD (unprotected — auth handled client-side via login screen) ──
 router.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../../public/admin.html'));
 });
