@@ -14,52 +14,175 @@ function planId() {
   return Math.random().toString(36).slice(2, 10).toUpperCase();
 }
 
+// ── VIBE CONFIG ───────────────────────────────────────────────────────────────
+// Each vibe defines: a human description, preferred venue categories/tags,
+// categories to avoid, and specific instructions for the Claude prompt.
+const VIBE_CONFIG = {
+  chill: {
+    label:       'Chill & low-key',
+    description: 'low-energy, intimate, conversation-friendly',
+    preferTags:  ['cozy', 'intimate', 'chill', 'low-key', 'quiet', 'neighborhood gem', 'hidden gem'],
+    preferCats:  ['Café', 'Wine Bar', 'Cocktail Bar', 'Bookstore', 'Jazz Club'],
+    avoidTags:   ['loud', 'club', 'high-energy', 'late night', 'DJ'],
+    instructions: [
+      'Prioritize venues with good seating, low ambient noise, and a relaxed atmosphere.',
+      'Avoid clubs, loud bars, or venues where conversation is difficult.',
+      'Good picks: wine bars, cozy cocktail lounges, cafés open late, jazz spots with table seating.',
+      'Each plan should feel unhurried — 2 stops max, longer durations at each.',
+    ],
+  },
+  lively: {
+    label:       'Lively & social',
+    description: 'high energy, music-forward, great crowd',
+    preferTags:  ['high-energy', 'late night', 'DJ', 'live music', 'rooftop', 'social', 'trendy'],
+    preferCats:  ['Bar', 'Lounge', 'Nightclub', 'Rooftop Bar', 'Music Venue'],
+    avoidTags:   ['quiet', 'intimate', 'cozy', 'seated'],
+    instructions: [
+      'Prioritize bars, lounges, and venues with music and a buzzing crowd.',
+      'Include at least one venue with a DJ or live band.',
+      'Plans can have 2-3 stops with a natural escalation in energy.',
+      'Think: pregame spot → main event → late-night option.',
+    ],
+  },
+  cultural: {
+    label:       'Cultural & artsy',
+    description: 'arts, culture, live performance, creative spaces',
+    preferTags:  ['live music', 'art', 'gallery', 'record shop', 'spoken word', 'indie', 'local', 'creative'],
+    preferCats:  ['Music Venue', 'Record Store', 'Art Gallery', 'Theater', 'Jazz Club', 'Café'],
+    avoidTags:   ['chain', 'tourist', 'club'],
+    instructions: [
+      'Lead with a cultural anchor: a record store, gallery opening, live performance, or jazz club.',
+      'Mix venue types — e.g. record shop browse → dinner → live show.',
+      'Highlight what makes each venue culturally interesting (history, local significance, artists).',
+      'Each plan should feel like a curated evening, not just drinks.',
+    ],
+  },
+  foodie: {
+    label:       'Foodie night',
+    description: 'exceptional food, dining experience, diverse cuisine',
+    preferTags:  ['food', 'chef-driven', 'diverse cuisine', 'cocktails', 'wine', 'local', 'brunch'],
+    preferCats:  ['Restaurant', 'Food Hall', 'Bar', 'Cocktail Bar', 'Café'],
+    avoidTags:   ['club', 'late night', 'DJ'],
+    instructions: [
+      'Food is the star — every stop should have exceptional food or drinks.',
+      'Structure plans around a food journey: drinks & small bites → main dinner → dessert or nightcap.',
+      'Vary cuisines across the 3 plans (e.g. one American, one international, one fusion).',
+      'Mention cuisine type and any standout dishes or drinks in the plan tagline.',
+    ],
+  },
+  active: {
+    label:       'Active & adventurous',
+    description: 'unique experiences, walkable, multi-stop, outdoor options',
+    preferTags:  ['outdoor', 'rooftop', 'walkable', 'unique', 'experiential', 'hidden gem', 'neighborhood gem'],
+    preferCats:  ['Outdoor Venue', 'Rooftop Bar', 'Market', 'Food Hall', 'Music Venue', 'Bar'],
+    avoidTags:   ['seated only', 'quiet', 'intimate'],
+    instructions: [
+      'Plans should involve movement — multiple stops in walkable proximity.',
+      'Include at least one outdoor or rooftop venue per plan.',
+      'Think: explore a neighborhood on foot, pop into spots along the way.',
+      'Each plan should have 3 stops to maximize variety and activity.',
+      'One stop per plan should be somewhere unexpected or off the beaten path.',
+    ],
+  },
+  spontaneous: {
+    label:       'Surprise me',
+    description: 'eclectic mix, one unexpected venue per plan',
+    preferTags:  [],
+    preferCats:  [],
+    avoidTags:   [],
+    instructions: [
+      'Each plan should be a genuinely surprising, eclectic mix of venue types.',
+      'Include at least one unexpected or unusual venue per plan that the group would not normally pick.',
+      'Do not repeat the same venue category across all 3 plans.',
+      'Think creatively — pair a record store with a wine bar, or a rooftop with a jazz club.',
+      'The plans should feel like happy accidents, not a typical night out.',
+    ],
+  },
+};
+
 async function buildPlans({ vibe, groupSize, budget, neighborhood, startTime }) {
-  // Fetch spots from DB filtered by budget
+  const config   = VIBE_CONFIG[vibe] || VIBE_CONFIG.spontaneous;
   const priceTier = budget <= 25 ? 1 : budget <= 50 ? 2 : budget <= 75 ? 3 : 4;
-  const spots = await prisma.spot.findMany({
+
+  // Pull all budget-appropriate spots
+  const allSpots = await prisma.spot.findMany({
     where: {
       isActive: true,
       priceTier: { lte: priceTier },
       ...(neighborhood ? { neighborhood: { contains: neighborhood, mode: 'insensitive' } } : {}),
     },
-    take: 40,
+    take: 60,
   });
 
-  const vibeMap = {
-    chill:       'low-energy, intimate, great for conversation',
-    lively:      'high energy, social, music-forward',
-    cultural:    'arts, culture, galleries, live performance',
-    foodie:      'exceptional food, unique cuisine, dining experience',
-    active:      'active, adventurous, experiential',
-    spontaneous: 'eclectic mix, surprising, fun variety',
-  };
+  // Score each spot against the vibe: +2 per matching tag, +1 per matching category
+  function scoreSpot(spot) {
+    let score = 0;
+    const tags = spot.vibeTags || [];
+    const cat  = spot.category  || '';
+    for (const t of config.preferTags) {
+      if (tags.some(tag => tag.toLowerCase().includes(t.toLowerCase()))) score += 2;
+    }
+    if (config.preferCats.some(c => cat.toLowerCase().includes(c.toLowerCase()))) score += 1;
+    for (const t of config.avoidTags) {
+      if (tags.some(tag => tag.toLowerCase().includes(t.toLowerCase()))) score -= 3;
+    }
+    return score;
+  }
 
-  const prompt = `You are a DC nightlife expert. Generate 3 distinct evening plan options for a group.
+  const scored = allSpots
+    .map(s => ({ spot: s, score: scoreSpot(s) }))
+    .sort((a, b) => b.score - a.score);
 
-Group details:
-- Vibe: ${vibeMap[vibe] || vibe}
+  // Top 20 preferred spots + up to 10 others for variety (spontaneous gets full shuffle)
+  let preferred = scored.slice(0, 20).map(x => x.spot);
+  let others    = scored.slice(20).map(x => x.spot).slice(0, 10);
+  const spots   = vibe === 'spontaneous'
+    ? allSpots.sort(() => Math.random() - 0.5)
+    : [...preferred, ...others];
+
+  const spotList = spots.length
+    ? spots.map(s =>
+        `- ${s.name} | ${s.category} | ${s.neighborhood} | ${'$'.repeat(s.priceTier)} | Tags: ${(s.vibeTags || []).join(', ')}`
+      ).join('\n')
+    : '(no venues in database — invent 2–3 real DC venues per plan)';
+
+  const prompt = `You are a local DC expert curating evening plans. Generate 3 distinct plans for a group night out.
+
+GROUP DETAILS
+- Vibe: ${config.label} — ${config.description}
 - Group size: ${groupSize} people
-- Budget: $${budget} per person max
+- Budget: up to $${budget} per person
 - Neighborhood preference: ${neighborhood || 'anywhere in DC'}
 - Starting time: ${startTime}
 
-Available venues${spots.length ? ' (use only these)' : ' (none in DB yet — invent 2–3 real DC venues per plan)'}:
-${spots.length
-  ? spots.map(s => `- ${s.name} | ${s.category} | ${s.neighborhood} | Price tier ${s.priceTier}/4 | Tags: ${s.vibeTags?.join(', ')}`).join('\n')
-  : '(no venues in database)'}
+VIBE INSTRUCTIONS
+${config.instructions.map((line, i) => `${i + 1}. ${line}`).join('\n')}
 
-Return a JSON array of exactly 3 plan objects. Each plan:
-{
-  "title": "Short catchy name",
-  "tagline": "One-line description",
-  "stops": [
-    { "name": "Venue name", "category": "Category", "neighborhood": "Neighborhood", "duration": "90 min" }
-  ]
-}
+AVAILABLE VENUES (use only venues from this list):
+${spotList}
 
-Each plan should have 2-3 stops. Plans should be meaningfully different from each other.
-Return ONLY the JSON array, no other text.`;
+OUTPUT FORMAT
+Return a JSON array of exactly 3 plan objects. No markdown, no explanation — only the raw JSON array.
+[
+  {
+    "title": "Short catchy plan name (3-5 words)",
+    "tagline": "One compelling sentence describing the vibe of this plan",
+    "stops": [
+      {
+        "name": "Exact venue name from the list above",
+        "category": "Venue category",
+        "neighborhood": "Neighborhood",
+        "duration": "e.g. 60 min"
+      }
+    ]
+  }
+]
+
+Rules:
+- Each plan must have 2-3 stops chosen from the venue list above.
+- Plans must be meaningfully different from each other.
+- Only use venues from the list. Do not invent venues.
+- Return ONLY the JSON array.`;
 
   const msg = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
