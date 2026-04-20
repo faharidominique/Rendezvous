@@ -144,32 +144,41 @@ const FALLBACK_TEMPLATES = {
 
 const STOP_DURATIONS = ['60 min', '75 min', '90 min', '2 hrs'];
 
+// Hardcoded DC venues used as absolute last resort when DB has no spots
+const STATIC_DC_VENUES = [
+  { name: 'Wunder Garten',           category: 'Outdoor Bar',    neighborhood: 'NoMa' },
+  { name: 'Songbyrd Music House',    category: 'Music Venue',    neighborhood: 'Adams Morgan' },
+  { name: 'Compass Rose',            category: 'Restaurant',     neighborhood: 'Shaw' },
+  { name: 'Dirty Habit',             category: 'Bar',            neighborhood: 'Penn Quarter' },
+  { name: 'Pearl Dive Oyster Palace',category: 'Restaurant',     neighborhood: 'U Street' },
+  { name: 'U Street Music Hall',     category: 'Nightclub',      neighborhood: 'U Street' },
+  { name: 'The Brixton',             category: 'Bar',            neighborhood: 'U Street' },
+  { name: 'Anxo Cidery',             category: 'Bar',            neighborhood: 'Shaw' },
+  { name: 'Right Proper Brewing',    category: 'Brewery',        neighborhood: 'Shaw' },
+];
+
 function buildFallbackPlans(spots, vibe) {
   const templates = FALLBACK_TEMPLATES[vibe] || FALLBACK_TEMPLATES.spontaneous;
 
-  // Divide the top spots into 3 non-overlapping groups of 2-3
-  // Group 0: spots 0,1,2 — Group 1: spots 3,4,5 — Group 2: spots 6,7,8 (2-stop fallback if fewer)
-  const plans = templates.map((tmpl, i) => {
-    const poolStart = i * 3;
-    const pool      = spots.slice(poolStart, poolStart + 3);
+  // Convert DB spots to a flat stop pool; fall back to static venues if DB is empty
+  const pool = spots.length >= 3
+    ? spots.map((s, j) => ({
+        name:         s.name,
+        category:     s.category,
+        neighborhood: s.neighborhood,
+        duration:     STOP_DURATIONS[j % STOP_DURATIONS.length],
+      }))
+    : STATIC_DC_VENUES.map((s, j) => ({ ...s, duration: STOP_DURATIONS[j % STOP_DURATIONS.length] }));
 
-    // If we've run out of unique spots, wrap around with slight offset
-    const filled = pool.length >= 2 ? pool : [
-      spots[i % spots.length],
-      spots[(i + 1) % spots.length],
-    ];
-
-    const stops = filled.slice(0, 3).map((s, j) => ({
-      name:         s.name,
-      category:     s.category,
-      neighborhood: s.neighborhood,
-      duration:     STOP_DURATIONS[j % STOP_DURATIONS.length],
-    }));
-
+  return templates.map((tmpl, i) => {
+    const base  = (i * 3) % pool.length;
+    const stops = [
+      pool[base % pool.length],
+      pool[(base + 1) % pool.length],
+      pool[(base + 2) % pool.length],
+    ].filter(Boolean);
     return { title: tmpl.title, tagline: tmpl.tagline, stops };
   });
-
-  return plans;
 }
 
 async function buildPlans({ vibe, groupSize, budget, neighborhood, startTime }) {
@@ -212,11 +221,18 @@ async function buildPlans({ vibe, groupSize, budget, neighborhood, startTime }) 
     ? allSpots.sort(() => Math.random() - 0.5)
     : [...preferred, ...others];
 
+  // ── Early exit: no API key → build plans from DB spots (or static venues)
+  const anthropic = getAnthropic();
+  if (!anthropic) {
+    console.warn('[guestPlan] ANTHROPIC_API_KEY not set — using fallback plan builder');
+    return buildFallbackPlans(spots, vibe);
+  }
+
   const spotList = spots.length
     ? spots.map(s =>
         `- ${s.name} | ${s.category} | ${s.neighborhood} | ${'$'.repeat(s.priceTier)} | Tags: ${(s.vibeTags || []).join(', ')}`
       ).join('\n')
-    : '(no venues in database — invent 2–3 real DC venues per plan)';
+    : '(no venues in database — use well-known real DC venues)';
 
   const prompt = `You are a local DC expert curating evening plans. Generate 3 distinct plans for a group night out.
 
@@ -256,13 +272,6 @@ Rules:
 - Only use venues from the list. Do not invent venues.
 - Return ONLY the JSON array.`;
 
-  // ── Fallback: no API key → assemble plans from DB spots directly
-  const anthropic = getAnthropic();
-  if (!anthropic) {
-    console.warn('ANTHROPIC_API_KEY not set — using fallback plan builder');
-    return buildFallbackPlans(spots, vibe);
-  }
-
   const msg = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 1024,
@@ -293,8 +302,8 @@ router.post('/plan', async (req, res) => {
 
     res.json({ success: true, planId: id, plans });
   } catch (err) {
-    console.error('Guest plan error:', err);
-    res.status(500).json({ success: false, error: { message: 'Could not generate plans.' } });
+    console.error('[guestPlan] Error:', err.message, err.stack);
+    res.status(500).json({ success: false, error: { message: 'Could not generate plans.', detail: err.message } });
   }
 });
 
