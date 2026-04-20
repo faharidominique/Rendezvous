@@ -44,8 +44,10 @@ Group details:
 - Neighborhood preference: ${neighborhood || 'anywhere in DC'}
 - Starting time: ${startTime}
 
-Available venues (use only these):
-${spots.map(s => `- ${s.name} | ${s.category} | ${s.neighborhood} | Price tier ${s.priceTier}/4 | Tags: ${s.vibeTags?.join(', ')}`).join('\n')}
+Available venues${spots.length ? ' (use only these)' : ' (none in DB yet — invent 2–3 real DC venues per plan)'}:
+${spots.length
+  ? spots.map(s => `- ${s.name} | ${s.category} | ${s.neighborhood} | Price tier ${s.priceTier}/4 | Tags: ${s.vibeTags?.join(', ')}`).join('\n')
+  : '(no venues in database)'}
 
 Return a JSON array of exactly 3 plan objects. Each plan:
 {
@@ -60,14 +62,19 @@ Each plan should have 2-3 stops. Plans should be meaningfully different from eac
 Return ONLY the JSON array, no other text.`;
 
   const msg = await anthropic.messages.create({
-    model: 'claude-opus-4-6',
+    model: 'claude-sonnet-4-6',
     max_tokens: 1024,
     messages: [{ role: 'user', content: prompt }],
   });
 
-  const text = msg.content[0].text.trim();
-  const json = text.startsWith('[') ? text : text.slice(text.indexOf('['));
-  return JSON.parse(json);
+  let text = msg.content[0].text.trim();
+  // Strip markdown code fences if present
+  text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  // Find the JSON array
+  const start = text.indexOf('[');
+  const end   = text.lastIndexOf(']');
+  if (start === -1 || end === -1) throw new Error('No JSON array in response');
+  return JSON.parse(text.slice(start, end + 1));
 }
 
 // POST /api/v1/guest/plan
