@@ -5,7 +5,14 @@ const { PrismaClient } = require('@prisma/client');
 const Anthropic = require('@anthropic-ai/sdk');
 
 const prisma = new PrismaClient();
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// Lazy Anthropic client — only instantiated when the key is present
+let _anthropic = null;
+function getAnthropic() {
+  if (!process.env.ANTHROPIC_API_KEY) return null;
+  if (!_anthropic) _anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  return _anthropic;
+}
 
 // In-memory store for guest plans (no DB required)
 const guestPlans = new Map();
@@ -100,6 +107,71 @@ const VIBE_CONFIG = {
   },
 };
 
+// ── FALLBACK PLAN BUILDER ─────────────────────────────────────────────────────
+// Used when ANTHROPIC_API_KEY is not set. Assembles 3 plans from scored DB spots.
+const FALLBACK_TEMPLATES = {
+  chill: [
+    { title: 'Easy Like Sunday',      tagline: 'Low lights, good drinks, and nowhere to be.' },
+    { title: 'The Slow Burn',         tagline: 'Start quiet, stay that way — exactly as planned.' },
+    { title: 'Just the Two-Stop',     tagline: 'Two great spots, zero pressure, all night.' },
+  ],
+  lively: [
+    { title: 'Turn It Up',            tagline: 'Energy first, questions later.' },
+    { title: 'The Social Circuit',    tagline: 'Bar to bar, crowd to crowd — the night finds you.' },
+    { title: 'Friday Mode',           tagline: 'Music, people, and the right amount of chaos.' },
+  ],
+  cultural: [
+    { title: 'The Culture Run',       tagline: 'Art, sound, and something you didn\'t expect.' },
+    { title: 'Record to Table',       tagline: 'Browse vinyl, then settle in for the night.' },
+    { title: 'After the Opening',     tagline: 'Galleries close, the night opens up.' },
+  ],
+  foodie: [
+    { title: 'The Tasting Route',     tagline: 'Every stop earns its place on the table.' },
+    { title: 'Bites & Rounds',        tagline: 'Snacks into dinner into something sweet.' },
+    { title: 'Chef\'s Night Out',     tagline: 'Let the kitchen do the talking.' },
+  ],
+  active: [
+    { title: 'The Neighborhood Run',  tagline: 'On foot, no plan — just good instincts.' },
+    { title: 'Three & Done',          tagline: 'Three stops, three different feels, one great night.' },
+    { title: 'Off the Map',           tagline: 'You\'ve walked past these places. Tonight you go in.' },
+  ],
+  spontaneous: [
+    { title: 'Whatever Works',        tagline: 'No theme, no rules — just what sounds good right now.' },
+    { title: 'The Wildcard Night',    tagline: 'Trust the process. The process is chaos.' },
+    { title: 'Pick Three, See What Happens', tagline: 'The best nights are the ones nobody planned.' },
+  ],
+};
+
+const STOP_DURATIONS = ['60 min', '75 min', '90 min', '2 hrs'];
+
+function buildFallbackPlans(spots, vibe) {
+  const templates = FALLBACK_TEMPLATES[vibe] || FALLBACK_TEMPLATES.spontaneous;
+
+  // Divide the top spots into 3 non-overlapping groups of 2-3
+  // Group 0: spots 0,1,2 — Group 1: spots 3,4,5 — Group 2: spots 6,7,8 (2-stop fallback if fewer)
+  const plans = templates.map((tmpl, i) => {
+    const poolStart = i * 3;
+    const pool      = spots.slice(poolStart, poolStart + 3);
+
+    // If we've run out of unique spots, wrap around with slight offset
+    const filled = pool.length >= 2 ? pool : [
+      spots[i % spots.length],
+      spots[(i + 1) % spots.length],
+    ];
+
+    const stops = filled.slice(0, 3).map((s, j) => ({
+      name:         s.name,
+      category:     s.category,
+      neighborhood: s.neighborhood,
+      duration:     STOP_DURATIONS[j % STOP_DURATIONS.length],
+    }));
+
+    return { title: tmpl.title, tagline: tmpl.tagline, stops };
+  });
+
+  return plans;
+}
+
 async function buildPlans({ vibe, groupSize, budget, neighborhood, startTime }) {
   const config   = VIBE_CONFIG[vibe] || VIBE_CONFIG.spontaneous;
   const priceTier = budget <= 25 ? 1 : budget <= 50 ? 2 : budget <= 75 ? 3 : 4;
@@ -183,6 +255,13 @@ Rules:
 - Plans must be meaningfully different from each other.
 - Only use venues from the list. Do not invent venues.
 - Return ONLY the JSON array.`;
+
+  // ── Fallback: no API key → assemble plans from DB spots directly
+  const anthropic = getAnthropic();
+  if (!anthropic) {
+    console.warn('ANTHROPIC_API_KEY not set — using fallback plan builder');
+    return buildFallbackPlans(spots, vibe);
+  }
 
   const msg = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
