@@ -10,9 +10,10 @@ const compression = require('compression');
 const morgan     = require('morgan');
 const rateLimit  = require('express-rate-limit');
 
-const { initSocket }  = require('./websocket/socket');
-const { connectRedis } = require('./services/redis');
-const logger          = require('./utils/logger');
+const { initSocket }        = require('./websocket/socket');
+const { connectRedis, redis } = require('./services/redis');
+const { prisma }              = require('./services/db');
+const logger                  = require('./utils/logger');
 
 // Routes
 const authRoutes        = require('./routes/auth');
@@ -95,13 +96,33 @@ app.use('/admin',                adminRoutes);
 app.use('/api/v1/guest',         guestPlanRoutes);
 
 // ── HEALTH CHECK ─────────────────────────────────────────────────────
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    version: '2.0.0',
-    ts: new Date().toISOString(),
-    env: process.env.NODE_ENV,
-  });
+app.get('/health', async (req, res) => {
+  const result = {
+    status:    'ok',
+    version:   '2.0.0',
+    timestamp: new Date().toISOString(),
+    env:       process.env.NODE_ENV || 'development',
+    db:        'disconnected',
+    redis:     'disconnected',
+  };
+
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    result.db = 'connected';
+  } catch (e) {
+    result.db     = 'error';
+    result.status = 'degraded';
+  }
+
+  try {
+    await redis.ping();
+    result.redis = 'connected';
+  } catch (e) {
+    result.redis  = 'error';
+    result.status = result.status === 'degraded' ? 'degraded' : 'degraded';
+  }
+
+  res.status(result.status === 'ok' ? 200 : 503).json(result);
 });
 
 // ── FALLBACK: serve landing page for non-API routes ───────────────────
