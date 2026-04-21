@@ -250,7 +250,8 @@
       display: flex;
       gap: 6px;
     }
-    .toggle-btn {
+    .toggle-btn { display: none; }
+    .toggle-btn-label {
       border: 1px solid var(--border);
       border-radius: 50px;
       background: transparent;
@@ -262,7 +263,7 @@
       cursor: pointer;
       transition: border-color 0.15s, background 0.15s, color 0.15s;
     }
-    .toggle-btn.sel {
+    .toggle-btn:checked + .toggle-btn-label {
       background: var(--gold-p);
       border-color: var(--gold);
       color: var(--gold);
@@ -354,8 +355,10 @@
     <div class="toggle-row">
       <span class="toggle-label">Starting at someone's house first?</span>
       <div class="toggle-btns">
-        <button type="button" class="toggle-btn" id="hs-yes">Yes</button>
-        <button type="button" class="toggle-btn sel" id="hs-no">No</button>
+        <input type="radio" name="houseStart" id="hs-yes" value="yes" class="toggle-btn">
+        <label for="hs-yes" class="toggle-btn-label">Yes</label>
+        <input type="radio" name="houseStart" id="hs-no"  value="no"  class="toggle-btn" checked>
+        <label for="hs-no"  class="toggle-btn-label">No</label>
       </div>
     </div>
 
@@ -413,15 +416,6 @@ var selectedVibe  = null;
 var selectedPlan  = null;
 var planId        = null;
 var plans         = [];
-var houseStart    = false;
-
-function setHouseStart(val) {
-  houseStart = val;
-  document.getElementById('hs-yes').className = val  ? 'toggle-btn sel' : 'toggle-btn';
-  document.getElementById('hs-no').className  = !val ? 'toggle-btn sel' : 'toggle-btn';
-}
-document.getElementById('hs-yes').onclick = function() { setHouseStart(true); };
-document.getElementById('hs-no').onclick  = function() { setHouseStart(false); };
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 function show(id) {
@@ -488,7 +482,7 @@ document.getElementById('btn-generate').onclick = function() {
       budget:       budget,
       neighborhood: hood,
       startTime:    time,
-      houseStart:   houseStart
+      houseStart:   document.getElementById('hs-yes').checked
     })
   })
   .then(function(r) { return r.json(); })
