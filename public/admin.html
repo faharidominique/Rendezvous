@@ -148,7 +148,8 @@ body { background: var(--bg); color: var(--white); font-family: var(--font); min
 
 <script>
 (function() {
-  const stored = sessionStorage.getItem('admin_secret');
+  const urlSecret = new URLSearchParams(window.location.search).get('secret');
+  const stored = urlSecret || sessionStorage.getItem('admin_secret');
   if (stored) verifySecret(stored);
 
   function fetchWithTimeout(url, options, ms) {
