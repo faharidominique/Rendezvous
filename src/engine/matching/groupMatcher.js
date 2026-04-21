@@ -389,13 +389,19 @@ function mbtiToVectorOverrides(mbtiType, zodiacSign) {
   }
 
   if (zodiacSign) {
-    const sign = zodiacSign.trim().toLowerCase();
+    const sign  = zodiacSign.trim().toLowerCase();
     const fire  = ['aries', 'leo', 'sagittarius'];
     const water = ['cancer', 'scorpio', 'pisces'];
+    const earth = ['taurus', 'virgo', 'capricorn'];
+    const air   = ['gemini', 'libra', 'aquarius'];
     if (fire.includes(sign)) {
-      overrides.energyLevel = clamp((overrides.energyLevel ?? 0.5) + 0.1);
+      overrides.energyLevel = parseFloat(clamp((overrides.energyLevel ?? 0.5) + 0.1).toFixed(2));
     } else if (water.includes(sign)) {
-      overrides.socialOpenness = clamp((overrides.socialOpenness ?? 0.5) + 0.1);
+      overrides.socialOpenness = parseFloat(clamp((overrides.socialOpenness ?? 0.5) + 0.1).toFixed(2));
+    } else if (earth.includes(sign)) {
+      overrides.spontaneity = parseFloat(clamp((overrides.spontaneity ?? 0.5) - 0.08).toFixed(2));
+    } else if (air.includes(sign)) {
+      overrides.noveltyAppetite = parseFloat(clamp((overrides.noveltyAppetite ?? 0.5) + 0.08).toFixed(2));
     }
   }
 
