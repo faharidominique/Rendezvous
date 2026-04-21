@@ -141,7 +141,7 @@ body { background: var(--bg); color: var(--white); font-family: var(--font); min
     <h2>✦ Rendezvous Admin</h2>
     <p>Enter your admin secret to continue.</p>
     <input type="password" id="login-secret" placeholder="Admin secret" onkeydown="if(event.key==='Enter')doLogin()" />
-    <button id="login-btn" onclick="doLogin()">Sign in</button>
+    <button type="button" id="login-btn" onclick="doLogin()">Sign in</button>
     <div id="login-error">Incorrect secret. Try again.</div>
   </div>
 </div>
@@ -151,13 +151,21 @@ body { background: var(--bg); color: var(--white); font-family: var(--font); min
   const stored = sessionStorage.getItem('admin_secret');
   if (stored) verifySecret(stored);
 
+  function fetchWithTimeout(url, options, ms) {
+    ms = ms || 8000;
+    var controller = new AbortController();
+    var timer = setTimeout(function() { controller.abort(); }, ms);
+    return fetch(url, Object.assign({}, options, { signal: controller.signal })).finally(function() { clearTimeout(timer); });
+  }
+
   async function verifySecret(secret) {
     try {
-      const res = await fetch('/admin/api/stats', { headers: { 'x-admin-secret': secret } });
+      const res = await fetchWithTimeout('/admin/api/stats', { headers: { 'x-admin-secret': secret } });
       if (res.ok) {
         window.__ADMIN_SECRET__ = secret;
         sessionStorage.setItem('admin_secret', secret);
         document.getElementById('login-overlay').style.display = 'none';
+        loadSpots();
       } else {
         sessionStorage.removeItem('admin_secret');
       }
@@ -171,7 +179,7 @@ body { background: var(--bg); color: var(--white); font-family: var(--font); min
     btn.textContent = 'Checking…';
     btn.disabled = true;
     try {
-      const res = await fetch('/admin/api/stats', { headers: { 'x-admin-secret': secret } });
+      const res = await fetchWithTimeout('/admin/api/stats', { headers: { 'x-admin-secret': secret } });
       if (res.ok) {
         window.__ADMIN_SECRET__ = secret;
         sessionStorage.setItem('admin_secret', secret);
