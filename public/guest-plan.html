@@ -231,6 +231,44 @@
     .stop-meta { font-size: 12px; color: var(--muted); }
 
     /* ── Share ── */
+    /* ── House-start toggle ── */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+    .toggle-label {
+      font-size: 14px;
+      color: var(--dim);
+    }
+    .toggle-btns {
+      display: flex;
+      gap: 6px;
+    }
+    .toggle-btn {
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      background: transparent;
+      color: var(--dim);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 16px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+    }
+    .toggle-btn.sel {
+      background: var(--gold-p);
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    /* ── Share ── */
     .share-url {
       background: var(--bg3);
       border: 1px solid var(--border);
@@ -313,6 +351,14 @@
       </select>
     </div>
 
+    <div class="toggle-row">
+      <span class="toggle-label">Starting at someone's house first?</span>
+      <div class="toggle-btns">
+        <button type="button" class="toggle-btn" id="hs-yes" onclick="setHouseStart(true)">Yes</button>
+        <button type="button" class="toggle-btn sel" id="hs-no"  onclick="setHouseStart(false)">No</button>
+      </div>
+    </div>
+
     <button class="btn btn-gold" id="btn-generate">Build my plans →</button>
     <button class="btn btn-ghost" id="btn-back2">← Back</button>
   </div>
@@ -367,6 +413,13 @@ var selectedVibe  = null;
 var selectedPlan  = null;
 var planId        = null;
 var plans         = [];
+var houseStart    = false;
+
+function setHouseStart(val) {
+  houseStart = val;
+  document.getElementById('hs-yes').className = val  ? 'toggle-btn sel' : 'toggle-btn';
+  document.getElementById('hs-no').className  = !val ? 'toggle-btn sel' : 'toggle-btn';
+}
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 function show(id) {
@@ -432,7 +485,8 @@ document.getElementById('btn-generate').onclick = function() {
       groupSize:    size,
       budget:       budget,
       neighborhood: hood,
-      startTime:    time
+      startTime:    time,
+      houseStart:   houseStart
     })
   })
   .then(function(r) { return r.json(); })
