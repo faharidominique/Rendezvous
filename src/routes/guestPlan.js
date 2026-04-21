@@ -1,12 +1,12 @@
 // src/routes/guestPlan.js — Guest plan generation (no auth required)
-const express = require('express');
-const router = express.Router();
+const express  = require('express');
+const router   = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const Anthropic = require('@anthropic-ai/sdk');
+const { generateGroupPlans } = require('../engine/engine');
 
 const prisma = new PrismaClient();
 
-// Lazy Anthropic client — only instantiated when the key is present
 let _anthropic = null;
 function getAnthropic() {
   if (!process.env.ANTHROPIC_API_KEY) return null;
@@ -14,279 +14,138 @@ function getAnthropic() {
   return _anthropic;
 }
 
-// In-memory store for guest plans (no DB required)
 const guestPlans = new Map();
+function planId() { return Math.random().toString(36).slice(2, 10).toUpperCase(); }
 
-function planId() {
-  return Math.random().toString(36).slice(2, 10).toUpperCase();
-}
-
-// ── VIBE CONFIG ───────────────────────────────────────────────────────────────
-// Each vibe defines: a human description, preferred venue categories/tags,
-// categories to avoid, and specific instructions for the Claude prompt.
-const VIBE_CONFIG = {
-  chill: {
-    label:       'Chill & low-key',
-    description: 'low-energy, intimate, conversation-friendly',
-    preferTags:  ['cozy', 'intimate', 'chill', 'low-key', 'quiet', 'neighborhood gem', 'hidden gem'],
-    preferCats:  ['Café', 'Wine Bar', 'Cocktail Bar', 'Bookstore', 'Jazz Club'],
-    avoidTags:   ['loud', 'club', 'high-energy', 'late night', 'DJ'],
-    instructions: [
-      'Prioritize venues with good seating, low ambient noise, and a relaxed atmosphere.',
-      'Avoid clubs, loud bars, or venues where conversation is difficult.',
-      'Good picks: wine bars, cozy cocktail lounges, cafés open late, jazz spots with table seating.',
-      'Each plan should feel unhurried — 2 stops max, longer durations at each.',
-    ],
-  },
-  lively: {
-    label:       'Lively & social',
-    description: 'high energy, music-forward, great crowd',
-    preferTags:  ['high-energy', 'late night', 'DJ', 'live music', 'rooftop', 'social', 'trendy'],
-    preferCats:  ['Bar', 'Lounge', 'Nightclub', 'Rooftop Bar', 'Music Venue'],
-    avoidTags:   ['quiet', 'intimate', 'cozy', 'seated'],
-    instructions: [
-      'Prioritize bars, lounges, and venues with music and a buzzing crowd.',
-      'Include at least one venue with a DJ or live band.',
-      'Plans can have 2-3 stops with a natural escalation in energy.',
-      'Think: pregame spot → main event → late-night option.',
-    ],
-  },
-  cultural: {
-    label:       'Cultural & artsy',
-    description: 'arts, culture, live performance, creative spaces',
-    preferTags:  ['live music', 'art', 'gallery', 'record shop', 'spoken word', 'indie', 'local', 'creative'],
-    preferCats:  ['Music Venue', 'Record Store', 'Art Gallery', 'Theater', 'Jazz Club', 'Café'],
-    avoidTags:   ['chain', 'tourist', 'club'],
-    instructions: [
-      'Lead with a cultural anchor: a record store, gallery opening, live performance, or jazz club.',
-      'Mix venue types — e.g. record shop browse → dinner → live show.',
-      'Highlight what makes each venue culturally interesting (history, local significance, artists).',
-      'Each plan should feel like a curated evening, not just drinks.',
-    ],
-  },
-  foodie: {
-    label:       'Foodie night',
-    description: 'exceptional food, dining experience, diverse cuisine',
-    preferTags:  ['food', 'chef-driven', 'diverse cuisine', 'cocktails', 'wine', 'local', 'brunch'],
-    preferCats:  ['Restaurant', 'Food Hall', 'Bar', 'Cocktail Bar', 'Café'],
-    avoidTags:   ['club', 'late night', 'DJ'],
-    instructions: [
-      'Food is the star — every stop should have exceptional food or drinks.',
-      'Structure plans around a food journey: drinks & small bites → main dinner → dessert or nightcap.',
-      'Vary cuisines across the 3 plans (e.g. one American, one international, one fusion).',
-      'Mention cuisine type and any standout dishes or drinks in the plan tagline.',
-    ],
-  },
-  active: {
-    label:       'Active & adventurous',
-    description: 'unique experiences, walkable, multi-stop, outdoor options',
-    preferTags:  ['outdoor', 'rooftop', 'walkable', 'unique', 'experiential', 'hidden gem', 'neighborhood gem'],
-    preferCats:  ['Outdoor Venue', 'Rooftop Bar', 'Market', 'Food Hall', 'Music Venue', 'Bar'],
-    avoidTags:   ['seated only', 'quiet', 'intimate'],
-    instructions: [
-      'Plans should involve movement — multiple stops in walkable proximity.',
-      'Include at least one outdoor or rooftop venue per plan.',
-      'Think: explore a neighborhood on foot, pop into spots along the way.',
-      'Each plan should have 3 stops to maximize variety and activity.',
-      'One stop per plan should be somewhere unexpected or off the beaten path.',
-    ],
-  },
-  spontaneous: {
-    label:       'Surprise me',
-    description: 'eclectic mix, one unexpected venue per plan',
-    preferTags:  [],
-    preferCats:  [],
-    avoidTags:   [],
-    instructions: [
-      'Each plan should be a genuinely surprising, eclectic mix of venue types.',
-      'Include at least one unexpected or unusual venue per plan that the group would not normally pick.',
-      'Do not repeat the same venue category across all 3 plans.',
-      'Think creatively — pair a record store with a wine bar, or a rooftop with a jazz club.',
-      'The plans should feel like happy accidents, not a typical night out.',
-    ],
-  },
+// ── VIBE → TASTE PROFILE ──────────────────────────────────────────────────────
+// Maps check-in vibe selection to a synthetic tasteProfile the engine understands.
+// Uses the same ACTIVITY_MAP and VIBE_MAP keys defined in src/engine/config.js.
+const VIBE_TO_PROFILE = {
+  chill:       { activities: ['coffee', 'chill', 'food'],                vibeTags: ['chill', 'low-key'],           energyOverride: 'low'    },
+  lively:      { activities: ['music', 'dance', 'late-night', 'events'], vibeTags: ['social', 'high-energy'],      energyOverride: 'high'   },
+  cultural:    { activities: ['music', 'art', 'markets', 'events'],      vibeTags: ['creative', 'spontaneous'],    energyOverride: 'medium' },
+  foodie:      { activities: ['food', 'coffee', 'markets'],              vibeTags: ['social'],                     energyOverride: 'medium' },
+  active:      { activities: ['outdoor', 'events', 'sports', 'food'],    vibeTags: ['adventurous', 'outdoors'],    energyOverride: 'high'   },
+  spontaneous: { activities: ['events', 'music', 'food'],                vibeTags: ['spontaneous', 'adventurous'], energyOverride: 'medium' },
 };
 
-// ── FALLBACK PLAN BUILDER ─────────────────────────────────────────────────────
-// Used when ANTHROPIC_API_KEY is not set. Assembles 3 plans from scored DB spots.
-const FALLBACK_TEMPLATES = {
-  chill: [
-    { title: 'Easy Like Sunday',      tagline: 'Low lights, good drinks, and nowhere to be.' },
-    { title: 'The Slow Burn',         tagline: 'Start quiet, stay that way — exactly as planned.' },
-    { title: 'Just the Two-Stop',     tagline: 'Two great spots, zero pressure, all night.' },
-  ],
-  lively: [
-    { title: 'Turn It Up',            tagline: 'Energy first, questions later.' },
-    { title: 'The Social Circuit',    tagline: 'Bar to bar, crowd to crowd — the night finds you.' },
-    { title: 'Friday Mode',           tagline: 'Music, people, and the right amount of chaos.' },
-  ],
-  cultural: [
-    { title: 'The Culture Run',       tagline: 'Art, sound, and something you didn\'t expect.' },
-    { title: 'Record to Table',       tagline: 'Browse vinyl, then settle in for the night.' },
-    { title: 'After the Opening',     tagline: 'Galleries close, the night opens up.' },
-  ],
-  foodie: [
-    { title: 'The Tasting Route',     tagline: 'Every stop earns its place on the table.' },
-    { title: 'Bites & Rounds',        tagline: 'Snacks into dinner into something sweet.' },
-    { title: 'Chef\'s Night Out',     tagline: 'Let the kitchen do the talking.' },
-  ],
-  active: [
-    { title: 'The Neighborhood Run',  tagline: 'On foot, no plan — just good instincts.' },
-    { title: 'Three & Done',          tagline: 'Three stops, three different feels, one great night.' },
-    { title: 'Off the Map',           tagline: 'You\'ve walked past these places. Tonight you go in.' },
-  ],
-  spontaneous: [
-    { title: 'Whatever Works',        tagline: 'No theme, no rules — just what sounds good right now.' },
-    { title: 'The Wildcard Night',    tagline: 'Trust the process. The process is chaos.' },
-    { title: 'Pick Three, See What Happens', tagline: 'The best nights are the ones nobody planned.' },
-  ],
-};
-
-const STOP_DURATIONS = ['60 min', '75 min', '90 min', '2 hrs'];
-
-// Hardcoded DC venues used as absolute last resort when DB has no spots
-const STATIC_DC_VENUES = [
-  { name: 'Wunder Garten',           category: 'Outdoor Bar',    neighborhood: 'NoMa' },
-  { name: 'Songbyrd Music House',    category: 'Music Venue',    neighborhood: 'Adams Morgan' },
-  { name: 'Compass Rose',            category: 'Restaurant',     neighborhood: 'Shaw' },
-  { name: 'Dirty Habit',             category: 'Bar',            neighborhood: 'Penn Quarter' },
-  { name: 'Pearl Dive Oyster Palace',category: 'Restaurant',     neighborhood: 'U Street' },
-  { name: 'U Street Music Hall',     category: 'Nightclub',      neighborhood: 'U Street' },
-  { name: 'The Brixton',             category: 'Bar',            neighborhood: 'U Street' },
-  { name: 'Anxo Cidery',             category: 'Bar',            neighborhood: 'Shaw' },
-  { name: 'Right Proper Brewing',    category: 'Brewery',        neighborhood: 'Shaw' },
-];
-
-function buildFallbackPlans(spots, vibe) {
-  const templates = FALLBACK_TEMPLATES[vibe] || FALLBACK_TEMPLATES.spontaneous;
-
-  // Convert DB spots to a flat stop pool; fall back to static venues if DB is empty
-  const pool = spots.length >= 3
-    ? spots.map((s, j) => ({
-        name:         s.name,
-        category:     s.category,
-        neighborhood: s.neighborhood,
-        duration:     STOP_DURATIONS[j % STOP_DURATIONS.length],
-      }))
-    : STATIC_DC_VENUES.map((s, j) => ({ ...s, duration: STOP_DURATIONS[j % STOP_DURATIONS.length] }));
-
-  return templates.map((tmpl, i) => {
-    const base  = (i * 3) % pool.length;
-    const stops = [
-      pool[base % pool.length],
-      pool[(base + 1) % pool.length],
-      pool[(base + 2) % pool.length],
-    ].filter(Boolean);
-    return { title: tmpl.title, tagline: tmpl.tagline, stops };
-  });
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function startTimeToMinutes(startTime) {
+  if (!startTime) return 19 * 60;
+  const match = String(startTime).match(/(\d{1,2}):?(\d{2})?\s*(am|pm)?/i);
+  if (!match) return 19 * 60;
+  let hours = parseInt(match[1]);
+  const mins  = parseInt(match[2] || '0');
+  const mer   = match[3]?.toLowerCase();
+  if (mer === 'pm' && hours !== 12) hours += 12;
+  if (mer === 'am' && hours === 12) hours = 0;
+  return hours * 60 + mins;
 }
 
-async function buildPlans({ vibe, groupSize, budget, neighborhood, startTime }) {
-  const config   = VIBE_CONFIG[vibe] || VIBE_CONFIG.spontaneous;
-  const priceTier = budget <= 25 ? 1 : budget <= 50 ? 2 : budget <= 75 ? 3 : 4;
+// ── CLAUDE: NARRATIVE LAYER ───────────────────────────────────────────────────
+// Engine picks the venues. Claude writes the voice.
+async function addNarratives(anthropic, plans, { vibe, groupSize, budget }) {
+  const summaries = plans.map((p, i) => ({
+    index: i,
+    label: p.label,
+    stops: p.stops.map(s => `${s.name} (${s.category}, ${s.neighborhood})`).join(' → '),
+  }));
 
-  // Pull all budget-appropriate spots
-  const allSpots = await prisma.spot.findMany({
-    where: {
-      isActive: true,
-      priceTier: { lte: priceTier },
-      ...(neighborhood ? { neighborhood: { contains: neighborhood, mode: 'insensitive' } } : {}),
-    },
-    take: 60,
-  });
+  const prompt = `You are Rendezvous — write sharp, local-feeling copy for 3 evening plans.
 
-  // Score each spot against the vibe: +2 per matching tag, +1 per matching category
-  function scoreSpot(spot) {
-    let score = 0;
-    const tags = spot.vibeTags || [];
-    const cat  = spot.category  || '';
-    for (const t of config.preferTags) {
-      if (tags.some(tag => tag.toLowerCase().includes(t.toLowerCase()))) score += 2;
-    }
-    if (config.preferCats.some(c => cat.toLowerCase().includes(c.toLowerCase()))) score += 1;
-    for (const t of config.avoidTags) {
-      if (tags.some(tag => tag.toLowerCase().includes(t.toLowerCase()))) score -= 3;
-    }
-    return score;
-  }
+Group: ${groupSize} people | Vibe: ${vibe} | Budget: $${budget}/person
 
-  const scored = allSpots
-    .map(s => ({ spot: s, score: scoreSpot(s) }))
-    .sort((a, b) => b.score - a.score);
+For each plan write:
+- "tagline": one punchy sentence capturing the night's feel (under 15 words, no quotes, no filler)
+- "stops": for each stop, one "why" sentence explaining why this stop fits this group tonight (under 20 words, specific, no generic phrases)
 
-  // Top 20 preferred spots + up to 10 others for variety (spontaneous gets full shuffle)
-  let preferred = scored.slice(0, 20).map(x => x.spot);
-  let others    = scored.slice(20).map(x => x.spot).slice(0, 10);
-  const spots   = vibe === 'spontaneous'
-    ? allSpots.sort(() => Math.random() - 0.5)
-    : [...preferred, ...others];
+Plans:
+${summaries.map(p => `Plan ${p.index + 1} (${p.label}): ${p.stops}`).join('\n')}
 
-  // ── Early exit: no API key → build plans from DB spots (or static venues)
-  const anthropic = getAnthropic();
-  if (!anthropic) {
-    console.warn('[guestPlan] ANTHROPIC_API_KEY not set — using fallback plan builder');
-    return buildFallbackPlans(spots, vibe);
-  }
-
-  const spotList = spots.length
-    ? spots.map(s =>
-        `- ${s.name} | ${s.category} | ${s.neighborhood} | ${'$'.repeat(s.priceTier)} | Tags: ${(s.vibeTags || []).join(', ')}`
-      ).join('\n')
-    : '(no venues in database — use well-known real DC venues)';
-
-  const prompt = `You are a local DC expert curating evening plans. Generate 3 distinct plans for a group night out.
-
-GROUP DETAILS
-- Vibe: ${config.label} — ${config.description}
-- Group size: ${groupSize} people
-- Budget: up to $${budget} per person
-- Neighborhood preference: ${neighborhood || 'anywhere in DC'}
-- Starting time: ${startTime}
-
-VIBE INSTRUCTIONS
-${config.instructions.map((line, i) => `${i + 1}. ${line}`).join('\n')}
-
-AVAILABLE VENUES (use only venues from this list):
-${spotList}
-
-OUTPUT FORMAT
-Return a JSON array of exactly 3 plan objects. No markdown, no explanation — only the raw JSON array.
-[
-  {
-    "title": "Short catchy plan name (3-5 words)",
-    "tagline": "One compelling sentence describing the vibe of this plan",
-    "stops": [
-      {
-        "name": "Exact venue name from the list above",
-        "category": "Venue category",
-        "neighborhood": "Neighborhood",
-        "duration": "e.g. 60 min"
-      }
-    ]
-  }
-]
-
-Rules:
-- Each plan must have 2-3 stops chosen from the venue list above.
-- Plans must be meaningfully different from each other.
-- Only use venues from the list. Do not invent venues.
-- Return ONLY the JSON array.`;
+Return ONLY a raw JSON array of exactly 3 objects — no markdown, no explanation:
+[{"tagline":"...","stops":[{"why":"..."},...]}]
+Each stops array must have the exact same stop count as the corresponding plan.`;
 
   const msg = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 1024,
+    max_tokens: 800,
     messages: [{ role: 'user', content: prompt }],
   });
 
-  let text = msg.content[0].text.trim();
-  // Strip markdown code fences if present
-  text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-  // Find the JSON array
-  const start = text.indexOf('[');
-  const end   = text.lastIndexOf(']');
-  if (start === -1 || end === -1) throw new Error('No JSON array in response');
-  return JSON.parse(text.slice(start, end + 1));
+  let text = msg.content[0].text.trim()
+    .replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  const narratives = JSON.parse(text.slice(text.indexOf('['), text.lastIndexOf(']') + 1));
+
+  return plans.map((plan, i) => ({
+    ...plan,
+    tagline: narratives[i]?.tagline || plan.label,
+    stops: plan.stops.map((stop, j) => ({
+      ...stop,
+      why: narratives[i]?.stops?.[j]?.why || '',
+    })),
+  }));
 }
+
+function fallbackFormat(plans) {
+  return plans.map(plan => ({
+    ...plan,
+    tagline: plan.label,
+    stops: plan.stops.map(s => ({ ...s, why: '' })),
+  }));
+}
+
+// ── PLAN BUILDER ──────────────────────────────────────────────────────────────
+async function buildPlans({ vibe, groupSize, budget, neighborhood, startTime }) {
+  const profile   = VIBE_TO_PROFILE[vibe] || VIBE_TO_PROFILE.spontaneous;
+  const priceTier = budget <= 25 ? 1 : budget <= 50 ? 2 : budget <= 75 ? 3 : 4;
+
+  // Pull budget/neighborhood-filtered spots from DB
+  const allSpots = await prisma.spot.findMany({
+    where: {
+      isActive:  true,
+      priceTier: { lte: priceTier },
+      ...(neighborhood ? { neighborhood: { contains: neighborhood, mode: 'insensitive' } } : {}),
+    },
+    take: 80,
+  });
+
+  // Build synthetic party members — one per person, all sharing the vibe-derived profile.
+  // Minimum 2 so the engine's group size filter passes (spots require groupSizeMin >= 2).
+  const availableFromMinutes = startTimeToMinutes(startTime);
+  const memberCount = Math.max(2, groupSize);
+  const partyMembers = Array.from({ length: memberCount }, (_, i) => ({
+    userId: `guest_${i}`,
+    tasteProfile: {
+      activities: profile.activities,
+      vibeTags:   profile.vibeTags,
+      budgetMax:  budget,
+    },
+    tonightOverrides: {
+      energyLevel:          profile.energyOverride,
+      budget,
+      availableFromMinutes,
+    },
+  }));
+
+  // Engine runs: profile build → group spectrum → venue scoring → 3 plans
+  const { plans } = await generateGroupPlans(partyMembers, allSpots);
+
+  // Layer Claude narrative on top
+  const anthropic = getAnthropic();
+  if (!anthropic) {
+    console.warn('[guestPlan] ANTHROPIC_API_KEY not set — skipping narratives');
+    return fallbackFormat(plans);
+  }
+
+  try {
+    return await addNarratives(anthropic, plans, { vibe, groupSize, budget });
+  } catch (err) {
+    console.error('[guestPlan] Claude narrative error:', err.message);
+    return fallbackFormat(plans);
+  }
+}
+
+// ── ROUTES ────────────────────────────────────────────────────────────────────
 
 // POST /api/v1/guest/plan
 router.post('/plan', async (req, res) => {
@@ -295,11 +154,9 @@ router.post('/plan', async (req, res) => {
     if (!vibe || !groupSize || !budget) {
       return res.status(400).json({ success: false, error: { message: 'Missing required fields.' } });
     }
-
     const plans = await buildPlans({ vibe, groupSize, budget, neighborhood, startTime });
     const id = planId();
     guestPlans.set(id, { plans, inputs: req.body, createdAt: Date.now() });
-
     res.json({ success: true, planId: id, plans });
   } catch (err) {
     console.error('[guestPlan] Error:', err.message, err.stack);
@@ -312,11 +169,9 @@ router.post('/plan/:id/reshuffle', async (req, res) => {
   try {
     const entry = guestPlans.get(req.params.id);
     if (!entry) return res.status(404).json({ success: false, error: { message: 'Plan not found.' } });
-
     const plans = await buildPlans(entry.inputs);
     entry.plans = plans;
     guestPlans.set(req.params.id, entry);
-
     res.json({ success: true, planId: req.params.id, plans });
   } catch (err) {
     console.error('Reshuffle error:', err);
