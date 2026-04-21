@@ -125,6 +125,16 @@ app.get('/health', async (req, res) => {
   res.status(result.status === 'ok' ? 200 : 503).json(result);
 });
 
+// ── TEMP DEBUG: verify ADMIN_SECRET value on Railway ─────────────────
+app.get('/admin-check', (req, res) => {
+  const s = process.env.ADMIN_SECRET;
+  res.json({
+    set: !!s,
+    length: s?.length ?? 0,
+    prefix: s ? s.slice(0, 3) : null,
+  });
+});
+
 // ── FALLBACK: serve landing page for non-API routes ───────────────────
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api') && !req.path.startsWith('/admin')) {
