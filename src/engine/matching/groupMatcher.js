@@ -296,9 +296,10 @@ function filterEligibleSpots(spots, groupSpectrum) {
     // Hours: must be open during the group's availability window
     if (!isOpenAt(spot, availableFromMinutes)) return false;
 
-    // Group size fit
-    if (groupSize < (spot.groupSizeMin || 2)) return false;
-    if (groupSize > (spot.groupSizeMax || 20)) return false;
+    // Group size fit (treat solo as 2 — venues don't distinguish 1 vs 2)
+    const effectiveGroupSize = Math.max(2, groupSize);
+    if (effectiveGroupSize < (spot.groupSizeMin || 2)) return false;
+    if (effectiveGroupSize > (spot.groupSizeMax || 20)) return false;
 
     return true;
   });
@@ -319,7 +320,8 @@ function isOpenAt(spot, minutesSinceMidnight) {
     const [openH, openM] = openStr.split(':').map(Number);
     const [closeH, closeM] = closeStr.split(':').map(Number);
     const openMins  = openH * 60 + (openM || 0);
-    const closeMins = closeH * 60 + (closeM || 0);
+    let closeMins   = closeH * 60 + (closeM || 0);
+    if (closeMins < openMins) closeMins += 24 * 60; // closing time crosses midnight
     return minutesSinceMidnight >= openMins && minutesSinceMidnight < closeMins - 30;
   } catch {
     return true; // if hours parsing fails, include the spot
