@@ -134,7 +134,7 @@ function fallbackFormat(plans) {
 }
 
 // ── PLAN BUILDER ──────────────────────────────────────────────────────────────
-async function buildPlans({ vibe, groupSize, budget, neighborhood, startTime, format, novelty, visibility, houseStart }) {
+async function buildPlans({ vibe, groupSize, budget, neighborhood, startTime, format, novelty, visibility, houseStart, mbtiType, zodiacSign }) {
   const baseProfile = VIBE_TO_PROFILE[vibe] || VIBE_TO_PROFILE.spontaneous;
   const priceTier   = budget <= 25 ? 1 : budget <= 50 ? 2 : budget <= 75 ? 3 : 4;
 
@@ -162,6 +162,8 @@ async function buildPlans({ vibe, groupSize, budget, neighborhood, startTime, fo
   const memberCount = Math.max(2, groupSize);
   const partyMembers = Array.from({ length: memberCount }, (_, i) => ({
     userId: `guest_${i}`,
+    mbtiType:   mbtiType   || null,
+    zodiacSign: zodiacSign || null,
     tasteProfile: {
       activities,
       vibeTags,
@@ -197,11 +199,11 @@ async function buildPlans({ vibe, groupSize, budget, neighborhood, startTime, fo
 // POST /api/v1/guest/plan
 router.post('/plan', async (req, res) => {
   try {
-    const { vibe, groupSize, budget, neighborhood, startTime, format, novelty, visibility, houseStart } = req.body;
+    const { vibe, groupSize, budget, neighborhood, startTime, format, novelty, visibility, houseStart, mbtiType, zodiacSign } = req.body;
     if (!vibe || !groupSize || !budget) {
       return res.status(400).json({ success: false, error: { message: 'Missing required fields.' } });
     }
-    const plans = await buildPlans({ vibe, groupSize, budget, neighborhood, startTime, format, novelty, visibility, houseStart });
+    const plans = await buildPlans({ vibe, groupSize, budget, neighborhood, startTime, format, novelty, visibility, houseStart, mbtiType, zodiacSign });
     const id = planId();
     guestPlans.set(id, { plans, inputs: req.body, createdAt: Date.now() });
     res.json({ success: true, planId: id, plans });

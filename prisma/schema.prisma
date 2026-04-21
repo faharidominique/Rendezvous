@@ -125,12 +125,15 @@ model PartyMember {
   party       Party    @relation(fields: [partyId], references: [id], onDelete: Cascade)
   userId      String
   user        User     @relation(fields: [userId], references: [id])
-  energyLevel String?  // "low" | "medium" | "high"
-  budget      Int?
-  availableFrom String? // e.g. "19:00"
-  checkedInAt DateTime?
-  joinedAt    DateTime @default(now())
-  isConnected Boolean  @default(false)
+  energyLevel     String?  // "low" | "medium" | "high"
+  budget          Int?
+  availableFrom   String?  // e.g. "19:00"
+  checkedInAt     DateTime?
+  joinedAt        DateTime @default(now())
+  isConnected     Boolean  @default(false)
+  mbtiType        String?
+  zodiacSign      String?
+  currentActivity String?
 
   @@unique([partyId, userId])
   @@map("party_members")

@@ -51,6 +51,11 @@ function buildGroupSpectrum(members) {
       v.budgetSensitivity = clamp(1 - o.budget / 150);
     }
 
+    // Personality signals from MBTI and zodiac
+    if (m.mbtiType || m.zodiacSign) {
+      Object.assign(v, mbtiToVectorOverrides(m.mbtiType, m.zodiacSign));
+    }
+
     return v;
   });
 
@@ -371,6 +376,32 @@ function generateBudgetWarning(spot, effectiveBudget) {
   return null;
 }
 
+// ── MBTI + ZODIAC → VECTOR OVERRIDES ─────────────────────────────────
+function mbtiToVectorOverrides(mbtiType, zodiacSign) {
+  const overrides = {};
+
+  if (mbtiType && mbtiType.length === 4) {
+    const t = mbtiType.toUpperCase();
+    overrides.socialOpenness   = t[0] === 'E' ? 0.75 : 0.35;
+    overrides.noveltyAppetite  = t[1] === 'N' ? 0.75 : 0.35;
+    overrides.culturalAppetite = t[2] === 'F' ? 0.65 : 0.45;
+    overrides.spontaneity      = t[3] === 'P' ? 0.70 : 0.35;
+  }
+
+  if (zodiacSign) {
+    const sign = zodiacSign.trim().toLowerCase();
+    const fire  = ['aries', 'leo', 'sagittarius'];
+    const water = ['cancer', 'scorpio', 'pisces'];
+    if (fire.includes(sign)) {
+      overrides.energyLevel = clamp((overrides.energyLevel ?? 0.5) + 0.1);
+    } else if (water.includes(sign)) {
+      overrides.socialOpenness = clamp((overrides.socialOpenness ?? 0.5) + 0.1);
+    }
+  }
+
+  return overrides;
+}
+
 module.exports = {
   buildGroupSpectrum,
   deriveGroupVibeTags,
@@ -380,4 +411,5 @@ module.exports = {
   computeComplementaryScore,
   generateConflictMessages,
   generateBudgetWarning,
+  mbtiToVectorOverrides,
 };

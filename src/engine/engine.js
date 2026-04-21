@@ -155,9 +155,11 @@ async function generateGroupPlans(partyMembers, allSpots, options = {}) {
   const membersWithVectors = partyMembers.map(member => {
     const { vector } = buildTasteVector(member.tasteProfile);
     return {
-      userId: member.userId,
+      userId:     member.userId,
       tasteVector: vector,
       tonightOverrides: member.tonightOverrides || {},
+      mbtiType:   member.mbtiType   || null,
+      zodiacSign: member.zodiacSign || null,
     };
   });
 
