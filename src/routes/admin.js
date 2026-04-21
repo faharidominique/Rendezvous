@@ -9,8 +9,9 @@ const router = express.Router();
 
 // ── ADMIN AUTH MIDDLEWARE ─────────────────────────────────────────────
 function adminAuth(req, res, next) {
-  const secret = req.headers['x-admin-secret'] || req.query.secret;
+  const secret = req.headers['x-admin-secret'] || req.query.secret || req.body?.password;
   if (!process.env.ADMIN_SECRET || secret !== process.env.ADMIN_SECRET) {
+    logger.warn(`Admin auth failed — received: "${secret}" | expected length: ${process.env.ADMIN_SECRET?.length ?? 'UNSET'}`);
     return res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Admin access required.' } });
   }
   next();
