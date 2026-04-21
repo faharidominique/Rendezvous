@@ -69,18 +69,20 @@ function buildItinerary(primarySpot, scoredSpots, groupSpectrum, usedIds = new S
   const { effectiveBudget, availableFromMinutes } = groupSpectrum.constraints;
   const maxStops = getStopCount(availableFromMinutes);
 
-  // Stop 2: food/drinks anchor
+  // Stop 2: food/drinks anchor, fallback to highest-scored unvisited spot
   if (maxStops >= 2) {
-    const foodStop = selectFoodStop(primarySpot, scoredSpots, localUsed, effectiveBudget);
+    const foodStop = selectFoodStop(primarySpot, scoredSpots, localUsed, effectiveBudget)
+      || scoredSpots.find(s => !localUsed.has(s.spot.id)) || null;
     if (foodStop) {
       stops.push(foodStop.spot);
       localUsed.add(foodStop.spot.id);
     }
   }
 
-  // Stop 3: wind-down (only if time allows and not already have 2 food stops)
+  // Stop 3: wind-down, fallback to highest-scored unvisited spot
   if (maxStops >= 3 && stops.length >= 2) {
-    const windDown = selectWindDownStop(scoredSpots, localUsed, effectiveBudget);
+    const windDown = selectWindDownStop(scoredSpots, localUsed, effectiveBudget)
+      || scoredSpots.find(s => !localUsed.has(s.spot.id)) || null;
     if (windDown) {
       stops.push(windDown.spot);
       localUsed.add(windDown.spot.id);
@@ -186,28 +188,30 @@ async function generateThreePlans(allSpots, groupSpectrum, groupActivities = [],
   }
 
   // ── 5. OPTION 3: Wildcard / spontaneity ──────────────────────────
-  // Derive excluded ids from actual assembled stops (not stale primary variables)
-  const excludedIds = new Set([
-    ...option1.stops.map(s => s.id),
-    ...option2.stops.map(s => s.id),
-  ]);
+  // Prefer spots unused by both prior plans; fall back to spots unused by option 1 only
+  // so a thin DB still produces a distinct wildcard plan.
+  const excludedIds     = new Set([...option1.stops.map(s => s.id), ...option2.stops.map(s => s.id)]);
+  const excludedByOne   = new Set(option1.stops.map(s => s.id));
 
-  const wildcardCandidates = eligible
-    .filter(s => !excludedIds.has(s.id) && !FOOD_CATEGORIES.includes(s.category))
+  const wildcardPool = (pool) => eligible
+    .filter(s => !pool.has(s.id) && !FOOD_CATEGORIES.includes(s.category))
     .map(spot => ({
       spot,
       wildcardScore: scoreSpot(spot, groupSpectrum, groupActivities, groupHistory, true),
     }))
     .sort((a, b) => b.wildcardScore - a.wildcardScore);
 
-  // Fallback to any non-food spot not already used
+  const wildcardFromBoth  = wildcardPool(excludedIds);
+  const wildcardCandidates = wildcardFromBoth.length ? wildcardFromBoth : wildcardPool(excludedByOne);
+  const usedForOption3     = wildcardFromBoth.length ? excludedIds : excludedByOne;
+
   const option3Primary = wildcardCandidates[0]?.spot ||
-    scored.filter(s => !FOOD_CATEGORIES.includes(s.spot.category) && !excludedIds.has(s.spot.id))[0]?.spot ||
-    scored.filter(s => !excludedIds.has(s.spot.id))[0]?.spot;
+    scored.filter(s => !FOOD_CATEGORIES.includes(s.spot.category) && !usedForOption3.has(s.spot.id))[0]?.spot ||
+    scored.filter(s => !usedForOption3.has(s.spot.id))[0]?.spot;
 
   const option3 = option3Primary
-    ? buildItinerary(option3Primary, scored, groupSpectrum, new Set([...excludedIds, option3Primary.id]), ITINERARY.planLabels[2])
-    : option2; // absolute fallback — shouldn't happen with a proper database
+    ? buildItinerary(option3Primary, scored, groupSpectrum, new Set([...usedForOption3, option3Primary.id]), ITINERARY.planLabels[2])
+    : { ...option2, label: ITINERARY.planLabels[2] };
 
   // ── 6. Compute match scores for display ──────────────────────────
   function planMatchScore(itinerary) {

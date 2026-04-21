@@ -29,6 +29,45 @@ const VIBE_TO_PROFILE = {
   spontaneous: { activities: ['events', 'music', 'food'],                vibeTags: ['spontaneous', 'adventurous'], energyOverride: 'medium' },
 };
 
+// ── NEW CHECK-IN FIELD MAPPINGS ───────────────────────────────────────────────
+// Translates the 4 new fields into additional activities/vibeTags that merge with
+// the vibe profile before being passed to buildTasteVector in the engine.
+// houseStart shifts availableFromMinutes forward by 45 min (getting ready at home).
+
+const FORMAT_MAP = {
+  collaborate: { activities: ['events'],           vibeTags: ['social']                     },
+  compete:     { activities: ['gaming'],            vibeTags: ['high-energy']                },
+  talk:        { activities: ['coffee', 'chill'],   vibeTags: ['low-key']                    },
+  experience:  { activities: ['art', 'events'],     vibeTags: ['adventurous', 'creative']    },
+  flexible:    { activities: [],                    vibeTags: []                             },
+};
+
+const NOVELTY_MAP = {
+  familiar:  { activities: [],        vibeTags: ['planned']                   },
+  discover:  { activities: [],        vibeTags: ['spontaneous', 'adventurous'] },
+  either:    { activities: [],        vibeTags: []                             },
+};
+
+const VISIBILITY_MAP = {
+  low:  { activities: [],   vibeTags: ['low-key', 'indoors'] },
+  mid:  { activities: [],   vibeTags: []                     },
+  high: { activities: [],   vibeTags: ['social', 'high-energy'] },
+};
+
+const HOUSE_START_DELAY_MINUTES = 45;
+
+function applyCheckInFields(baseProfile, { format, novelty, visibility, houseStart }) {
+  const f = FORMAT_MAP[format]     || FORMAT_MAP.flexible;
+  const n = NOVELTY_MAP[novelty]   || NOVELTY_MAP.either;
+  const v = VISIBILITY_MAP[visibility] || VISIBILITY_MAP.mid;
+
+  return {
+    activities: [...new Set([...baseProfile.activities, ...f.activities, ...n.activities, ...v.activities])],
+    vibeTags:   [...new Set([...baseProfile.vibeTags,   ...f.vibeTags,   ...n.vibeTags,   ...v.vibeTags])],
+    extraMinutes: houseStart ? HOUSE_START_DELAY_MINUTES : 0,
+  };
+}
+
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function startTimeToMinutes(startTime) {
   if (!startTime) return 19 * 60;
@@ -95,9 +134,17 @@ function fallbackFormat(plans) {
 }
 
 // ── PLAN BUILDER ──────────────────────────────────────────────────────────────
-async function buildPlans({ vibe, groupSize, budget, neighborhood, startTime }) {
-  const profile   = VIBE_TO_PROFILE[vibe] || VIBE_TO_PROFILE.spontaneous;
-  const priceTier = budget <= 25 ? 1 : budget <= 50 ? 2 : budget <= 75 ? 3 : 4;
+async function buildPlans({ vibe, groupSize, budget, neighborhood, startTime, format, novelty, visibility, houseStart }) {
+  const baseProfile = VIBE_TO_PROFILE[vibe] || VIBE_TO_PROFILE.spontaneous;
+  const priceTier   = budget <= 25 ? 1 : budget <= 50 ? 2 : budget <= 75 ? 3 : 4;
+
+  // Merge vibe profile with the 4 new check-in fields
+  const { activities, vibeTags, extraMinutes } = applyCheckInFields(baseProfile, {
+    format:     format     || 'flexible',
+    novelty:    novelty    || 'either',
+    visibility: visibility || 'low',
+    houseStart: houseStart || false,
+  });
 
   // Pull budget/neighborhood-filtered spots from DB
   const allSpots = await prisma.spot.findMany({
@@ -109,19 +156,19 @@ async function buildPlans({ vibe, groupSize, budget, neighborhood, startTime }) 
     take: 80,
   });
 
-  // Build synthetic party members — one per person, all sharing the vibe-derived profile.
+  // Build synthetic party members — one per person, all sharing the merged profile.
   // Minimum 2 so the engine's group size filter passes (spots require groupSizeMin >= 2).
-  const availableFromMinutes = startTimeToMinutes(startTime);
+  const availableFromMinutes = startTimeToMinutes(startTime) + extraMinutes;
   const memberCount = Math.max(2, groupSize);
   const partyMembers = Array.from({ length: memberCount }, (_, i) => ({
     userId: `guest_${i}`,
     tasteProfile: {
-      activities: profile.activities,
-      vibeTags:   profile.vibeTags,
-      budgetMax:  budget,
+      activities,
+      vibeTags,
+      budgetMax: budget,
     },
     tonightOverrides: {
-      energyLevel:          profile.energyOverride,
+      energyLevel:          baseProfile.energyOverride,
       budget,
       availableFromMinutes,
     },
@@ -150,11 +197,11 @@ async function buildPlans({ vibe, groupSize, budget, neighborhood, startTime }) 
 // POST /api/v1/guest/plan
 router.post('/plan', async (req, res) => {
   try {
-    const { vibe, groupSize, budget, neighborhood, startTime } = req.body;
+    const { vibe, groupSize, budget, neighborhood, startTime, format, novelty, visibility, houseStart } = req.body;
     if (!vibe || !groupSize || !budget) {
       return res.status(400).json({ success: false, error: { message: 'Missing required fields.' } });
     }
-    const plans = await buildPlans({ vibe, groupSize, budget, neighborhood, startTime });
+    const plans = await buildPlans({ vibe, groupSize, budget, neighborhood, startTime, format, novelty, visibility, houseStart });
     const id = planId();
     guestPlans.set(id, { plans, inputs: req.body, createdAt: Date.now() });
     res.json({ success: true, planId: id, plans });
