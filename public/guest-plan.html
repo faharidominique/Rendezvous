@@ -415,6 +415,7 @@ var VIBES = [
 var selectedVibe  = null;
 var selectedPlan  = null;
 var planId        = null;
+var partyCode     = null;
 var plans         = [];
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -488,8 +489,9 @@ document.getElementById('btn-generate').onclick = function() {
   .then(function(r) { return r.json(); })
   .then(function(d) {
     if (d.success) {
-      plans  = d.plans;
-      planId = d.planId;
+      plans     = d.plans;
+      planId    = d.planId;
+      partyCode = d.partyCode;
       renderPlans();
     } else {
       alert('Could not generate plans. Try again.');
@@ -555,7 +557,9 @@ function renderPlans() {
 
 document.getElementById('btn-pick').onclick = function() {
   if (selectedPlan === null) { showErr('err3'); return; }
-  var url = window.location.origin + '/guest-plan.html?plan=' + planId + '&pick=' + selectedPlan;
+  var url = partyCode
+    ? window.location.origin + '/join.html?code=' + partyCode
+    : window.location.origin + '/guest-plan.html?plan=' + planId + '&pick=' + selectedPlan;
   document.getElementById('share-url').textContent = url;
   show('s-share');
 };

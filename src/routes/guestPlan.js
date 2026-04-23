@@ -196,6 +196,30 @@ async function buildPlans({ vibe, groupSize, budget, neighborhood, startTime, fo
 
 // ── ROUTES ────────────────────────────────────────────────────────────────────
 
+const GUEST_HOST_EMAIL = 'guest-host@rendezvous.app';
+
+async function getOrCreateGuestHost() {
+  return prisma.user.upsert({
+    where: { email: GUEST_HOST_EMAIL },
+    update: {},
+    create: {
+      email: GUEST_HOST_EMAIL,
+      displayName: 'Guest Host',
+      handle: 'guest-host',
+    },
+  });
+}
+
+async function generateUniqueCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code, exists;
+  do {
+    code = 'RNDVZ-' + Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    exists = await prisma.party.findUnique({ where: { code } });
+  } while (exists);
+  return code;
+}
+
 // POST /api/v1/guest/plan
 router.post('/plan', async (req, res) => {
   try {
@@ -204,9 +228,25 @@ router.post('/plan', async (req, res) => {
       return res.status(400).json({ success: false, error: { message: 'Missing required fields.' } });
     }
     const plans = await buildPlans({ vibe, groupSize, budget, neighborhood, startTime, format, novelty, visibility, houseStart, mbtiType, zodiacSign });
+
     const id = planId();
     guestPlans.set(id, { plans, inputs: req.body, createdAt: Date.now() });
-    res.json({ success: true, planId: id, plans });
+
+    const guestHost = await getOrCreateGuestHost();
+    const code = await generateUniqueCode();
+    const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000);
+    await prisma.party.create({
+      data: {
+        hostId: guestHost.id,
+        code,
+        expiresAt,
+        locationCity: 'Washington, DC',
+        status: 'ACTIVE',
+        generatedPlans: plans,
+      },
+    });
+
+    res.json({ success: true, planId: id, partyCode: code, plans });
   } catch (err) {
     console.error('[guestPlan] Error:', err.message, err.stack);
     res.status(500).json({ success: false, error: { message: 'Could not generate plans.', detail: err.message } });
