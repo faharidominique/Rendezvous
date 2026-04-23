@@ -253,6 +253,16 @@
         // Load members for waiting screen
         loadWaitingMembers();
         goToScreen('s-done');
+        const partyCode = partyData.code;
+        setInterval(async () => {
+          try {
+            const res = await fetch(`/api/v1/parties/code/${partyCode}`);
+            const data = await res.json();
+            if (data.status === 'VOTING' || data.status === 'CONFIRMED') {
+              window.location.href = `/party.html?code=${partyCode}`;
+            }
+          } catch {}
+        }, 3000);
       } catch {
         alert('Something went wrong. Try again.');
       } finally {
@@ -287,7 +297,7 @@
     }
 
     function shareParty() {
-      const url = `${location.origin}/join.html?code=${partyData?.code}`;
+      const url = `${window.location.origin}/join.html?code=${partyData.code}`;
       if (navigator.share) {
         navigator.share({ title: 'Join my Rendezvous', text: `Join my party: ${partyData?.code}`, url });
       } else {
@@ -295,10 +305,11 @@
       }
     }
 
-    // Pre-fill code from URL
+    // Pre-fill code from URL and auto-advance to name step
     const urlCode = new URLSearchParams(location.search).get('code');
     if (urlCode) {
       document.getElementById('code-input').value = urlCode.toUpperCase();
+      lookupParty();
     }
   </script>
 </body>

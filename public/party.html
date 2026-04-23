@@ -174,8 +174,13 @@
           <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:8px;" id="checkin-progress"></div>
         </div>
 
-        <div style="margin-top:14px;">
-          <button class="btn-ghost" onclick="shareParty()">Share party code 🔗</button>
+        <div style="background:#1a1a1a;border-radius:12px;padding:16px;margin:16px 0;">
+          <div style="font-size:11px;color:#888;margin-bottom:8px;">SHARE LINK</div>
+          <div id="share-url-display" style="font-size:13px;color:#E8A135;word-break:break-all;margin-bottom:12px;"></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-gold" onclick="copyJoinLink()" style="flex:1;">Copy link</button>
+            <button class="btn-ghost" onclick="shareParty()" style="flex:1;">Share via iMessage</button>
+          </div>
         </div>
       </div>
     </div>
@@ -349,6 +354,8 @@
       document.getElementById('no-party').style.display = 'none';
       document.getElementById('party-view').style.display = 'block';
       document.getElementById('pv-code').textContent = currentParty.code;
+      const joinUrl = `${window.location.origin}/join.html?code=${currentParty.code}`;
+      document.getElementById('share-url-display').textContent = joinUrl;
       document.getElementById('pv-meta').textContent = `Created ${new Date(currentParty.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · Expires in 8hrs`;
       updateStatusPill(currentParty.status);
       renderMembers(currentParty.members || []);
@@ -650,9 +657,14 @@
     }
 
     // ── SHARE ─────────────────────────────────────────────────────────
+    function copyJoinLink() {
+      const url = `${window.location.origin}/join.html?code=${currentParty.code}`;
+      navigator.clipboard.writeText(url).then(() => showToast('Link copied ✓'));
+    }
+
     function shareParty() {
       if (!currentParty) return;
-      const url = `${location.origin}/join.html?code=${currentParty.code}`;
+      const url = `${window.location.origin}/join.html?code=${currentParty.code}`;
       const text = `Join my Rendezvous tonight! Code: ${currentParty.code}`;
       if (navigator.share) { navigator.share({ title: 'Rendezvous', text, url }); }
       else { navigator.clipboard.writeText(url).then(() => showToast('Link copied!')); }
@@ -733,7 +745,26 @@
     }
 
     // ── INIT ──────────────────────────────────────────────────────────
-    loadMyParty();
+    const urlPartyCode = new URLSearchParams(location.search).get('code');
+    if (urlPartyCode) {
+      (async () => {
+        try {
+          const res = await fetch(`${API}/parties/join/code`, {
+            method: 'POST', headers: authHeaders(), body: JSON.stringify({ code: urlPartyCode.toUpperCase() })
+          });
+          const json = await res.json();
+          if (json.success) {
+            currentParty = json.data.party;
+            initSocket();
+            renderPartyView();
+          } else {
+            loadMyParty();
+          }
+        } catch { loadMyParty(); }
+      })();
+    } else {
+      loadMyParty();
+    }
   </script>
 </body>
 </html>
