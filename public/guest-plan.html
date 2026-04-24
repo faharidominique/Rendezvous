@@ -439,7 +439,10 @@ var gE = null, gB = null;
 function goTo(id) {
   document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
   var el = document.getElementById(id);
-  if (el) { el.classList.add('active'); }
+  if (el) {
+    void el.offsetWidth; // force reflow — Safari won't animate from display:none without this
+    el.classList.add('active');
+  }
   window.scrollTo(0, 0);
 }
 
