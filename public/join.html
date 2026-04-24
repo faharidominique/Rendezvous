@@ -186,7 +186,11 @@
       try {
         // We use the join endpoint with a temp token approach — guests don't need accounts
         // For now we search by code via a guest endpoint
-        const res = await fetch(`${API}/parties/guest/lookup?code=${code}`);
+        const res = await fetch(`${API}/parties/guest/lookup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code })
+        });
         const json = await res.json();
         if (!json.success) {
           err.textContent = json.error?.message || 'Party not found. Check your code.';
@@ -242,7 +246,7 @@
           method: 'POST',
           headers: {'Content-Type':'application/json'},
           body: JSON.stringify({
-            partyId: partyData.id,
+            code: partyData.code,
             guestName,
             energyLevel: selectedEnergy,
             budget,
@@ -272,7 +276,12 @@
 
     async function loadWaitingMembers() {
       try {
-        const res = await fetch(`${API}/parties/guest/lookup?code=${partyData?.code}`);
+        const code = partyData.code;
+        const res = await fetch(`${API}/parties/guest/lookup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code })
+        });
         const json = await res.json();
         if (!json.success) return;
         const members = json.data.party.members || [];
