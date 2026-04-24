@@ -415,7 +415,7 @@ async function createParty() {
 
     goTo('s-share');
     startPolling();
-  } catch {
+  } catch(e) {
     toast('Something went wrong. Try again.');
     goTo('s-setup');
     btn.disabled = false;
@@ -462,7 +462,7 @@ async function pollStatus() {
       renderVote();
       goTo('s-vote');
     }
-  } catch {}
+  } catch(e) {}
 }
 
 function updateFriendList(members) {
@@ -498,14 +498,14 @@ async function generatePlans() {
     const res = await fetch('/api/v1/guest/party/' + partyCode + '/generate', { method: 'POST' });
     const d = await res.json();
     if (!d.success) {
-      toast(d.error?.message || 'Could not generate plans.');
+      toast((d.error && d.error.message) || 'Could not generate plans.');
       goTo('s-share');
       startPolling();
       return;
     }
     plans = d.plans;
     setTimeout(() => { renderVote(); goTo('s-vote'); }, 3500);
-  } catch {
+  } catch(e) {
     toast('Something went wrong.');
     goTo('s-share');
     startPolling();
