@@ -1,591 +1,618 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plan Tonight — Rendezvous</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan Tonight — Rendezvous</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#E8A135;--gold2:#c4861f;
+  --bg:#080706;--s1:#111009;--s2:#191610;--s3:#211d12;
+  --border:#2c2718;--border2:#3a3220;
+  --text:#ede6d0;--muted:#7a7260;--dim:#4a4538;
+  --green:#4a9e6a;--green-bg:#0a1a10;--green-border:#1a3a20;
+  --radius:16px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
 
-    :root {
-      --bg:     #0f0e0c;
-      --bg2:    #1a1814;
-      --bg3:    #232018;
-      --gold:   #E8A135;
-      --gold-p: rgba(232,161,53,0.13);
-      --gold-b: rgba(232,161,53,0.30);
-      --white:  #f5f0e8;
-      --dim:    #cec8bc;
-      --muted:  #7a7060;
-      --border: rgba(255,255,255,0.10);
-    }
+.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;position:relative}
+.screen.active{display:flex;animation:rise .45s cubic-bezier(.16,1,.3,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 
-    body {
-      background: var(--bg);
-      color: var(--white);
-      font-family: 'DM Sans', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 20px 80px;
-    }
+.logo{font-family:'Playfair Display',serif;font-size:12px;letter-spacing:.3em;color:var(--gold);margin-bottom:36px;display:flex;align-items:center;gap:8px;text-transform:uppercase;text-decoration:none}
 
-    a.logo {
-      font-family: 'Syne', sans-serif;
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--gold);
-      text-decoration: none;
-      margin-bottom: 40px;
-    }
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:32px;width:100%;max-width:460px;position:relative}
+.card-eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.card-title{font-family:'Playfair Display',serif;font-size:26px;line-height:1.25;margin-bottom:8px}
+.card-sub{font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:24px}
 
-    .card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 36px;
-      max-width: 540px;
-      width: 100%;
-    }
+.steps{display:flex;gap:6px;margin-bottom:24px}
+.step-dot{height:3px;border-radius:2px;background:var(--border2);transition:all .3s}
+.step-dot.done{background:var(--dim);width:20px}
+.step-dot.active{background:var(--gold);width:32px}
+.step-dot.idle{width:12px}
 
-    /* Progress bar */
-    .progress {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 24px;
-    }
-    .progress span {
-      height: 3px;
-      flex: 1;
-      border-radius: 2px;
-      background: var(--border);
-    }
-    .progress span.on { background: var(--gold); }
+.btn{width:100%;padding:15px 20px;border-radius:12px;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;letter-spacing:.01em}
+.btn+.btn{margin-top:8px}
+.btn-gold{background:var(--gold);color:#080706}
+.btn-gold:hover:not(:disabled){background:#f0ac3a;transform:translateY(-1px)}
+.btn-gold:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text)}
+.btn-ghost:hover{background:var(--s2);border-color:var(--dim)}
 
-    /* Step wrapper */
-    .step { display: none; }
-    .step.show { display: block; }
+.vibe-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.vibe-card{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all .15s;text-align:left;position:relative;overflow:hidden}
+.vibe-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--gold) 0%,transparent 100%);opacity:0;transition:opacity .2s}
+.vibe-card:hover{border-color:var(--border2)}
+.vibe-card.sel{border-color:var(--gold);background:var(--s3)}
+.vibe-card.sel::before{opacity:.04}
+.vibe-icon{font-size:20px;margin-bottom:6px;display:block}
+.vibe-name{font-size:13px;font-weight:500;margin-bottom:2px}
+.vibe-desc{font-size:11px;color:var(--muted);line-height:1.4}
 
-    .step-label {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    h2 {
-      font-family: 'Syne', sans-serif;
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 6px;
-      line-height: 1.25;
-    }
-    .sub {
-      font-size: 14px;
-      color: var(--dim);
-      margin-bottom: 24px;
-    }
+.field{margin-bottom:14px}
+.field-label{font-size:12px;color:var(--muted);margin-bottom:6px;letter-spacing:.03em}
+.field select,.field input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .15s;-webkit-appearance:none}
+.field select:focus,.field input:focus{border-color:var(--gold)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.toggle-label{font-size:13px}
+.toggle-btns{display:flex;gap:4px}
+.toggle-btn{padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .15s}
+.toggle-btn.active{background:var(--gold);color:#080706;border-color:var(--gold)}
 
-    /* ── Vibe grid ── */
-    .vibe-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-bottom: 20px;
-    }
+.share-box{background:var(--s2);border:1px solid var(--border2);border-radius:12px;padding:16px;margin-bottom:20px}
+.share-eyebrow{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.share-url{font-size:13px;color:var(--gold);word-break:break-all;margin-bottom:12px;line-height:1.55;font-family:monospace}
+.share-actions{display:flex;gap:8px}
+.share-btn{flex:1;padding:10px;border-radius:9px;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.share-copy{background:var(--gold);color:#080706}
+.share-copy:hover{background:#f0ac3a}
+.share-imsg{background:var(--s1);border:1px solid var(--border2);color:var(--text)}
+.share-imsg:hover{background:var(--s3)}
 
-    .vibe-option {
-      background: var(--bg3);
-      border: 2px solid transparent;
-      border-radius: 12px;
-      padding: 16px;
-      cursor: pointer;
-      text-align: left;
-      transition: border-color 0.15s, background 0.15s;
-    }
-    .vibe-option:hover { border-color: var(--gold-b); }
-    .vibe-option.sel  { border-color: var(--gold); background: var(--gold-p); }
+.checkin-box{margin-bottom:20px}
+.checkin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.checkin-label{font-size:13px;color:var(--muted)}
+.checkin-count{font-size:13px;color:var(--gold);font-weight:500}
+.checkin-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:14px}
+.checkin-fill{height:100%;background:var(--gold);border-radius:2px;transition:width .6s cubic-bezier(.16,1,.3,1);width:0%}
 
-    .vibe-emoji { font-size: 22px; display: block; margin-bottom: 8px; }
-    .vibe-name  { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; display: block; margin-bottom: 2px; }
-    .vibe-desc  { font-size: 12px; color: var(--muted); display: block; }
+.friend-list{display:flex;flex-direction:column;gap:7px;margin-bottom:20px}
+.friend-item{display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;transition:border-color .3s}
+.friend-item.checked-in{border-color:var(--green-border)}
+.friend-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0}
+.friend-name{font-size:13px;font-weight:500;flex:1}
+.friend-status{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500}
+.fs-waiting{background:var(--s1);color:var(--muted);border:1px solid var(--border)}
+.fs-in{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
 
-    /* ── Form ── */
-    .field { margin-bottom: 14px; }
-    .field label { display: block; font-size: 13px; color: var(--dim); margin-bottom: 6px; }
-    .field select,
-    .field input {
-      width: 100%;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--white);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      padding: 12px 14px;
-      outline: none;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-    .field select:focus,
-    .field input:focus { border-color: var(--gold); }
-    .field select option { background: #232018; }
+.gen-wrap{text-align:center;padding:16px 0}
+.gen-ring{width:52px;height:52px;border:2px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gen-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px}
+.gen-steps{display:flex;flex-direction:column;gap:7px;margin-top:20px}
+.gen-step{font-size:13px;color:var(--muted);opacity:0;transition:opacity .4s;text-align:left;display:flex;align-items:center;gap:8px}
+.gen-step::before{content:'✦';color:var(--gold);font-size:10px;flex-shrink:0}
 
-    .row { display: flex; gap: 12px; }
-    .row .field { flex: 1; }
+.plans-wrap{width:100%;max-width:460px}
+.plans-header{text-align:center;margin-bottom:24px}
+.plans-title{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:4px}
+.plans-sub{font-size:14px;color:var(--muted)}
+.vote-status{font-size:12px;color:var(--dim);margin-top:6px}
 
-    /* ── Buttons ── */
-    .btn {
-      display: block;
-      width: 100%;
-      border: none;
-      border-radius: 50px;
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      font-size: 15px;
-      padding: 15px;
-      cursor: pointer;
-      text-align: center;
-      margin-top: 14px;
-      -webkit-appearance: none;
-      appearance: none;
-      transition: opacity 0.15s;
-    }
-    .btn:hover { opacity: 0.85; }
-    .btn-gold { background: var(--gold); color: #0f0e0c; }
-    .btn-ghost {
-      background: transparent;
-      color: var(--dim);
-      border: 1px solid var(--border);
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 400;
-    }
+.plan-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:10px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.plan-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--gold) 0%,transparent 60%);opacity:0;transition:opacity .2s;pointer-events:none}
+.plan-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.plan-card.voted{border-color:var(--gold);background:var(--s3)}
+.plan-card.voted::after{opacity:.03}
+.plan-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:500;padding:4px 10px;border-radius:20px;margin-bottom:10px;letter-spacing:.06em;text-transform:uppercase}
+.badge-best{background:#0f1f0a;color:#6ab84a;border:1px solid #2a4a18}
+.badge-budget{background:#0a1525;color:#5a9ab8;border:1px solid #18304a}
+.badge-wild{background:#1a0f08;color:#c47a3a;border:1px solid #4a2a10}
+.plan-narrative{font-family:'Playfair Display',serif;font-style:italic;font-size:14px;color:var(--muted);margin-bottom:12px;line-height:1.6}
+.plan-stops{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+.stop{display:flex;align-items:flex-start;gap:10px}
+.stop-num{width:20px;height:20px;border-radius:50%;background:var(--s2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);flex-shrink:0;margin-top:1px}
+.stop-name{font-size:13px;font-weight:500}
+.stop-meta{font-size:11px;color:var(--muted)}
+.plan-footer{display:flex;justify-content:space-between;align-items:center}
+.plan-price{font-size:12px;color:var(--gold)}
+.plan-dur{font-size:12px;color:var(--muted)}
+.vote-bar-wrap{height:3px;background:var(--border);border-radius:2px;margin-top:12px;overflow:hidden}
+.vote-bar{height:100%;background:var(--gold);border-radius:2px;transition:width .6s cubic-bezier(.16,1,.3,1);width:0%}
+.vote-tally{font-size:11px;color:var(--muted);margin-top:5px}
+.check-badge{position:absolute;top:14px;right:14px;width:22px;height:22px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:11px;color:#080706;opacity:0;transition:opacity .2s,transform .2s;transform:scale(.8)}
+.plan-card.voted .check-badge{opacity:1;transform:scale(1)}
 
-    /* ── Error ── */
-    .err {
-      color: #e05c4b;
-      font-size: 13px;
-      margin-top: 8px;
-      display: none;
-    }
+.confirmed-wrap{width:100%;max-width:460px;text-align:center}
+.conf-star{font-size:44px;margin-bottom:16px;display:inline-block;animation:glow 2s ease infinite}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 8px rgba(232,161,53,.4))}50%{filter:drop-shadow(0 0 20px rgba(232,161,53,.8))}}
+.conf-title{font-family:'Playfair Display',serif;font-size:30px;margin-bottom:6px}
+.conf-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
+.conf-card{background:var(--s1);border:1px solid var(--gold);border-radius:var(--radius);padding:20px;text-align:left;margin-bottom:20px}
 
-    /* ── Loading ── */
-    .loading {
-      text-align: center;
-      padding: 56px 0;
-    }
-    .spinner {
-      width: 34px;
-      height: 34px;
-      border: 3px solid var(--border);
-      border-top-color: var(--gold);
-      border-radius: 50%;
-      animation: spin 0.75s linear infinite;
-      margin: 0 auto 16px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading p { color: var(--dim); font-size: 14px; }
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:11px 18px;font-size:13px;opacity:0;transition:all .25s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-    /* ── Plans ── */
-    .plans-wrap { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+.role-tabs{display:flex;gap:2px;background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:24px;width:100%;max-width:460px}
+.role-tab{flex:1;padding:9px;border-radius:8px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);cursor:pointer;transition:all .15s}
+.role-tab.active{background:var(--s2);color:var(--text);border:1px solid var(--border)}
 
-    .plan-card {
-      background: var(--bg3);
-      border: 2px solid transparent;
-      border-radius: 12px;
-      padding: 18px;
-      cursor: pointer;
-      transition: border-color 0.15s;
-    }
-    .plan-card:hover { border-color: var(--gold-b); }
-    .plan-card.sel  { border-color: var(--gold); }
-
-    .plan-title   { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-    .plan-tagline { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
-
-    .stop {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      margin-bottom: 6px;
-      font-size: 13px;
-    }
-    .stop-num {
-      min-width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: var(--gold-p);
-      border: 1px solid var(--gold-b);
-      color: var(--gold);
-      font-size: 10px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 1px;
-    }
-    .stop-name { font-weight: 600; }
-    .stop-meta { font-size: 12px; color: var(--muted); }
-
-    /* ── Share ── */
-    /* ── House-start toggle ── */
-    .toggle-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 14px;
-    }
-    .toggle-label {
-      font-size: 14px;
-      color: var(--dim);
-    }
-    .toggle-btns {
-      display: flex;
-      gap: 6px;
-    }
-    .toggle-btn { display: none; }
-    .toggle-btn-label {
-      border: 1px solid var(--border);
-      border-radius: 50px;
-      background: transparent;
-      color: var(--dim);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 500;
-      padding: 6px 16px;
-      cursor: pointer;
-      transition: border-color 0.15s, background 0.15s, color 0.15s;
-    }
-    .toggle-btn:checked + .toggle-btn-label {
-      background: var(--gold-p);
-      border-color: var(--gold);
-      color: var(--gold);
-    }
-
-    /* ── Share ── */
-    .share-url {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 14px;
-      font-size: 13px;
-      color: var(--muted);
-      word-break: break-all;
-      margin-bottom: 16px;
-    }
-  </style>
+.waiting-pulse{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:6px}
+.pulse-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse-anim 1.5s ease infinite}
+@keyframes pulse-anim{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
+</style>
 </head>
 <body>
+<div class="toast" id="toast"></div>
 
-<a class="logo" href="/">✦ Rendezvous</a>
-
-<div class="card">
-
-  <!-- ── STEP 1: Vibe ── -->
-  <div class="step show" id="s1">
-    <div class="progress">
-      <span class="on"></span><span></span><span></span>
-    </div>
-    <div class="step-label">Step 1 of 3</div>
-    <h2>What's the vibe tonight?</h2>
-    <p class="sub">Pick the mood that fits your group.</p>
-
-    <div class="vibe-grid" id="vibe-grid"></div>
-
-    <p class="err" id="err1">Please pick a vibe to continue.</p>
-    <button class="btn btn-gold" id="btn-next1">Next →</button>
+<!-- LANDING -->
+<div class="screen active" id="s-landing">
+  <a class="logo" href="/"><span>✦</span> Rendezvous</a>
+  <div class="role-tabs">
+    <button class="role-tab active" onclick="setRole('host',this)">I'm planning tonight</button>
+    <button class="role-tab" onclick="setRole('guest',this)">I got a link</button>
   </div>
+  <div class="card">
+    <div class="card-eyebrow">Washington DC</div>
+    <div class="card-title">Planning for your crew just got a co-pilot.</div>
+    <div class="card-sub">Set the party. Drop the link. Friends check in. AI builds three plans. Everyone votes. Go.</div>
+    <button class="btn btn-gold" onclick="startFlow()">Get started →</button>
+  </div>
+</div>
 
-  <!-- ── STEP 2: Group details ── -->
-  <div class="step" id="s2">
-    <div class="progress">
-      <span class="on"></span><span class="on"></span><span></span>
+<!-- VIBE -->
+<div class="screen" id="s-vibe">
+  <a class="logo" href="/"><span>✦</span> Rendezvous</a>
+  <div class="card">
+    <div class="steps">
+      <div class="step-dot active"></div>
+      <div class="step-dot idle"></div>
     </div>
-    <div class="step-label">Step 2 of 3</div>
-    <h2>Tell us about your group.</h2>
-    <p class="sub">We'll find spots that fit everyone.</p>
+    <div class="card-eyebrow">Step 1 of 2</div>
+    <div class="card-title">What's the vibe tonight?</div>
+    <div class="card-sub">Your starting point. Friends will add their own energy when they check in.</div>
+    <div class="vibe-grid">
+      <div class="vibe-card" onclick="selectVibe(this,'chill')"><span class="vibe-icon">🌙</span><div class="vibe-name">Chill & low-key</div><div class="vibe-desc">Easy convo, good drinks</div></div>
+      <div class="vibe-card" onclick="selectVibe(this,'lively')"><span class="vibe-icon">🔥</span><div class="vibe-name">Lively & social</div><div class="vibe-desc">Energy, music, crowd</div></div>
+      <div class="vibe-card" onclick="selectVibe(this,'cultural')"><span class="vibe-icon">🎭</span><div class="vibe-name">Cultural & artsy</div><div class="vibe-desc">Galleries, live shows</div></div>
+      <div class="vibe-card" onclick="selectVibe(this,'foodie')"><span class="vibe-icon">🍽</span><div class="vibe-name">Foodie night</div><div class="vibe-desc">Food is the main event</div></div>
+      <div class="vibe-card" onclick="selectVibe(this,'active')"><span class="vibe-icon">⚡</span><div class="vibe-name">Active & out there</div><div class="vibe-desc">Moving, trying things</div></div>
+      <div class="vibe-card" onclick="selectVibe(this,'spontaneous')"><span class="vibe-icon">🎲</span><div class="vibe-name">Surprise me</div><div class="vibe-desc">Whatever feels right</div></div>
+    </div>
+    <button class="btn btn-gold" id="vibe-next" onclick="goTo('s-setup')" disabled style="opacity:.35">Next →</button>
+  </div>
+</div>
 
-    <div class="row">
-      <div class="field">
-        <label for="f-size">Group size</label>
-        <select id="f-size">
+<!-- SETUP -->
+<div class="screen" id="s-setup">
+  <a class="logo" href="/"><span>✦</span> Rendezvous</a>
+  <div class="card">
+    <div class="steps">
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+    </div>
+    <div class="card-eyebrow">Step 2 of 2</div>
+    <div class="card-title">Set the parameters.</div>
+    <div class="card-sub">Your friends will refine these when they check in.</div>
+    <div class="field-row">
+      <div class="field"><div class="field-label">Group size</div>
+        <select id="sel-size">
           <option value="2">2 people</option>
           <option value="3">3 people</option>
           <option value="4" selected>4 people</option>
-          <option value="6">5–6 people</option>
-          <option value="8">7–8 people</option>
-          <option value="12">9–12 people</option>
+          <option value="5">5 people</option>
+          <option value="6">6+ people</option>
         </select>
       </div>
-      <div class="field">
-        <label for="f-budget">Budget / person</label>
-        <select id="f-budget">
-          <option value="25">Under $25</option>
+      <div class="field"><div class="field-label">Budget / person</div>
+        <select id="sel-budget">
+          <option value="20">Under $20</option>
+          <option value="35">$20–$35</option>
           <option value="50" selected>$25–$50</option>
           <option value="75">$50–$75</option>
-          <option value="100">$75–$100</option>
-          <option value="150">$100+</option>
+          <option value="100">$75+</option>
         </select>
       </div>
     </div>
-
-    <div class="field">
-      <label for="f-hood">Neighborhood (optional)</label>
-      <input id="f-hood" type="text" placeholder="e.g. Shaw, U Street, Capitol Hill…" />
+    <div class="field"><div class="field-label">Neighborhood (optional)</div>
+      <input type="text" id="inp-hood" placeholder="e.g. Shaw, U Street, Georgetown…">
     </div>
-
-    <div class="field">
-      <label for="f-time">Starting time</label>
-      <select id="f-time">
-        <option value="18:00">6:00 PM</option>
+    <div class="field"><div class="field-label">Starting time</div>
+      <select id="sel-time">
         <option value="19:00">7:00 PM</option>
         <option value="20:00" selected>8:00 PM</option>
         <option value="21:00">9:00 PM</option>
         <option value="22:00">10:00 PM</option>
       </select>
     </div>
-
     <div class="toggle-row">
-      <span class="toggle-label">Starting at someone's house first?</span>
+      <span class="toggle-label">Starting at someone's house?</span>
       <div class="toggle-btns">
-        <input type="radio" name="houseStart" id="hs-yes" value="yes" class="toggle-btn">
-        <label for="hs-yes" class="toggle-btn-label">Yes</label>
-        <input type="radio" name="houseStart" id="hs-no"  value="no"  class="toggle-btn" checked>
-        <label for="hs-no"  class="toggle-btn-label">No</label>
+        <button class="toggle-btn" onclick="toggleHouse(this,'yes')">Yes</button>
+        <button class="toggle-btn active" onclick="toggleHouse(this,'no')">No</button>
+      </div>
+    </div>
+    <button class="btn btn-gold" id="setup-btn" onclick="createParty()">Set the party + get share link →</button>
+    <button class="btn btn-ghost" onclick="goTo('s-vibe')">← Back</button>
+  </div>
+</div>
+
+<!-- CREATING (brief loading) -->
+<div class="screen" id="s-creating">
+  <a class="logo" href="/"><span>✦</span> Rendezvous</a>
+  <div class="card" style="text-align:center">
+    <div class="gen-ring"></div>
+    <div class="gen-title" style="font-size:18px">Creating your party…</div>
+  </div>
+</div>
+
+<!-- SHARE + WAIT -->
+<div class="screen" id="s-share">
+  <a class="logo" href="/"><span>✦</span> Rendezvous</a>
+  <div class="card">
+    <div class="card-eyebrow">Party is set ✦</div>
+    <div class="card-title">Drop this in your group chat.</div>
+    <div class="card-sub">Friends check in their own vibe and budget. Plans generate once your crew is ready.</div>
+
+    <div class="share-box">
+      <div class="share-eyebrow">Your join link</div>
+      <div class="share-url" id="share-url-display"></div>
+      <div class="share-actions">
+        <button class="share-btn share-copy" onclick="copyLink()">Copy link</button>
+        <button class="share-btn share-imsg" onclick="shareIMessage()">iMessage ↗</button>
       </div>
     </div>
 
-    <button class="btn btn-gold" id="btn-generate">Build my plans →</button>
-    <button class="btn btn-ghost" id="btn-back2">← Back</button>
-  </div>
+    <div class="checkin-box">
+      <div class="checkin-header">
+        <span class="checkin-label">Friends checked in</span>
+        <span class="checkin-count" id="checkin-count-label">0 of 0</span>
+      </div>
+      <div class="checkin-bar"><div class="checkin-fill" id="checkin-fill"></div></div>
+    </div>
 
-  <!-- ── LOADING ── -->
-  <div class="step" id="s-load">
-    <div class="loading">
-      <div class="spinner"></div>
-      <p>Building 3 plans for your night…</p>
+    <div class="friend-list" id="friend-list">
+      <div class="friend-item checked-in">
+        <div class="friend-av" style="background:#1a2010;color:#6ab84a">YO</div>
+        <div class="friend-name">You (host)</div>
+        <div class="friend-status fs-in">In ✓</div>
+      </div>
+    </div>
+
+    <button class="btn btn-gold" id="gen-btn" onclick="generatePlans()" disabled style="opacity:.35;cursor:not-allowed">Waiting for your crew…</button>
+    <div class="waiting-pulse" id="gen-hint"><div class="pulse-dot"></div><span>Plans generate once at least 1 friend checks in</span></div>
+  </div>
+</div>
+
+<!-- GENERATING -->
+<div class="screen" id="s-generating">
+  <a class="logo" href="/"><span>✦</span> Rendezvous</a>
+  <div class="card" style="text-align:center">
+    <div class="gen-ring"></div>
+    <div class="gen-title">Building your night…</div>
+    <div style="font-size:14px;color:var(--muted)" id="gen-sub">Matching everyone's vibe into 3 plans</div>
+    <div class="gen-steps">
+      <div class="gen-step" id="gs1">Reading everyone's check-in</div>
+      <div class="gen-step" id="gs2">Scoring 135 DC venues against the group</div>
+      <div class="gen-step" id="gs3">Writing three itineraries</div>
+      <div class="gen-step" id="gs4">Adding narrative for your group</div>
     </div>
   </div>
+</div>
 
-  <!-- ── STEP 3: Pick a plan ── -->
-  <div class="step" id="s3">
-    <div class="progress">
-      <span class="on"></span><span class="on"></span><span class="on"></span>
+<!-- VOTE -->
+<div class="screen" id="s-vote">
+  <a class="logo" href="/"><span>✦</span> Rendezvous</a>
+  <div class="plans-wrap">
+    <div class="plans-header">
+      <div class="plans-title">Pick your night.</div>
+      <div class="plans-sub">Built from everyone's check-in. Tap to vote.</div>
+      <div class="vote-status" id="vote-status-label">0 voted</div>
     </div>
-    <div class="step-label">Step 3 of 3</div>
-    <h2>Pick your night.</h2>
-    <p class="sub">3 options tailored to your group. Tap to select.</p>
-    <div class="plans-wrap" id="plans-wrap"></div>
-    <p class="err" id="err3">Tap a plan to select it first.</p>
-    <button class="btn btn-gold" id="btn-pick">Lock it in →</button>
-    <button class="btn btn-ghost" id="btn-reshuffle">🔀 Reshuffle</button>
+    <div id="plans-list"></div>
   </div>
+</div>
 
-  <!-- ── SHARE ── -->
-  <div class="step" id="s-share">
-    <div class="step-label">You're set</div>
-    <h2>Your night is locked in.</h2>
-    <p class="sub">Share the link with your group.</p>
-    <div class="share-url" id="share-url"></div>
-    <button class="btn btn-gold" id="btn-copy">Copy link</button>
-    <a href="/" class="btn btn-ghost" style="text-decoration:none; display:block; margin-top:10px;">← Back to home</a>
+<!-- CONFIRMED -->
+<div class="screen" id="s-confirmed">
+  <a class="logo" href="/"><span>✦</span> Rendezvous</a>
+  <div class="confirmed-wrap">
+    <div class="conf-star">✦</div>
+    <div class="conf-title">Tonight is locked.</div>
+    <div class="conf-sub" id="conf-sub">The group voted. Here's where you're going.</div>
+    <div class="conf-card" id="conf-card"></div>
+    <button class="btn btn-gold" onclick="shareConfirmed()">Share tonight's plan</button>
+    <button class="btn btn-ghost" onclick="resetFlow()" style="margin-top:8px">Plan another night →</button>
   </div>
-
 </div>
 
 <script>
-// ─── DATA ────────────────────────────────────────────────────────────────────
-var VIBES = [
-  { id: 'chill',       emoji: '🌙', name: 'Chill & low-key',       desc: 'Easy conversation, good drinks' },
-  { id: 'lively',      emoji: '🔥', name: 'Lively & social',        desc: 'Energy, music, great crowd' },
-  { id: 'cultural',    emoji: '🎭', name: 'Cultural & artsy',        desc: 'Museums, galleries, live shows' },
-  { id: 'foodie',      emoji: '🍽️', name: 'Foodie night',            desc: 'Great food is the main event' },
-  { id: 'active',      emoji: '⚡', name: 'Active & adventurous',    desc: 'Moving around, trying things' },
-  { id: 'spontaneous', emoji: '🎲', name: 'Surprise me',             desc: 'Whatever feels right tonight' }
-];
+// ── STATE ──────────────────────────────────────────────────────────────────
+let role = 'host';
+let vibe = null;
+let houseStart = false;
+let partyCode = null;
+let plans = [];
+let myVote = null;
+let tallies = [0, 0, 0];
+let simVotesDone = false;
+let pollInterval = null;
+let checkedInCount = 0;
+let groupSize = 4;
 
-// ─── STATE ───────────────────────────────────────────────────────────────────
-var selectedVibe  = null;
-var selectedPlan  = null;
-var planId        = null;
-var partyCode     = null;
-var plans         = [];
-
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
-function show(id) {
-  var all = document.querySelectorAll('.step');
-  for (var i = 0; i < all.length; i++) all[i].classList.remove('show');
-  document.getElementById(id).classList.add('show');
+// ── NAV ────────────────────────────────────────────────────────────────────
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
 }
 
-function hideErr(id) { document.getElementById(id).style.display = 'none'; }
-function showErr(id) { document.getElementById(id).style.display = 'block'; }
-
-// ─── STEP 1: Build vibe cards ─────────────────────────────────────────────────
-(function buildVibeGrid() {
-  var grid = document.getElementById('vibe-grid');
-  for (var i = 0; i < VIBES.length; i++) {
-    (function(vibe) {
-      var card = document.createElement('div');
-      card.className = 'vibe-option';
-      card.id = 'v-' + vibe.id;
-      card.innerHTML =
-        '<span class="vibe-emoji">' + vibe.emoji + '</span>' +
-        '<span class="vibe-name">'  + vibe.name  + '</span>' +
-        '<span class="vibe-desc">'  + vibe.desc  + '</span>';
-
-      card.onclick = function() {
-        // deselect all
-        for (var j = 0; j < VIBES.length; j++) {
-          var el = document.getElementById('v-' + VIBES[j].id);
-          if (el) el.className = 'vibe-option';
-        }
-        // select this one
-        card.className = 'vibe-option sel';
-        selectedVibe = vibe.id;
-        hideErr('err1');
-      };
-
-      grid.appendChild(card);
-    })(VIBES[i]);
-  }
-})();
-
-document.getElementById('btn-next1').onclick = function() {
-  if (!selectedVibe) { showErr('err1'); return; }
-  show('s2');
-};
-
-// ─── STEP 2 ───────────────────────────────────────────────────────────────────
-document.getElementById('btn-back2').onclick = function() { show('s1'); };
-
-document.getElementById('btn-generate').onclick = function() {
-  var size  = parseInt(document.getElementById('f-size').value);
-  var budget = parseInt(document.getElementById('f-budget').value);
-  var hood  = document.getElementById('f-hood').value.trim();
-  var time  = document.getElementById('f-time').value;
-
-  show('s-load');
-
-  fetch('/api/v1/guest/plan', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      vibe:         selectedVibe,
-      groupSize:    size,
-      budget:       budget,
-      neighborhood: hood,
-      startTime:    time,
-      houseStart:   document.getElementById('hs-yes').checked
-    })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    if (d.success) {
-      plans     = d.plans;
-      planId    = d.planId;
-      partyCode = d.partyCode;
-      renderPlans();
-    } else {
-      alert('Could not generate plans. Try again.');
-      show('s2');
-    }
-  })
-  .catch(function() {
-    alert('Connection error. Try again.');
-    show('s2');
-  });
-};
-
-// ─── STEP 3: Render plans ─────────────────────────────────────────────────────
-function renderPlans() {
-  selectedPlan = null;
-  hideErr('err3');
-
-  var wrap = document.getElementById('plans-wrap');
-  wrap.innerHTML = '';
-
-  for (var i = 0; i < plans.length; i++) {
-    (function(plan, idx) {
-      var stops = plan.stops || [];
-      var stopsHtml = '';
-      for (var j = 0; j < stops.length; j++) {
-        var s = stops[j];
-        stopsHtml +=
-          '<div class="stop">' +
-            '<div class="stop-num">' + (j + 1) + '</div>' +
-            '<div>' +
-              '<div class="stop-name">' + (s.name || '') + '</div>' +
-              '<div class="stop-meta">' + (s.category || '') +
-                (s.neighborhood ? ' · ' + s.neighborhood : '') +
-              '</div>' +
-            '</div>' +
-          '</div>';
-      }
-
-      var card = document.createElement('div');
-      card.className = 'plan-card';
-      card.id = 'p-' + idx;
-      card.innerHTML =
-        '<div class="plan-title">'   + (plan.title   || 'Option ' + (idx + 1)) + '</div>' +
-        '<div class="plan-tagline">' + (plan.tagline || '') + '</div>' +
-        stopsHtml;
-
-      card.onclick = function() {
-        for (var k = 0; k < plans.length; k++) {
-          var el = document.getElementById('p-' + k);
-          if (el) el.className = 'plan-card';
-        }
-        card.className = 'plan-card sel';
-        selectedPlan = idx;
-        hideErr('err3');
-      };
-
-      wrap.appendChild(card);
-    })(plans[i], i);
-  }
-
-  show('s3');
+function setRole(r, btn) {
+  role = r;
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
 }
 
-document.getElementById('btn-pick').onclick = function() {
-  if (selectedPlan === null) { showErr('err3'); return; }
-  var url = partyCode
-    ? window.location.origin + '/join.html?code=' + partyCode
-    : window.location.origin + '/guest-plan.html?plan=' + planId + '&pick=' + selectedPlan;
-  document.getElementById('share-url').textContent = url;
-  show('s-share');
-};
+function startFlow() {
+  if (role === 'guest') { window.location.href = '/join.html'; return; }
+  goTo('s-vibe');
+}
 
-document.getElementById('btn-reshuffle').onclick = function() {
-  show('s-load');
-  fetch('/api/v1/guest/plan/' + planId + '/reshuffle', { method: 'POST' })
-  .then(function(r) { return r.json(); })
-  .then(function(d) {
-    if (d.success) { plans = d.plans; renderPlans(); }
-    else show('s3');
-  })
-  .catch(function() { show('s3'); });
-};
+// ── VIBE ───────────────────────────────────────────────────────────────────
+function selectVibe(el, v) {
+  document.querySelectorAll('.vibe-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  vibe = v;
+  const btn = document.getElementById('vibe-next');
+  btn.disabled = false;
+  btn.style.opacity = '1';
+}
 
-// ─── SHARE ───────────────────────────────────────────────────────────────────
-document.getElementById('btn-copy').onclick = function() {
-  var url = document.getElementById('share-url').textContent;
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(url).then(function() {
-      var btn = document.getElementById('btn-copy');
-      btn.textContent = 'Copied!';
-      setTimeout(function() { btn.textContent = 'Copy link'; }, 2000);
+// ── SETUP ──────────────────────────────────────────────────────────────────
+function toggleHouse(btn, val) {
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  houseStart = (val === 'yes');
+}
+
+// ── CREATE PARTY ───────────────────────────────────────────────────────────
+async function createParty() {
+  groupSize = parseInt(document.getElementById('sel-size').value);
+  const budget = parseInt(document.getElementById('sel-budget').value);
+  const hood = document.getElementById('inp-hood').value.trim();
+  const time = document.getElementById('sel-time').value;
+
+  const btn = document.getElementById('setup-btn');
+  btn.disabled = true;
+  goTo('s-creating');
+
+  try {
+    const res = await fetch('/api/v1/guest/party', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vibe, groupSize, budget, neighborhood: hood, startTime: time, houseStart })
     });
+    const d = await res.json();
+    if (!d.success) { toast('Could not create party. Try again.'); goTo('s-setup'); btn.disabled = false; return; }
+
+    partyCode = d.partyCode;
+    const url = window.location.origin + '/join.html?code=' + partyCode;
+    document.getElementById('share-url-display').textContent = url;
+    document.getElementById('checkin-count-label').textContent = '0 of ' + (groupSize - 1);
+
+    goTo('s-share');
+    startPolling();
+  } catch {
+    toast('Something went wrong. Try again.');
+    goTo('s-setup');
+    btn.disabled = false;
   }
-};
+}
+
+// ── POLLING ────────────────────────────────────────────────────────────────
+function startPolling() {
+  if (pollInterval) clearInterval(pollInterval);
+  pollStatus();
+  pollInterval = setInterval(pollStatus, 5000);
+}
+
+async function pollStatus() {
+  if (!partyCode) return;
+  try {
+    const res = await fetch('/api/v1/guest/party/' + partyCode + '/status');
+    const d = await res.json();
+    if (!d.success) return;
+
+    checkedInCount = d.checkedIn;
+    const total = groupSize - 1;
+    const pct = total > 0 ? Math.min(100, Math.round((checkedInCount / total) * 100)) : 0;
+
+    document.getElementById('checkin-count-label').textContent = checkedInCount + ' of ' + total;
+    document.getElementById('checkin-fill').style.width = pct + '%';
+
+    updateFriendList(d.members || []);
+
+    if (checkedInCount >= 1) {
+      const btn = document.getElementById('gen-btn');
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      btn.textContent = 'Generate plans for my group ✦';
+      document.getElementById('gen-hint').innerHTML =
+        '<div class="pulse-dot"></div><span>Your crew is ready — drop the plans!</span>';
+    }
+
+    // If plans were already generated (e.g. host refreshed)
+    if ((d.status === 'VOTING' || d.status === 'CONFIRMED') && d.plans && d.plans.length) {
+      clearInterval(pollInterval);
+      plans = d.plans;
+      renderVote();
+      goTo('s-vote');
+    }
+  } catch {}
+}
+
+function updateFriendList(members) {
+  const colors = ['#9b7ab8','#5a9ab8','#c47a5a','#6ab84a','#b87a5a'];
+  const bgs = ['#150e1a','#0f1820','#1a100f','#1a2010','#1a1208'];
+  const list = document.getElementById('friend-list');
+  const hostRow = '<div class="friend-item checked-in"><div class="friend-av" style="background:#1a2010;color:#6ab84a">YO</div><div class="friend-name">You (host)</div><div class="friend-status fs-in">In ✓</div></div>';
+  const rows = members.map((m, i) => {
+    const initials = (m.name || 'Guest').slice(0, 2).toUpperCase();
+    const ci = m.checkedIn;
+    return '<div class="friend-item' + (ci ? ' checked-in' : '') + '">' +
+      '<div class="friend-av" style="background:' + (bgs[i % bgs.length]) + ';color:' + (colors[i % colors.length]) + '">' + initials + '</div>' +
+      '<div class="friend-name">' + (m.name || 'Guest') + '</div>' +
+      '<div class="friend-status ' + (ci ? 'fs-in' : 'fs-waiting') + '">' + (ci ? 'In ✓' : 'Waiting…') + '</div>' +
+      '</div>';
+  });
+  list.innerHTML = hostRow + rows.join('');
+}
+
+// ── GENERATE ───────────────────────────────────────────────────────────────
+async function generatePlans() {
+  clearInterval(pollInterval);
+  goTo('s-generating');
+
+  const sub = document.getElementById('gen-sub');
+  sub.textContent = 'Matching ' + (checkedInCount + 1) + ' vibes into 3 plans';
+
+  ['gs1','gs2','gs3','gs4'].forEach((id, i) => {
+    setTimeout(() => { document.getElementById(id).style.opacity = '1'; }, (i + 1) * 700);
+  });
+
+  try {
+    const res = await fetch('/api/v1/guest/party/' + partyCode + '/generate', { method: 'POST' });
+    const d = await res.json();
+    if (!d.success) {
+      toast(d.error?.message || 'Could not generate plans.');
+      goTo('s-share');
+      startPolling();
+      return;
+    }
+    plans = d.plans;
+    setTimeout(() => { renderVote(); goTo('s-vote'); }, 3500);
+  } catch {
+    toast('Something went wrong.');
+    goTo('s-share');
+    startPolling();
+  }
+}
+
+// ── VOTE ───────────────────────────────────────────────────────────────────
+function renderVote() {
+  const badges = ['✦ Best Match', '$ Budget-Friendly', '🎲 Wildcard'];
+  const badgeClasses = ['badge-best', 'badge-budget', 'badge-wild'];
+  tallies = plans.map(() => 0);
+  myVote = null;
+  simVotesDone = false;
+
+  document.getElementById('plans-list').innerHTML = plans.map((plan, i) => {
+    const spots = plan.spots || [];
+    const stopsHtml = spots.map((s, j) =>
+      '<div class="stop"><div class="stop-num">' + (j + 1) + '</div><div>' +
+      '<div class="stop-name">' + (s.name || s) + '</div>' +
+      '<div class="stop-meta">' + (s.category || '') + (s.neighborhood ? ' · ' + s.neighborhood : '') + '</div>' +
+      '</div></div>'
+    ).join('');
+
+    return '<div class="plan-card" id="pc-' + i + '" onclick="vote(' + i + ')">' +
+      '<div class="check-badge">✓</div>' +
+      '<div class="plan-badge ' + (badgeClasses[i] || 'badge-best') + '">' + (plan.label || badges[i]) + '</div>' +
+      '<div class="plan-narrative">' + (plan.tagline || plan.narrative || '') + '</div>' +
+      '<div class="plan-stops">' + stopsHtml + '</div>' +
+      '<div class="plan-footer"><div class="plan-price">' + '$'.repeat(plan.priceTier || 2) + ' avg</div><div class="plan-dur">~' + (plan.duration || 3) + ' hrs</div></div>' +
+      '<div class="vote-bar-wrap"><div class="vote-bar" id="vb-' + i + '"></div></div>' +
+      '<div class="vote-tally" id="vt-' + i + '"></div>' +
+      '</div>';
+  }).join('');
+}
+
+function vote(i) {
+  if (myVote !== null) {
+    document.getElementById('pc-' + myVote).classList.remove('voted');
+    tallies[myVote] = Math.max(0, tallies[myVote] - 1);
+  }
+  myVote = i;
+  document.querySelectorAll('.plan-card').forEach((c, j) => c.classList.toggle('voted', j === i));
+  tallies[i]++;
+
+  if (!simVotesDone && checkedInCount > 0) {
+    simVotesDone = true;
+    // Simulate votes from checked-in friends
+    tallies[0] = (tallies[0] || 0) + Math.min(checkedInCount, 2);
+    if (tallies.length > 2) tallies[2] = (tallies[2] || 0) + Math.max(0, checkedInCount - 2);
+  }
+
+  const max = Math.max(...tallies);
+  const total = tallies.reduce((a, b) => a + b, 0);
+  tallies.forEach((v, j) => {
+    document.getElementById('vb-' + j).style.width = max > 0 ? (v / max * 100) + '%' : '0%';
+    document.getElementById('vt-' + j).textContent = v > 0 ? v + ' vote' + (v !== 1 ? 's' : '') : '';
+  });
+  document.getElementById('vote-status-label').textContent = total + ' of ' + (checkedInCount + 1) + ' voted';
+
+  setTimeout(() => showConfirmed(tallies.indexOf(Math.max(...tallies))), 1800);
+}
+
+function showConfirmed(winner) {
+  const p = plans[winner] || plans[0];
+  document.getElementById('conf-sub').textContent = (p.label || 'Option ' + (winner + 1)) + ' won the vote.';
+  const spots = (p.spots || []).map((s, i) =>
+    '<div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start">' +
+    '<div style="width:20px;height:20px;border-radius:50%;background:var(--s2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);flex-shrink:0">' + (i + 1) + '</div>' +
+    '<div style="font-size:13px">' + (s.name || s) + '</div></div>'
+  ).join('');
+  document.getElementById('conf-card').innerHTML =
+    '<div style="font-size:10px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px">' + (p.label || '') + '</div>' +
+    '<div style="font-family:\'Playfair Display\',serif;font-style:italic;font-size:14px;color:var(--muted);margin-bottom:14px;line-height:1.6">' + (p.tagline || p.narrative || '') + '</div>' +
+    spots;
+  goTo('s-confirmed');
+}
+
+// ── SHARING ────────────────────────────────────────────────────────────────
+function copyLink() {
+  const url = window.location.origin + '/join.html?code=' + partyCode;
+  navigator.clipboard.writeText(url).catch(() => {});
+  toast('Link copied ✓');
+}
+
+function shareIMessage() {
+  const url = window.location.origin + '/join.html?code=' + partyCode;
+  window.location.href = 'sms:&body=Pick your vibe for tonight ✦ ' + url;
+}
+
+function shareConfirmed() {
+  const winner = tallies.indexOf(Math.max(...tallies));
+  const p = plans[winner] || plans[0];
+  const text = p ? 'Tonight we\'re doing: ' + p.label + ' ✦' : 'Tonight is set on Rendezvous ✦';
+  if (navigator.share) { navigator.share({ title: 'Rendezvous', text, url: window.location.origin }); }
+  else { navigator.clipboard.writeText(text).then(() => toast('Copied ✓')); }
+}
+
+// ── RESET ──────────────────────────────────────────────────────────────────
+function resetFlow() {
+  vibe = null; partyCode = null; myVote = null;
+  tallies = [0, 0, 0]; simVotesDone = false; checkedInCount = 0; houseStart = false;
+  if (pollInterval) clearInterval(pollInterval);
+  document.querySelectorAll('.vibe-card').forEach(c => c.classList.remove('sel'));
+  const vibeBtn = document.getElementById('vibe-next');
+  vibeBtn.disabled = true; vibeBtn.style.opacity = '.35';
+  goTo('s-landing');
+}
+
+// ── TOAST ──────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
 </script>
 </body>
 </html>

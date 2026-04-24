@@ -4,6 +4,7 @@ const router   = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const Anthropic = require('@anthropic-ai/sdk');
 const { generateGroupPlans } = require('../engine/engine');
+const { redis } = require('../services/redis');
 
 const prisma = new PrismaClient();
 
@@ -219,6 +220,92 @@ async function generateUniqueCode() {
   } while (exists);
   return code;
 }
+
+// In-memory store for host prefs (keyed by partyCode)
+const hostPrefsMap = new Map();
+
+// POST /api/v1/guest/party — create party, return code immediately (no plan generation)
+router.post('/party', async (req, res) => {
+  try {
+    const { vibe, groupSize, budget, neighborhood, startTime, houseStart } = req.body;
+    if (!vibe || !groupSize || !budget) {
+      return res.status(400).json({ success: false, error: { message: 'Missing required fields.' } });
+    }
+    const guestHost = await getOrCreateGuestHost();
+    const code = await generateUniqueCode();
+    const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000);
+    await prisma.party.create({
+      data: { hostId: guestHost.id, code, expiresAt, locationCity: 'Washington, DC', status: 'ACTIVE' },
+    });
+    hostPrefsMap.set(code, { vibe, groupSize: parseInt(groupSize), budget: parseInt(budget), neighborhood, startTime, houseStart });
+    setTimeout(() => hostPrefsMap.delete(code), 8 * 60 * 60 * 1000);
+    res.json({ success: true, partyCode: code });
+  } catch (err) {
+    console.error('[guestParty] Error:', err.message, err.stack);
+    res.status(500).json({ success: false, error: { message: 'Could not create party.' } });
+  }
+});
+
+// GET /api/v1/guest/party/:code/status — poll check-in count from Redis guests
+router.get('/party/:code/status', async (req, res) => {
+  try {
+    const code = req.params.code.toUpperCase();
+    const party = await prisma.party.findUnique({ where: { code } });
+    if (!party) return res.status(404).json({ success: false, error: { message: 'Party not found.' } });
+
+    const guestIds = await redis.smembers(`party:${party.id}:guests`);
+    const guests = (await Promise.all(
+      guestIds.map(id => redis.get(`party:${party.id}:guest:${id}`).then(r => r ? JSON.parse(r) : null))
+    )).filter(Boolean);
+
+    const members = guests.map(g => ({ name: g.guestName || 'Guest', checkedIn: true }));
+    res.json({
+      success: true,
+      status: party.status,
+      checkedIn: members.length,
+      total: members.length,
+      members,
+      plans: (party.status === 'VOTING' || party.status === 'CONFIRMED') ? party.generatedPlans : null,
+    });
+  } catch (err) {
+    console.error('[guestStatus] Error:', err.message);
+    res.status(500).json({ success: false });
+  }
+});
+
+// POST /api/v1/guest/party/:code/generate — build plans using host prefs + Redis guest check-ins
+router.post('/party/:code/generate', async (req, res) => {
+  try {
+    const code = req.params.code.toUpperCase();
+    const prefs = hostPrefsMap.get(code);
+    if (!prefs) return res.status(404).json({ success: false, error: { message: 'Party session expired. Please start over.' } });
+
+    const party = await prisma.party.findUnique({ where: { code } });
+    if (!party) return res.status(404).json({ success: false, error: { message: 'Party not found.' } });
+
+    const guestIds = await redis.smembers(`party:${party.id}:guests`);
+    const guests = (await Promise.all(
+      guestIds.map(id => redis.get(`party:${party.id}:guest:${id}`).then(r => r ? JSON.parse(r) : null))
+    )).filter(Boolean);
+
+    let finalPrefs = { ...prefs };
+    if (guests.length > 0) {
+      const budgets = guests.map(g => parseInt(g.budget)).filter(b => b > 0);
+      if (budgets.length > 0) {
+        const avg = Math.round(budgets.reduce((a, b) => a + b, 0) / budgets.length);
+        finalPrefs.budget = Math.round((prefs.budget + avg) / 2);
+      }
+      finalPrefs.groupSize = Math.max(prefs.groupSize, guests.length + 1);
+    }
+
+    const plans = await buildPlans(finalPrefs);
+    await prisma.party.update({ where: { code }, data: { generatedPlans: plans, status: 'VOTING' } });
+    res.json({ success: true, plans });
+  } catch (err) {
+    console.error('[guestGenerate] Error:', err.message, err.stack);
+    res.status(500).json({ success: false, error: { message: 'Could not generate plans.' } });
+  }
+});
 
 // POST /api/v1/guest/plan
 router.post('/plan', async (req, res) => {
