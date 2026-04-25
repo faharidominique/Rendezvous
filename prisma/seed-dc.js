@@ -11,16 +11,8 @@ async function main() {
 
   for (const venue of venues) {
     try {
-      await prisma.spot.upsert({
-        where: { name_neighborhood: { name: venue.name, neighborhood: venue.neighborhood } },
-        update: {
-          energyScore: venue.energyScore,
-          socialScore: venue.socialScore,
-          vibeTags: venue.vibeTags,
-          isActive: true,
-          lastVerifiedAt: new Date(),
-        },
-        create: {
+      await prisma.spot.create({
+        data: {
           name: venue.name,
           category: venue.category,
           neighborhood: venue.neighborhood,
@@ -47,8 +39,13 @@ async function main() {
       console.log(`  ✓ ${venue.name}`);
       created++;
     } catch (err) {
-      console.warn(`  ✗ ${venue.name}: ${err.message}`);
-      skipped++;
+      if (err.code === 'P2002') {
+        console.log(`  ~ ${venue.name} (already exists, skipped)`);
+        skipped++;
+      } else {
+        console.warn(`  ✗ ${venue.name}: ${err.message}`);
+        skipped++;
+      }
     }
   }
 
