@@ -3,695 +3,811 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>✦ Rendezvous — Plan Tonight</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Rendezvous — Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
+  --bg:#0f0e0c;
+  --bg2:#141410;
+  --bg3:#1c1b16;
+  --bg4:#232118;
   --gold:#E8A135;
-  --gold-dim:#b87d28;
-  --bg:#0a0907;
-  --surface:#131109;
-  --surface2:#1c1810;
-  --border:#2a2418;
-  --text:#f0ead8;
-  --muted:#7a7060;
-  --muted2:#4a4438;
+  --gold-dim:rgba(232,161,53,0.12);
+  --gold-border:rgba(232,161,53,0.28);
+  --cream:#F5F0E8;
+  --cream2:rgba(245,240,232,0.6);
+  --cream3:rgba(245,240,232,0.3);
+  --cream4:rgba(245,240,232,0.06);
+  --border:rgba(245,240,232,0.09);
+  --border2:rgba(245,240,232,0.16);
+  --font-d:'Playfair Display',Georgia,serif;
+  --font-b:'DM Sans',system-ui,sans-serif;
 }
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+html{background:var(--bg);color:var(--cream);font-family:var(--font-b);min-height:100%}
+body{min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden}
 
-/* ── SCREENS ── */
-.screen{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:24px;animation:fadeUp .4s ease both}
-.screen.active{display:flex}
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+/* NAV */
+nav{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:1.25rem 1.5rem;
+  background:rgba(15,14,12,0.92);backdrop-filter:blur(20px);
+  border-bottom:0.5px solid var(--border);
+  position:sticky;top:0;z-index:50;
+}
+.nav-logo{font-family:var(--font-d);font-size:1.05rem;color:var(--gold)}
+.nav-badge{
+  font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;
+  color:var(--gold);border:0.5px solid var(--gold-border);
+  padding:0.3rem 0.75rem;border-radius:2px;
+}
 
-/* ── LOGO ── */
-.logo{font-family:'Playfair Display',serif;font-size:13px;letter-spacing:.25em;color:var(--gold);margin-bottom:40px;display:flex;align-items:center;gap:8px}
-.logo-star{font-size:16px}
+/* SCREENS */
+.screen{display:none;width:100%;max-width:480px;padding:2.5rem 1.25rem 4rem;animation:fadeUp 0.4s both}
+.screen.active{display:block}
 
-/* ── CARDS ── */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;width:100%;max-width:440px}
-.card-title{font-family:'Playfair Display',serif;font-size:28px;line-height:1.2;margin-bottom:8px}
-.card-sub{font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.6}
+/* PROGRESS */
+.progress-wrap{display:flex;align-items:center;gap:0.5rem;margin-bottom:2.5rem}
+.prog-step{font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--cream3);display:flex;align-items:center;gap:0.4rem}
+.prog-step.active{color:var(--gold)}
+.prog-step.done{color:rgba(232,161,53,0.45)}
+.prog-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.prog-line{flex:1;height:0.5px;background:var(--border)}
 
-/* ── BUTTONS ── */
-.btn{width:100%;padding:16px;border-radius:14px;border:none;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:all .15s}
-.btn-gold{background:var(--gold);color:#0a0907}
-.btn-gold:hover{background:#f0ac3a;transform:translateY(-1px)}
-.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text);margin-top:10px}
-.btn-ghost:hover{border-color:var(--muted2);background:var(--surface2)}
+/* HEADINGS */
+.eyebrow{font-size:0.63rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.9rem;display:flex;align-items:center;gap:0.5rem}
+.eyebrow-dot{width:5px;height:5px;border-radius:50%;background:var(--gold)}
+h1{font-family:var(--font-d);font-size:clamp(1.9rem,6vw,2.6rem);font-weight:400;line-height:1.1;color:var(--cream);margin-bottom:0.75rem}
+h1 em{font-style:italic;color:var(--gold)}
+.sub{font-size:0.9rem;font-weight:300;color:var(--cream2);line-height:1.7;margin-bottom:2rem}
 
-/* ── VIBE GRID ── */
-.vibe-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
-.vibe-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;transition:all .15s;text-align:left}
-.vibe-card:hover{border-color:var(--muted2)}
-.vibe-card.selected{border-color:var(--gold);background:#1f1a0e}
-.vibe-icon{font-size:22px;margin-bottom:8px;display:block}
-.vibe-name{font-size:14px;font-weight:500;margin-bottom:2px}
-.vibe-desc{font-size:12px;color:var(--muted)}
+/* CARD */
+.card{background:var(--bg2);border:0.5px solid var(--border2);border-radius:4px;padding:2rem 1.75rem}
 
-/* ── FRIEND PILLS ── */
-.friend-row{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
-.friend-item{display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
-.friend-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
-.friend-name{font-size:14px;font-weight:500;flex:1}
-.friend-status{font-size:12px;padding:4px 10px;border-radius:20px}
-.status-waiting{background:#1a1810;color:var(--muted);border:1px solid var(--border)}
-.status-in{background:#0f1a0e;color:#5a9e5a;border:1px solid #2a4a2a}
+/* FORM FIELDS */
+.field{margin-bottom:1.5rem}
+.field:last-of-type{margin-bottom:0}
+label{display:block;font-size:0.62rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--gold);margin-bottom:0.55rem}
+input[type="text"],input[type="email"],input[type="number"],input[type="date"],select{
+  width:100%;background:var(--bg3);border:0.5px solid var(--border2);border-radius:2px;
+  color:var(--cream);font-family:var(--font-b);font-size:0.92rem;font-weight:300;
+  padding:0.75rem 0.9rem;outline:none;transition:border-color 0.2s,box-shadow 0.2s;
+  appearance:none;-webkit-appearance:none;
+}
+input[type="date"]{color-scheme:dark}
+input::placeholder{color:var(--cream3)}
+input:focus,select:focus{border-color:var(--gold-border);box-shadow:0 0 0 3px rgba(232,161,53,0.07)}
+input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none}
 
-/* ── SHARE BOX ── */
-.share-box{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:20px}
-.share-label{font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
-.share-url{font-size:13px;color:var(--gold);word-break:break-all;margin-bottom:12px;line-height:1.5}
-.share-btns{display:flex;gap:8px}
-.share-btn{flex:1;padding:10px;border-radius:10px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
-.copy-btn{background:var(--gold);color:#0a0907}
-.copy-btn:hover{background:#f0ac3a}
-.imsg-btn{background:var(--surface);border:1px solid var(--border);color:var(--text)}
-.imsg-btn:hover{background:var(--surface2)}
+/* NUMBER STEPPER */
+.number-wrap{position:relative}
+.number-wrap input{padding-right:3rem;text-align:center;cursor:default}
+.steppers{position:absolute;right:0;top:0;bottom:0;display:flex;flex-direction:column;border-left:0.5px solid var(--border2)}
+.step-btn{flex:1;background:none;border:none;color:var(--cream3);font-size:0.7rem;cursor:pointer;padding:0 0.75rem;transition:color 0.15s,background 0.15s;line-height:1;font-family:var(--font-b)}
+.step-btn:hover{color:var(--gold);background:var(--gold-dim)}
+.step-btn:first-child{border-bottom:0.5px solid var(--border2)}
 
-/* ── PROGRESS ── */
-.progress-wrap{margin-bottom:24px}
-.progress-label{font-size:13px;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between}
-.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
-.progress-fill{height:100%;background:var(--gold);border-radius:2px;transition:width .6s ease}
+/* SELECT WRAPPER */
+.select-wrap{position:relative}
+.select-wrap::after{content:'';position:absolute;right:0.9rem;top:50%;transform:translateY(-50%);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid var(--gold);pointer-events:none}
+.select-wrap select{padding-right:2.25rem;cursor:pointer}
+select option{background:var(--bg3);color:var(--cream)}
 
-/* ── GENERATING ── */
-.generating{text-align:center;padding:20px 0}
-.gen-spinner{width:48px;height:48px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.gen-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px}
-.gen-sub{font-size:14px;color:var(--muted)}
+/* NEIGHBORHOOD PILLS */
+.hood-pills{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.1rem}
+.hood-pill{
+  font-size:0.75rem;font-weight:400;
+  padding:0.45rem 0.9rem;border-radius:20px;
+  border:0.5px solid var(--border2);color:var(--cream3);
+  background:var(--bg3);cursor:pointer;
+  transition:all 0.15s;user-select:none;
+}
+.hood-pill:hover{border-color:var(--gold-border);color:var(--cream)}
+.hood-pill.selected{background:var(--gold-dim);border-color:var(--gold);color:var(--gold);font-weight:500}
+.hood-hint{font-size:0.65rem;color:var(--cream3);margin-top:0.5rem;font-weight:300}
 
-/* ── PLAN CARDS ── */
-.plans-wrap{width:100%;max-width:440px}
-.plans-header{text-align:center;margin-bottom:28px}
-.plans-title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:6px}
-.plans-sub{font-size:14px;color:var(--muted)}
+/* TWO COL */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:0.85rem}
+.two-col .field{margin-bottom:0}
 
-.plan-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;margin-bottom:12px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
-.plan-card:hover{border-color:var(--muted2);transform:translateY(-2px)}
-.plan-card.voted{border-color:var(--gold);background:#1a1508}
-.plan-card.winner{border-color:var(--gold);background:#1a1508}
+/* DIVIDER */
+.divider{height:0.5px;background:var(--border);margin:1.5rem 0}
 
-.plan-badge{display:inline-block;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;margin-bottom:10px;letter-spacing:.04em;text-transform:uppercase}
-.badge-best{background:#1a2010;color:#7ab857;border:1px solid #2a4020}
-.badge-budget{background:#0f1820;color:#5a9ab8;border:1px solid #1a3040}
-.badge-wild{background:#1a100f;color:#c47a5a;border:1px solid #3a2018}
+/* HINT */
+.hint{font-size:0.68rem;color:var(--cream3);margin-top:0.4rem;font-weight:300}
 
-.plan-narrative{font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:var(--muted);margin-bottom:14px;line-height:1.5}
-.plan-stops{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
-.plan-stop{display:flex;align-items:flex-start;gap:10px}
-.stop-num{width:22px;height:22px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);flex-shrink:0;margin-top:1px}
-.stop-name{font-size:14px;font-weight:500}
-.stop-cat{font-size:12px;color:var(--muted)}
+/* BUTTONS */
+.btn-primary{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:0.5rem;
+  background:var(--gold);color:var(--bg);
+  font-family:var(--font-b);font-size:0.8rem;font-weight:500;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:0.95rem 1.5rem;border:none;border-radius:2px;cursor:pointer;
+  transition:opacity 0.2s,transform 0.15s;margin-top:1.75rem;
+}
+.btn-primary:hover{opacity:0.85;transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:0.32;cursor:not-allowed;transform:none}
+.btn-ghost{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:0.5rem;
+  background:transparent;color:var(--gold);
+  font-family:var(--font-b);font-size:0.8rem;font-weight:500;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:0.95rem 1.5rem;border:0.5px solid var(--gold-border);border-radius:2px;cursor:pointer;
+  transition:background 0.2s;margin-top:0.6rem;
+}
+.btn-ghost:hover{background:var(--gold-dim)}
+.btn-subtle{
+  width:100%;display:flex;align-items:center;justify-content:center;
+  background:transparent;color:var(--cream3);
+  font-family:var(--font-b);font-size:0.75rem;font-weight:400;
+  letter-spacing:0.08em;text-transform:uppercase;
+  padding:0.75rem;border:0.5px solid var(--border);border-radius:2px;cursor:pointer;
+  transition:color 0.15s,border-color 0.15s;margin-top:0.6rem;
+}
+.btn-subtle:hover{color:var(--cream);border-color:var(--border2)}
 
-.plan-footer{display:flex;align-items:center;justify-content:space-between}
-.plan-price{font-size:13px;color:var(--gold)}
-.plan-dur{font-size:12px;color:var(--muted)}
+/* SUCCESS STATE */
+.success-state{display:none;text-align:center;padding:2rem 0}
+.success-state.show{display:block}
+.success-mark{width:48px;height:48px;border-radius:50%;border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:1.25rem;color:var(--gold);margin:0 auto 1.25rem}
+.success-h{font-family:var(--font-d);font-size:1.5rem;color:var(--cream);margin-bottom:0.4rem}
+.success-h em{font-style:italic;color:var(--gold)}
+.success-event{font-family:var(--font-d);font-style:italic;color:var(--gold);margin-bottom:0.4rem;font-size:0.95rem}
+.success-hoods{font-size:0.7rem;color:var(--cream3);margin-bottom:1.25rem;letter-spacing:0.02em}
+.success-p{font-size:0.85rem;font-weight:300;color:var(--cream2);line-height:1.7;margin-bottom:1.5rem}
+.join-url-box{
+  font-size:0.72rem;color:var(--cream3);word-break:break-all;
+  background:var(--cream4);border:0.5px solid var(--border);
+  border-radius:2px;padding:0.6rem 0.85rem;margin-bottom:1.5rem;line-height:1.6;text-align:left;
+}
+.success-actions{display:flex;flex-direction:column;gap:0.6rem}
+.success-actions .btn-primary,.success-actions .btn-ghost,.success-actions .btn-subtle{margin-top:0}
 
-.vote-bar-wrap{height:3px;background:var(--border);border-radius:2px;margin-top:14px;overflow:hidden}
-.vote-bar{height:100%;background:var(--gold);border-radius:2px;transition:width .5s ease;width:0%}
-.vote-count{font-size:12px;color:var(--muted);margin-top:6px}
+/* GUEST STEPS */
+.guest-step{display:none}
+.guest-step.active{display:block;animation:fadeUp 0.3s both}
 
-.voted-check{position:absolute;top:16px;right:16px;width:24px;height:24px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:12px;color:#0a0907;opacity:0;transition:opacity .2s}
-.plan-card.voted .voted-check{opacity:1}
+/* EVENT HEADER */
+.event-header{
+  background:var(--bg2);border:0.5px solid var(--border);border-radius:3px;
+  padding:1rem 1.1rem;margin-bottom:1.75rem;
+  display:flex;align-items:center;gap:0.75rem;
+}
+.event-header-mark{font-size:1.1rem;color:var(--gold);flex-shrink:0}
+.event-header-name{font-family:var(--font-d);font-size:0.95rem;color:var(--cream)}
+.event-header-meta{font-size:0.7rem;color:var(--cream3);margin-top:0.15rem;font-weight:300}
 
-/* ── CONFIRMED ── */
-.confirmed-wrap{width:100%;max-width:440px;text-align:center}
-.confirmed-star{font-size:48px;margin-bottom:16px;animation:pulse 2s ease infinite}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-.confirmed-title{font-family:'Playfair Display',serif;font-size:32px;margin-bottom:8px}
-.confirmed-sub{font-size:15px;color:var(--muted);margin-bottom:28px}
-.confirmed-card{background:var(--surface);border:1px solid var(--gold);border-radius:18px;padding:22px;text-align:left;margin-bottom:20px}
+/* ENERGY OPTIONS */
+.energy-grid{display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.5rem}
+.energy-opt{background:var(--bg3);border:0.5px solid var(--border2);border-radius:3px;padding:1rem 1.1rem;cursor:pointer;display:flex;align-items:center;gap:1rem;transition:border-color 0.15s,background 0.15s}
+.energy-opt:hover{border-color:var(--gold-border)}
+.energy-opt.selected{border-color:var(--gold);background:var(--gold-dim)}
+.energy-emoji{font-size:1.4rem;flex-shrink:0}
+.energy-label{font-family:var(--font-d);font-size:1rem;color:var(--cream)}
+.energy-desc{font-size:0.72rem;color:var(--cream3);margin-top:0.15rem;font-weight:300}
 
-/* ── CHECKIN (guest) ── */
-.energy-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px}
-.energy-btn{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;text-align:center;transition:all .15s;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text)}
-.energy-btn:hover,.energy-btn.selected{border-color:var(--gold);background:#1f1a0e;color:var(--gold)}
-.energy-btn .e-icon{font-size:20px;display:block;margin-bottom:4px}
+/* BUDGET SLIDER */
+.budget-display{font-family:var(--font-d);font-size:2.4rem;font-weight:700;color:var(--gold);text-align:center;margin-bottom:1rem;letter-spacing:-0.02em}
+input[type="range"]{width:100%;-webkit-appearance:none;height:3px;background:var(--bg4);border-radius:2px;outline:none;cursor:pointer}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--gold);cursor:pointer;box-shadow:0 0 0 5px var(--gold-dim)}
+.budget-labels{display:flex;justify-content:space-between;font-size:0.68rem;color:var(--cream3);margin-top:0.5rem}
 
-/* ── TABS ── */
-.demo-tabs{display:flex;gap:2px;background:var(--surface);border-radius:12px;padding:4px;margin-bottom:32px;max-width:440px;width:100%}
-.demo-tab{flex:1;padding:8px;border-radius:8px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);cursor:pointer;transition:all .15s}
-.demo-tab.active{background:var(--surface2);color:var(--text)}
+/* PLAN CARDS */
+.plans{display:flex;flex-direction:column;gap:1rem;margin-bottom:1.75rem}
+.plan-card{background:var(--bg2);border:0.5px solid var(--border2);border-radius:3px;cursor:pointer;transition:border-color 0.15s,background 0.15s;overflow:hidden}
+.plan-card:hover{border-color:var(--gold-border)}
+.plan-card.selected{border-color:var(--gold)}
+.plan-head{padding:1rem 1.1rem 0.75rem;border-bottom:0.5px solid var(--border)}
+.plan-badge{display:inline-block;font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);background:var(--gold-dim);border:0.5px solid var(--gold-border);padding:0.15rem 0.5rem;border-radius:2px;margin-bottom:0.5rem}
+.plan-name{font-family:var(--font-d);font-size:1.05rem;color:var(--cream)}
+.plan-stops{padding:0.75rem 1.1rem}
+.plan-stop{display:flex;gap:0.75rem;padding:0.5rem 0;border-bottom:0.5px solid var(--border)}
+.plan-stop:last-child{border-bottom:none}
+.plan-stop-time{font-size:0.62rem;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;min-width:38px;margin-top:2px;flex-shrink:0}
+.plan-stop-name{font-size:0.82rem;font-weight:500;color:var(--cream)}
+.plan-stop-meta{font-size:0.68rem;color:var(--cream3);margin-top:0.1rem;font-weight:300}
+.plan-foot{padding:0.65rem 1.1rem;background:var(--cream4);display:flex;justify-content:space-between;align-items:center}
+.plan-cost{font-size:0.7rem;color:var(--cream3)}
+.plan-cost span{color:var(--gold);font-weight:500}
+.plan-select-indicator{width:18px;height:18px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.15s,border-color 0.15s;font-size:0.6rem}
+.plan-card.selected .plan-select-indicator{background:var(--gold);border-color:var(--gold);color:var(--bg)}
 
-/* ── UTILS ── */
-.divider{height:1px;background:var(--border);margin:20px 0}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 20px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:100;white-space:nowrap}
-.toast.show{opacity:1}
-.step-indicator{display:flex;gap:6px;margin-bottom:28px}
-.step-dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:all .3s}
-.step-dot.active{background:var(--gold);width:20px;border-radius:3px}
-.step-dot.done{background:var(--muted2)}
+/* CONFIRMED */
+.confirmed-mark{width:56px;height:56px;border-radius:50%;border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--gold);margin:0 auto 1.25rem}
+.confirmed-stop{display:flex;gap:1rem;padding:0.85rem 0;border-bottom:0.5px solid var(--border);align-items:flex-start}
+.confirmed-stop:last-child{border-bottom:none}
+.confirmed-stop-time{font-size:0.62rem;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;min-width:42px;margin-top:2px;flex-shrink:0}
+.confirmed-stop-name{font-size:0.88rem;font-weight:500;color:var(--cream)}
+.confirmed-stop-meta{font-size:0.7rem;color:var(--cream3);margin-top:0.15rem;font-weight:300}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:400px){.screen{padding:2rem 1rem 3.5rem}.card{padding:1.5rem 1.25rem}}
 </style>
 </head>
 <body>
 
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
+<nav>
+  <div class="nav-logo">✦ Rendezvous</div>
+  <div class="nav-badge">Demo</div>
+</nav>
 
-<!-- ══════════════════════════════════════
-     SCREEN 0: LANDING
-══════════════════════════════════════ -->
-<div class="screen active" id="s-landing">
-  <div class="logo"><span class="logo-star">✦</span> RENDEZVOUS</div>
+<!-- ══════════════════════════════════════════
+     SCREEN 1 — HOST
+══════════════════════════════════════════ -->
+<section class="screen active" id="s1">
+
+  <div class="progress-wrap">
+    <div class="prog-step active"><span class="prog-dot"></span> Host</div>
+    <div class="prog-line"></div>
+    <div class="prog-step"><span class="prog-dot"></span> Guest</div>
+    <div class="prog-line"></div>
+    <div class="prog-step"><span class="prog-dot"></span> Vote</div>
+    <div class="prog-line"></div>
+    <div class="prog-step"><span class="prog-dot"></span> Done</div>
+  </div>
+
+  <div class="eyebrow"><span class="eyebrow-dot"></span> Step 1 of 4</div>
+  <h1>Set up <em>your night.</em></h1>
+  <p class="sub">Fill in the details — your crew gets a link to check in. No backend, just the demo.</p>
+
   <div class="card">
-    <div class="card-title">Plan tonight.<br>Together.</div>
-    <div class="card-sub">Share a link. Your crew checks in. AI builds three plans. Everyone votes. Done.</div>
-    <div class="demo-tabs" style="margin-bottom:20px">
-      <button class="demo-tab active" onclick="setRole('host',this)">I'm the host</button>
-      <button class="demo-tab" onclick="setRole('guest',this)">I got a link</button>
-    </div>
-    <button class="btn btn-gold" onclick="startDemo()">Try the demo →</button>
-  </div>
-</div>
+    <form id="host-form" novalidate>
 
-<!-- ══════════════════════════════════════
-     SCREEN 1: HOST — VIBE
-══════════════════════════════════════ -->
-<div class="screen" id="s-vibe">
-  <div class="logo"><span class="logo-star">✦</span> RENDEZVOUS</div>
-  <div class="card">
-    <div class="step-indicator">
-      <div class="step-dot active" id="dot-1a"></div>
-      <div class="step-dot" id="dot-2a"></div>
-      <div class="step-dot" id="dot-3a"></div>
-    </div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:6px;letter-spacing:.05em">STEP 1 OF 3</div>
-    <div class="card-title">What's the vibe tonight?</div>
-    <div class="card-sub">Pick the mood that fits your group.</div>
-    <div class="vibe-grid">
-      <div class="vibe-card" onclick="selectVibe(this,'chill')">
-        <span class="vibe-icon">🌙</span>
-        <div class="vibe-name">Chill & low-key</div>
-        <div class="vibe-desc">Easy conversation, good drinks</div>
+      <div class="field">
+        <label for="host-name">Your name</label>
+        <input type="text" id="host-name" placeholder="e.g. Alex" required autocomplete="given-name">
       </div>
-      <div class="vibe-card" onclick="selectVibe(this,'lively')">
-        <span class="vibe-icon">🔥</span>
-        <div class="vibe-name">Lively & social</div>
-        <div class="vibe-desc">Energy, music, great crowd</div>
-      </div>
-      <div class="vibe-card" onclick="selectVibe(this,'cultural')">
-        <span class="vibe-icon">🎭</span>
-        <div class="vibe-name">Cultural & artsy</div>
-        <div class="vibe-desc">Museums, galleries, live shows</div>
-      </div>
-      <div class="vibe-card" onclick="selectVibe(this,'foodie')">
-        <span class="vibe-icon">🍽</span>
-        <div class="vibe-name">Foodie night</div>
-        <div class="vibe-desc">Great food is the main event</div>
-      </div>
-      <div class="vibe-card" onclick="selectVibe(this,'adventure')">
-        <span class="vibe-icon">⚡</span>
-        <div class="vibe-name">Active & adventurous</div>
-        <div class="vibe-desc">Moving around, trying things</div>
-      </div>
-      <div class="vibe-card" onclick="selectVibe(this,'surprise')">
-        <span class="vibe-icon">🎲</span>
-        <div class="vibe-name">Surprise me</div>
-        <div class="vibe-desc">Whatever feels right tonight</div>
-      </div>
-    </div>
-    <button class="btn btn-gold" id="vibe-next" onclick="goTo('s-group')" disabled style="opacity:.4">Next →</button>
-  </div>
-</div>
 
-<!-- ══════════════════════════════════════
-     SCREEN 2: HOST — GROUP DETAILS
-══════════════════════════════════════ -->
-<div class="screen" id="s-group">
-  <div class="logo"><span class="logo-star">✦</span> RENDEZVOUS</div>
-  <div class="card">
-    <div class="step-indicator">
-      <div class="step-dot done"></div>
-      <div class="step-dot active"></div>
-      <div class="step-dot"></div>
-    </div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:6px;letter-spacing:.05em">STEP 2 OF 3</div>
-    <div class="card-title">Tell us about your group.</div>
-    <div class="card-sub">We'll find spots that fit everyone.</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-      <div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Group size</div>
-        <select id="group-size" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px">
-          <option>2 people</option>
-          <option selected>4 people</option>
-          <option>6 people</option>
-          <option>8+ people</option>
-        </select>
+      <div class="field">
+        <label for="event-name">Event name</label>
+        <input type="text" id="event-name" placeholder="e.g. Friday night out" required>
       </div>
-      <div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Budget / person</div>
-        <select id="budget" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px">
-          <option>Under $20</option>
-          <option>$20–$35</option>
-          <option selected>$25–$50</option>
-          <option>$50–$75</option>
-          <option>$75+</option>
-        </select>
-      </div>
-    </div>
-    <div style="margin-bottom:16px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Neighborhood (optional)</div>
-      <input type="text" placeholder="e.g. Shaw, U Street, Capitol Hill…" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
-    </div>
-    <div style="margin-bottom:24px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Starting time</div>
-      <select style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px">
-        <option>7:00 PM</option>
-        <option selected>8:00 PM</option>
-        <option>9:00 PM</option>
-        <option>10:00 PM</option>
-      </select>
-    </div>
-    <button class="btn btn-gold" onclick="createParty()">Create my party link →</button>
-    <button class="btn btn-ghost" onclick="goTo('s-vibe')">← Back</button>
-  </div>
-</div>
 
-<!-- ══════════════════════════════════════
-     SCREEN 3: HOST — SHARE LINK
-══════════════════════════════════════ -->
-<div class="screen" id="s-share">
-  <div class="logo"><span class="logo-star">✦</span> RENDEZVOUS</div>
-  <div class="card">
-    <div style="font-size:12px;color:var(--muted);margin-bottom:6px;letter-spacing:.05em">STEP 3 OF 3</div>
-    <div class="card-title">You're all set. ✦</div>
-    <div class="card-sub">Share this link with your crew. Once everyone checks in, you'll see three plans built for the group.</div>
+      <div class="divider"></div>
 
-    <div class="share-box">
-      <div class="share-label">Your join link</div>
-      <div class="share-url" id="share-url-text">rendezvous-production-408e.up.railway.app/join.html?code=<span id="party-code-display" style="font-weight:600">7K2MX9</span></div>
-      <div class="share-btns">
-        <button class="share-btn copy-btn" onclick="copyLink()">Copy link</button>
-        <button class="share-btn imsg-btn" onclick="shareIMessage()">Send via iMessage</button>
+      <div class="field">
+        <label for="group-size">Group size</label>
+        <div class="number-wrap">
+          <input type="number" id="group-size" value="4" min="2" max="10" readonly>
+          <div class="steppers">
+            <button type="button" class="step-btn" id="size-up">▲</button>
+            <button type="button" class="step-btn" id="size-down">▼</button>
+          </div>
+        </div>
+        <div class="hint">Including yourself · 2–10 people</div>
       </div>
-    </div>
 
-    <div class="progress-wrap">
-      <div class="progress-label">
-        <span>Friends checked in</span>
-        <span id="checkin-count">0 of 3</span>
+      <div class="field">
+        <label for="event-date">Date</label>
+        <input type="date" id="event-date" required>
       </div>
-      <div class="progress-bar"><div class="progress-fill" id="checkin-bar" style="width:0%"></div></div>
-    </div>
 
-    <div class="friend-row" id="friend-list">
-      <div class="friend-item">
-        <div class="friend-avatar" style="background:#1a2010;color:#7ab857">YO</div>
-        <div class="friend-name">You (host)</div>
-        <div class="friend-status status-in">Checked in ✓</div>
+      <div class="two-col">
+        <div class="field">
+          <label for="time-from">From</label>
+          <div class="select-wrap"><select id="time-from"></select></div>
+        </div>
+        <div class="field">
+          <label for="time-until">Until</label>
+          <div class="select-wrap"><select id="time-until"></select></div>
+        </div>
       </div>
-      <div class="friend-item">
-        <div class="friend-avatar" style="background:#150e1a;color:#9b7ab8">JD</div>
-        <div class="friend-name">Jordan</div>
-        <div class="friend-status status-waiting" id="status-jordan">Waiting…</div>
-      </div>
-      <div class="friend-item">
-        <div class="friend-avatar" style="background:#0f1820;color:#5a9ab8">MA</div>
-        <div class="friend-name">Marcus</div>
-        <div class="friend-status status-waiting" id="status-marcus">Waiting…</div>
-      </div>
-      <div class="friend-item">
-        <div class="friend-avatar" style="background:#1a100f;color:#c47a5a">PR</div>
-        <div class="friend-name">Priya</div>
-        <div class="friend-status status-waiting" id="status-priya">Waiting…</div>
-      </div>
-    </div>
 
-    <button class="btn btn-gold" id="gen-btn" onclick="generatePlans()" disabled style="opacity:.4;cursor:not-allowed">Waiting for your crew…</button>
-    <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px" id="gen-hint">Plans generate once at least 2 friends check in</div>
-  </div>
-</div>
+      <div class="field" style="margin-top:1.25rem">
+        <label>Neighborhoods <span style="color:var(--cream3);font-weight:300;font-size:0.9em">(pick one or more)</span></label>
+        <div class="hood-pills" id="hood-pills">
+          <div class="hood-pill" data-hood="U Street">U Street</div>
+          <div class="hood-pill selected" data-hood="Shaw">Shaw</div>
+          <div class="hood-pill" data-hood="Georgetown">Georgetown</div>
+          <div class="hood-pill" data-hood="Dupont Circle">Dupont Circle</div>
+          <div class="hood-pill" data-hood="Capitol Hill">Capitol Hill</div>
+          <div class="hood-pill" data-hood="Columbia Heights">Columbia Heights</div>
+          <div class="hood-pill" data-hood="Navy Yard">Navy Yard</div>
+          <div class="hood-pill" data-hood="Adams Morgan">Adams Morgan</div>
+          <div class="hood-pill" data-hood="H Street">H Street</div>
+        </div>
+        <div class="hood-hint" id="hood-hint">1 selected</div>
+      </div>
 
-<!-- ══════════════════════════════════════
-     SCREEN 4: GENERATING
-══════════════════════════════════════ -->
-<div class="screen" id="s-generating">
-  <div class="logo"><span class="logo-star">✦</span> RENDEZVOUS</div>
-  <div class="card" style="text-align:center">
-    <div class="gen-spinner"></div>
-    <div class="gen-title">Building your night…</div>
-    <div class="gen-sub" id="gen-status-text">Matching 4 vibes into 3 plans</div>
-    <div style="margin-top:24px;display:flex;flex-direction:column;gap:8px" id="gen-steps">
-      <div style="font-size:13px;color:var(--muted);opacity:0;transition:opacity .3s" id="gstep-1">✦ Reading everyone's vibe</div>
-      <div style="font-size:13px;color:var(--muted);opacity:0;transition:opacity .3s" id="gstep-2">✦ Matching DC venues</div>
-      <div style="font-size:13px;color:var(--muted);opacity:0;transition:opacity .3s" id="gstep-3">✦ Writing your three options</div>
+      <div class="field">
+        <label for="vibe">Vibe</label>
+        <div class="select-wrap">
+          <select id="vibe">
+            <option value="chill">Chill</option>
+            <option value="lively" selected>Lively</option>
+            <option value="cultural">Cultural</option>
+            <option value="foodie">Foodie</option>
+            <option value="active">Active</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary" id="host-submit" disabled>Create session →</button>
+    </form>
+
+    <div class="success-state" id="s1-success">
+      <div class="success-mark">✦</div>
+      <div class="success-h">You're <em>all set.</em></div>
+      <div class="success-event" id="s1-event-name"></div>
+      <div class="success-hoods" id="s1-hoods-display"></div>
+      <p class="success-p">Share this link with your crew — they tap it, pick their vibe, and you'll have three plans to vote on.</p>
+      <div class="join-url-box" id="s1-join-url"></div>
+      <div class="success-actions">
+        <button class="btn-ghost" id="btn-copy-demo">Copy link</button>
+        <button class="btn-primary" id="btn-continue-guest">Continue to guest view →</button>
+        <button class="btn-subtle" id="btn-restart">↺ Start over</button>
+      </div>
     </div>
   </div>
-</div>
+</section>
 
-<!-- ══════════════════════════════════════
-     SCREEN 5: VOTING
-══════════════════════════════════════ -->
-<div class="screen" id="s-voting">
-  <div class="logo"><span class="logo-star">✦</span> RENDEZVOUS</div>
-  <div class="plans-wrap">
-    <div class="plans-header">
-      <div class="plans-title">Pick your night.</div>
-      <div class="plans-sub">3 options built for your group. Tap to vote.</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:8px" id="vote-tally">0 of 4 voted</div>
+<!-- ══════════════════════════════════════════
+     SCREEN 2 — GUEST
+══════════════════════════════════════════ -->
+<section class="screen" id="s2">
+
+  <div class="progress-wrap">
+    <div class="prog-step done"><span class="prog-dot"></span> Host</div>
+    <div class="prog-line"></div>
+    <div class="prog-step active"><span class="prog-dot"></span> Guest</div>
+    <div class="prog-line"></div>
+    <div class="prog-step"><span class="prog-dot"></span> Vote</div>
+    <div class="prog-line"></div>
+    <div class="prog-step"><span class="prog-dot"></span> Done</div>
+  </div>
+
+  <div class="event-header">
+    <div class="event-header-mark">✦</div>
+    <div>
+      <div class="event-header-name" id="s2-event-name"></div>
+      <div class="event-header-meta" id="s2-host-meta"></div>
     </div>
+  </div>
 
-    <!-- Plan 1: Best Match -->
-    <div class="plan-card" id="plan-0" onclick="castVote(0)">
-      <div class="voted-check">✓</div>
-      <div class="plan-badge badge-best">Best Match</div>
-      <div class="plan-narrative">"Hop across three neighborhoods before anyone checks the time"</div>
+  <!-- Sub-step 1: Name + email -->
+  <div class="guest-step active" id="gs1">
+    <div class="eyebrow"><span class="eyebrow-dot"></span> Step 2 of 4</div>
+    <h1>Who's <em>joining?</em></h1>
+    <p class="sub">So your host knows who's in. Email is optional.</p>
+    <div class="card">
+      <div class="field">
+        <label for="guest-name">Your name</label>
+        <input type="text" id="guest-name" placeholder="e.g. Jordan" autocomplete="given-name">
+      </div>
+      <div class="field">
+        <label for="guest-email">Email <span style="color:var(--cream3);font-size:0.9em">(optional)</span></label>
+        <input type="email" id="guest-email" placeholder="e.g. jordan@email.com" autocomplete="email">
+      </div>
+      <button class="btn-primary" id="gs1-next" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- Sub-step 2: Energy -->
+  <div class="guest-step" id="gs2">
+    <div class="eyebrow"><span class="eyebrow-dot"></span> Step 2 of 4</div>
+    <h1>What's your <em>energy?</em></h1>
+    <p class="sub">This shapes the kind of night we build for your group.</p>
+    <div class="energy-grid">
+      <div class="energy-opt" data-energy="low">
+        <div class="energy-emoji">🌙</div>
+        <div>
+          <div class="energy-label">Low key</div>
+          <div class="energy-desc">Mellow vibes, good conversation, home by midnight</div>
+        </div>
+      </div>
+      <div class="energy-opt" data-energy="medium">
+        <div class="energy-emoji">✨</div>
+        <div>
+          <div class="energy-label">Medium</div>
+          <div class="energy-desc">Out for a solid night, not staying till close</div>
+        </div>
+      </div>
+      <div class="energy-opt" data-energy="high">
+        <div class="energy-emoji">🔥</div>
+        <div>
+          <div class="energy-label">High energy</div>
+          <div class="energy-desc">Dancing, late night, the whole thing</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-primary" id="gs2-next" disabled>Next →</button>
+  </div>
+
+  <!-- Sub-step 3: Budget + time -->
+  <div class="guest-step" id="gs3">
+    <div class="eyebrow"><span class="eyebrow-dot"></span> Step 2 of 4</div>
+    <h1>Budget &amp; <em>timing.</em></h1>
+    <p class="sub">We'll keep plans within your range and start when you can.</p>
+    <div class="card">
+      <label>Budget cap</label>
+      <div class="budget-display" id="budget-display">$30</div>
+      <input type="range" id="budget-slider" min="15" max="100" step="5" value="30">
+      <div class="budget-labels"><span>$15</span><span>$50</span><span>$100+</span></div>
+      <div class="divider"></div>
+      <div class="field" style="margin-bottom:0">
+        <label for="avail-from">I'm free from</label>
+        <div class="select-wrap"><select id="avail-from"></select></div>
+      </div>
+      <button class="btn-primary" id="gs3-submit">Submit preferences →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 3 — VOTE
+══════════════════════════════════════════ -->
+<section class="screen" id="s3">
+
+  <div class="progress-wrap">
+    <div class="prog-step done"><span class="prog-dot"></span> Host</div>
+    <div class="prog-line"></div>
+    <div class="prog-step done"><span class="prog-dot"></span> Guest</div>
+    <div class="prog-line"></div>
+    <div class="prog-step active"><span class="prog-dot"></span> Vote</div>
+    <div class="prog-line"></div>
+    <div class="prog-step"><span class="prog-dot"></span> Done</div>
+  </div>
+
+  <div class="event-header">
+    <div class="event-header-mark">✦</div>
+    <div>
+      <div class="event-header-name" id="s3-event-name"></div>
+      <div class="event-header-meta" id="s3-code-meta"></div>
+    </div>
+  </div>
+
+  <div class="eyebrow"><span class="eyebrow-dot"></span> Step 3 of 4</div>
+  <h1>Pick <em>your night.</em></h1>
+  <p class="sub">Three plans built for your group. Tap one to vote.</p>
+
+  <div class="plans">
+
+    <div class="plan-card" data-plan="0">
+      <div class="plan-head">
+        <div class="plan-badge">Best match</div>
+        <div class="plan-name">The Shaw Circuit</div>
+      </div>
       <div class="plan-stops">
         <div class="plan-stop">
-          <div class="stop-num">1</div>
-          <div><div class="stop-name">Right Proper Brewing Co.</div><div class="stop-cat">Brewery · Shaw</div></div>
+          <div class="plan-stop-time">7:30p</div>
+          <div><div class="plan-stop-name">Compass Rose</div><div class="plan-stop-meta">Global street food · Shaw · $$</div></div>
         </div>
         <div class="plan-stop">
-          <div class="stop-num">2</div>
-          <div><div class="stop-name">The Midlands Beer Garden</div><div class="stop-cat">Bar · Columbia Heights</div></div>
+          <div class="plan-stop-time">9:00p</div>
+          <div><div class="plan-stop-name">Player's Club</div><div class="plan-stop-meta">Craft cocktails · Shaw · $$</div></div>
         </div>
         <div class="plan-stop">
-          <div class="stop-num">3</div>
-          <div><div class="stop-name">DC Brau Brewing Company</div><div class="stop-cat">Brewery · Ivy City</div></div>
+          <div class="plan-stop-time">10:30p</div>
+          <div><div class="plan-stop-name">Twins Jazz</div><div class="plan-stop-meta">Live jazz · U Street · $</div></div>
         </div>
       </div>
-      <div class="plan-footer">
-        <div class="plan-price">$$</div>
-        <div class="plan-dur">~3 hrs</div>
+      <div class="plan-foot">
+        <div class="plan-cost">Est. <span>~$40/person</span> · walkable</div>
+        <div class="plan-select-indicator">✓</div>
       </div>
-      <div class="vote-bar-wrap"><div class="vote-bar" id="vbar-0"></div></div>
-      <div class="vote-count" id="vcount-0"></div>
     </div>
 
-    <!-- Plan 2: Budget-Friendly -->
-    <div class="plan-card" id="plan-1" onclick="castVote(1)">
-      <div class="voted-check">✓</div>
-      <div class="plan-badge badge-budget">Budget-Friendly</div>
-      <div class="plan-narrative">"Cheap pints, smoke rings, and a punchline to end it all"</div>
+    <div class="plan-card" data-plan="1">
+      <div class="plan-head">
+        <div class="plan-badge">Budget-friendly</div>
+        <div class="plan-name">East Market Run</div>
+      </div>
       <div class="plan-stops">
         <div class="plan-stop">
-          <div class="stop-num">1</div>
-          <div><div class="stop-name">The Midlands Beer Garden</div><div class="stop-cat">Bar · Columbia Heights</div></div>
+          <div class="plan-stop-time">6:30p</div>
+          <div><div class="plan-stop-name">Union Market</div><div class="plan-stop-meta">Food hall · NoMa · $</div></div>
         </div>
         <div class="plan-stop">
-          <div class="stop-num">2</div>
-          <div><div class="stop-name">DC Brau Brewing Company</div><div class="stop-cat">Brewery · Ivy City</div></div>
+          <div class="plan-stop-time">8:00p</div>
+          <div><div class="plan-stop-name">Smithsonian Free Evening</div><div class="plan-stop-meta">Art &amp; culture · Mall · Free</div></div>
         </div>
         <div class="plan-stop">
-          <div class="stop-num">3</div>
-          <div><div class="stop-name">The Miracle Theatre</div><div class="stop-cat">Comedy · Capitol Hill</div></div>
+          <div class="plan-stop-time">9:30p</div>
+          <div><div class="plan-stop-name">ChurchKey</div><div class="plan-stop-meta">555 craft beers · 14th St · $$</div></div>
         </div>
       </div>
-      <div class="plan-footer">
-        <div class="plan-price">$</div>
-        <div class="plan-dur">~3.5 hrs</div>
+      <div class="plan-foot">
+        <div class="plan-cost">Est. <span>~$22/person</span> · metro-friendly</div>
+        <div class="plan-select-indicator">✓</div>
       </div>
-      <div class="vote-bar-wrap"><div class="vote-bar" id="vbar-1"></div></div>
-      <div class="vote-count" id="vcount-1"></div>
     </div>
 
-    <!-- Plan 3: Wildcard -->
-    <div class="plan-card" id="plan-2" onclick="castVote(2)">
-      <div class="voted-check">✓</div>
-      <div class="plan-badge badge-wild">Wildcard</div>
-      <div class="plan-narrative">"Alleys, brisket, and cider until nobody wants to go home"</div>
+    <div class="plan-card" data-plan="2">
+      <div class="plan-head">
+        <div class="plan-badge">Wildcard</div>
+        <div class="plan-name">Comedy &amp; Late Night</div>
+      </div>
       <div class="plan-stops">
         <div class="plan-stop">
-          <div class="stop-num">1</div>
-          <div><div class="stop-name">Blagden Alley</div><div class="stop-cat">Bar · Shaw</div></div>
+          <div class="plan-stop-time">7:00p</div>
+          <div><div class="plan-stop-name">DC Improv</div><div class="plan-stop-meta">Stand-up comedy · Dupont · $$</div></div>
         </div>
         <div class="plan-stop">
-          <div class="stop-num">2</div>
-          <div><div class="stop-name">Ivy City Smokehouse</div><div class="stop-cat">Restaurant · Ivy City</div></div>
+          <div class="plan-stop-time">9:30p</div>
+          <div><div class="plan-stop-name">Ben's Chili Bowl</div><div class="plan-stop-meta">DC institution · U Street · $</div></div>
         </div>
         <div class="plan-stop">
-          <div class="stop-num">3</div>
-          <div><div class="stop-name">Anxo Cidery & Pintxos Bar</div><div class="stop-cat">Bar · Shaw</div></div>
+          <div class="plan-stop-time">10:30p</div>
+          <div><div class="plan-stop-name">Whiskey Charlie Rooftop</div><div class="plan-stop-meta">Rooftop bar · Dupont · $$$</div></div>
         </div>
       </div>
-      <div class="plan-footer">
-        <div class="plan-price">$$</div>
-        <div class="plan-dur">~4 hrs</div>
+      <div class="plan-foot">
+        <div class="plan-cost">Est. <span>~$55/person</span> · night owl</div>
+        <div class="plan-select-indicator">✓</div>
       </div>
-      <div class="vote-bar-wrap"><div class="vote-bar" id="vbar-2"></div></div>
-      <div class="vote-count" id="vcount-2"></div>
     </div>
-  </div>
-</div>
 
-<!-- ══════════════════════════════════════
-     SCREEN 6: CONFIRMED
-══════════════════════════════════════ -->
-<div class="screen" id="s-confirmed">
-  <div class="logo"><span class="logo-star">✦</span> RENDEZVOUS</div>
-  <div class="confirmed-wrap">
-    <div class="confirmed-star">✦</div>
-    <div class="confirmed-title">Tonight's plan is set.</div>
-    <div class="confirmed-sub" id="confirmed-sub">The group voted. Here's where you're going.</div>
-    <div class="confirmed-card" id="confirmed-card"></div>
-    <button class="btn btn-gold" onclick="shareConfirmed()">Share the plan 🔗</button>
-    <button class="btn btn-ghost" onclick="resetDemo()" style="margin-top:10px">Plan another night →</button>
   </div>
-</div>
 
-<!-- ══════════════════════════════════════
-     SCREEN 7: GUEST CHECK-IN
-══════════════════════════════════════ -->
-<div class="screen" id="s-guest">
-  <div class="logo"><span class="logo-star">✦</span> RENDEZVOUS</div>
+  <button class="btn-primary" id="btn-lock" disabled>Lock it in →</button>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 4 — CONFIRMED
+══════════════════════════════════════════ -->
+<section class="screen" id="s4">
+
+  <div class="progress-wrap">
+    <div class="prog-step done"><span class="prog-dot"></span> Host</div>
+    <div class="prog-line"></div>
+    <div class="prog-step done"><span class="prog-dot"></span> Guest</div>
+    <div class="prog-line"></div>
+    <div class="prog-step done"><span class="prog-dot"></span> Vote</div>
+    <div class="prog-line"></div>
+    <div class="prog-step active"><span class="prog-dot"></span> Done</div>
+  </div>
+
+  <div style="text-align:center;margin-bottom:1.75rem">
+    <div class="confirmed-mark">✦</div>
+    <h1 style="margin-bottom:0.5rem">Tonight <em>is set.</em></h1>
+    <p class="sub" style="margin-bottom:0">Your group voted. Here's where you're going.</p>
+  </div>
+
   <div class="card">
-    <div class="step-indicator">
-      <div class="step-dot active" id="gdot-1"></div>
-      <div class="step-dot" id="gdot-2"></div>
-      <div class="step-dot" id="gdot-3"></div>
-    </div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:6px;letter-spacing:.05em">CHECK IN</div>
-    <div class="card-title">Fahari is planning tonight.</div>
-    <div class="card-sub">90 seconds. Pick your vibe, we handle the rest.</div>
-
-    <div style="font-size:13px;font-weight:500;margin-bottom:12px;color:var(--muted)">Energy tonight?</div>
-    <div class="energy-grid" style="margin-bottom:20px">
-      <div class="energy-btn" onclick="guestSelect(this,'energy','low')"><span class="e-icon">😌</span>Low key</div>
-      <div class="energy-btn" onclick="guestSelect(this,'energy','medium')"><span class="e-icon">😊</span>Medium</div>
-      <div class="energy-btn" onclick="guestSelect(this,'energy','high')"><span class="e-icon">🔥</span>High energy</div>
-      <div class="energy-btn" onclick="guestSelect(this,'energy','flex')"><span class="e-icon">🤷</span>Flexible</div>
-    </div>
-
-    <div style="font-size:13px;font-weight:500;margin-bottom:12px;color:var(--muted)">Budget tonight?</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:24px">
-      <div class="energy-btn" onclick="guestSelect(this,'budget','20')" style="font-size:13px">Under $20</div>
-      <div class="energy-btn" onclick="guestSelect(this,'budget','35')" style="font-size:13px">$20–$35</div>
-      <div class="energy-btn" onclick="guestSelect(this,'budget','50')" style="font-size:13px">$35–$50</div>
-      <div class="energy-btn" onclick="guestSelect(this,'budget','75')" style="font-size:13px">$50–$75</div>
-      <div class="energy-btn" onclick="guestSelect(this,'budget','any')" style="font-size:13px">No limit</div>
-      <div class="energy-btn" onclick="guestSelect(this,'budget','split')" style="font-size:13px">Split it</div>
-    </div>
-
-    <button class="btn btn-gold" id="guest-submit" onclick="guestCheckin()" disabled style="opacity:.4">I'm in →</button>
+    <div class="plan-badge" id="s4-badge" style="margin-bottom:0.6rem;display:inline-block"></div>
+    <div style="font-family:var(--font-d);font-size:1.2rem;color:var(--cream);margin-bottom:0.2rem" id="s4-plan-name"></div>
+    <div style="font-size:0.72rem;color:var(--cream3);margin-bottom:0" id="s4-event-context"></div>
+    <div class="divider" style="margin:0.9rem 0"></div>
+    <div id="s4-stops"></div>
+    <div style="font-size:0.72rem;color:var(--cream3);padding-top:0.5rem;border-top:0.5px solid var(--border);margin-top:0.25rem" id="s4-cost"></div>
   </div>
-</div>
 
-<!-- ══════════════════════════════════════
-     SCREEN 8: GUEST WAITING
-══════════════════════════════════════ -->
-<div class="screen" id="s-guest-waiting">
-  <div class="logo"><span class="logo-star">✦</span> RENDEZVOUS</div>
-  <div class="card" style="text-align:center">
-    <div style="font-size:36px;margin-bottom:16px">✓</div>
-    <div class="card-title" style="margin-bottom:8px">You're in.</div>
-    <div class="card-sub">Waiting for the rest of the crew. Plans drop when everyone's ready.</div>
-    <div class="divider"></div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Who's checked in</div>
-    <div class="friend-row">
-      <div class="friend-item">
-        <div class="friend-avatar" style="background:#1a2010;color:#7ab857">FA</div>
-        <div class="friend-name">Fahari (host)</div>
-        <div class="friend-status status-in">In ✓</div>
-      </div>
-      <div class="friend-item">
-        <div class="friend-avatar" style="background:#0f1820;color:#5a9ab8">YO</div>
-        <div class="friend-name">You</div>
-        <div class="friend-status status-in">In ✓</div>
-      </div>
-      <div class="friend-item">
-        <div class="friend-avatar" style="background:#150e1a;color:#9b7ab8">JD</div>
-        <div class="friend-name">Jordan</div>
-        <div class="friend-status status-waiting">Waiting…</div>
-      </div>
-    </div>
-    <button class="btn btn-gold" onclick="goTo('s-voting')" style="margin-top:8px">See the plans →</button>
-  </div>
-</div>
+  <button class="btn-primary" id="btn-share" style="margin-top:1.75rem">Share with your group</button>
+  <button class="btn-subtle" id="btn-demo-restart" style="margin-top:0.6rem">↺ Run demo again</button>
+
+</section>
 
 <script>
-let role = 'host';
-let selectedVibe = null;
-let guestEnergy = null;
-let guestBudget = null;
-let partyCode = '7K2MX9';
-let checkinCount = 1;
-let myVote = null;
-const tallies = [0, 0, 0];
-let simVotesAdded = false;
-
-function setRole(r, btn) {
-  role = r;
-  document.querySelectorAll('.demo-tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function startDemo() {
-  if (role === 'guest') { goTo('s-guest'); return; }
-  goTo('s-vibe');
-}
-
-function goTo(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  window.scrollTo(0, 0);
-}
-
-function selectVibe(el, vibe) {
-  document.querySelectorAll('.vibe-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedVibe = vibe;
-  const btn = document.getElementById('vibe-next');
-  btn.disabled = false;
-  btn.style.opacity = '1';
-}
-
-function createParty() {
-  partyCode = Math.random().toString(36).substr(2, 6).toUpperCase();
-  document.getElementById('party-code-display').textContent = partyCode;
-  document.getElementById('share-url-text').innerHTML = `rendezvous-production-408e.up.railway.app/join.html?code=<span id="party-code-display" style="font-weight:600">${partyCode}</span>`;
-  goTo('s-share');
-  simulateCheckins();
-}
-
-function simulateCheckins() {
-  const friends = ['jordan','marcus','priya'];
-  const delays = [2500, 4500, 7000];
-  friends.forEach((f, i) => {
-    setTimeout(() => {
-      const el = document.getElementById(`status-${f}`);
-      if (el) {
-        el.textContent = 'Checked in ✓';
-        el.className = 'friend-status status-in';
-      }
-      checkinCount++;
-      document.getElementById('checkin-count').textContent = `${checkinCount - 1} of 3`;
-      document.getElementById('checkin-bar').style.width = `${((checkinCount-1)/3)*100}%`;
-      if (checkinCount >= 3) {
-        const btn = document.getElementById('gen-btn');
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        btn.style.cursor = 'pointer';
-        btn.textContent = 'Generate plans ✦';
-        document.getElementById('gen-hint').textContent = 'Your crew is ready — build the plans!';
-      }
-      showToast(`${f.charAt(0).toUpperCase()+f.slice(1)} checked in ✓`);
-    }, delays[i]);
-  });
-}
-
-function generatePlans() {
-  goTo('s-generating');
-  const steps = ['gstep-1','gstep-2','gstep-3'];
-  steps.forEach((s, i) => {
-    setTimeout(() => { document.getElementById(s).style.opacity = '1'; }, (i+1)*800);
-  });
-  setTimeout(() => { goTo('s-voting'); }, 3200);
-}
-
-function castVote(i) {
-  if (myVote !== null) {
-    document.getElementById(`plan-${myVote}`).classList.remove('voted');
-    tallies[myVote] = Math.max(0, tallies[myVote] - 1);
-  }
-  myVote = i;
-  document.querySelectorAll('.plan-card').forEach((c,j) => c.classList.toggle('voted', j===i));
-  tallies[i]++;
-
-  if (!simVotesAdded) {
-    simVotesAdded = true;
-    tallies[0] += 2;
-    tallies[2] += 1;
-  }
-
-  const total = tallies.reduce((a,b)=>a+b,0);
-  const max = Math.max(...tallies);
-  tallies.forEach((v,j) => {
-    document.getElementById(`vbar-${j}`).style.width = max > 0 ? `${(v/max)*100}%` : '0%';
-    document.getElementById(`vcount-${j}`).textContent = v > 0 ? `${v} vote${v!==1?'s':''}` : '';
-  });
-  document.getElementById('vote-tally').textContent = `${total} of 4 voted`;
-
-  setTimeout(() => {
-    const winner = tallies.indexOf(Math.max(...tallies));
-    showConfirmed(winner);
-  }, 1800);
-}
-
-const planData = [
-  { badge:'Best Match', narrative:'"Hop across three neighborhoods before anyone checks the time"',
-    stops:['Right Proper Brewing Co. · Shaw','The Midlands Beer Garden · Columbia Heights','DC Brau Brewing Co. · Ivy City'] },
-  { badge:'Budget-Friendly', narrative:'"Cheap pints, smoke rings, and a punchline to end it all"',
-    stops:['The Midlands Beer Garden · Columbia Heights','DC Brau Brewing Co. · Ivy City','The Miracle Theatre · Capitol Hill'] },
-  { badge:'Wildcard', narrative:'"Alleys, brisket, and cider until nobody wants to go home"',
-    stops:['Blagden Alley · Shaw','Ivy City Smokehouse · Ivy City','Anxo Cidery & Pintxos Bar · Shaw'] },
+const PLANS = [
+  {
+    badge:'Best match', name:'The Shaw Circuit', cost:'~$40/person · walkable',
+    stops:[
+      {time:'7:30p', name:'Compass Rose', meta:'Global street food · Shaw · $$'},
+      {time:'9:00p', name:"Player's Club", meta:'Craft cocktails · Shaw · $$'},
+      {time:'10:30p', name:'Twins Jazz', meta:'Live jazz · U Street · $'},
+    ],
+  },
+  {
+    badge:'Budget-friendly', name:'East Market Run', cost:'~$22/person · metro-friendly',
+    stops:[
+      {time:'6:30p', name:'Union Market', meta:'Food hall · NoMa · $'},
+      {time:'8:00p', name:'Smithsonian Free Evening', meta:'Art & culture · Mall · Free'},
+      {time:'9:30p', name:'ChurchKey', meta:'555 craft beers · 14th St · $$'},
+    ],
+  },
+  {
+    badge:'Wildcard', name:'Comedy & Late Night', cost:'~$55/person · night owl',
+    stops:[
+      {time:'7:00p', name:'DC Improv', meta:'Stand-up comedy · Dupont · $$'},
+      {time:'9:30p', name:"Ben's Chili Bowl", meta:'DC institution · U Street · $'},
+      {time:'10:30p', name:'Whiskey Charlie Rooftop', meta:'Rooftop bar · Dupont · $$$'},
+    ],
+  },
 ];
 
-function showConfirmed(winner) {
-  const p = planData[winner];
-  document.getElementById('confirmed-sub').textContent = `${p.badge} won the vote.`;
-  document.getElementById('confirmed-card').innerHTML = `
-    <div style="font-size:11px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px">${p.badge}</div>
-    <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:var(--muted);margin-bottom:14px;line-height:1.5">${p.narrative}</div>
-    ${p.stops.map((s,i)=>`<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px">
-      <div style="width:22px;height:22px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);flex-shrink:0">${i+1}</div>
-      <div style="font-size:14px">${s}</div>
-    </div>`).join('')}
-  `;
-  goTo('s-confirmed');
+let hostName = '', eventName = '', demoCode = '', selectedPlan = null;
+
+// ── HELPERS ───────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
-// Guest flow
-function guestSelect(el, type, val) {
-  const group = el.parentElement.querySelectorAll('.energy-btn');
-  group.forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
-  if (type === 'energy') guestEnergy = val;
-  if (type === 'budget') guestBudget = val;
-  const btn = document.getElementById('guest-submit');
-  if (guestEnergy && guestBudget) {
-    btn.disabled = false;
-    btn.style.opacity = '1';
+function showGuestStep(n) {
+  document.querySelectorAll('.guest-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('gs'+n).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function fakeCode() {
+  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return 'RDV' + Array.from({length:3}, () => c[Math.floor(Math.random()*c.length)]).join('');
+}
+
+function pad(n){ return String(n).padStart(2,'0'); }
+
+// ── DATE DEFAULT ──────────────────────────────────────────────────────
+const di = document.getElementById('event-date');
+const now = new Date();
+di.value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+di.min = di.value;
+
+// ── TIME SELECTS ──────────────────────────────────────────────────────
+function buildTimes() {
+  const out = [];
+  for (let h = 17; h <= 26; h++) {
+    for (let m = 0; m < 60; m += 30) {
+      const h24 = h % 24, dh = h24 % 12 || 12, suf = h24 < 12 ? 'AM' : 'PM';
+      out.push({label:`${dh}:${pad(m)} ${suf}`, value:`${pad(h24)}:${pad(m)}`, h});
+    }
   }
+  return out;
 }
 
-function guestCheckin() { goTo('s-guest-waiting'); }
-
-function copyLink() {
-  const url = `https://rendezvous-production-408e.up.railway.app/join.html?code=${partyCode}`;
-  navigator.clipboard.writeText(url).catch(()=>{});
-  showToast('Link copied ✓');
+function fillSelect(sel, times, defaultH) {
+  sel.innerHTML = '';
+  times.forEach(t => {
+    const o = document.createElement('option');
+    o.value = t.value; o.textContent = t.label;
+    if (t.h === defaultH && t.value.endsWith(':00')) o.selected = true;
+    sel.appendChild(o);
+  });
 }
 
-function shareIMessage() {
-  const url = `https://rendezvous-production-408e.up.railway.app/join.html?code=${partyCode}`;
-  window.location.href = `sms:&body=Pick your vibe for tonight ✦ ${url}`;
-}
+const times = buildTimes();
+fillSelect(document.getElementById('time-from'), times, 20);
+fillSelect(document.getElementById('time-until'), times, 23);
+fillSelect(document.getElementById('avail-from'), times, 20);
 
-function shareConfirmed() {
-  showToast('Plan link copied ✓');
-}
+document.getElementById('time-from').addEventListener('change', () => {
+  const f = document.getElementById('time-from');
+  const u = document.getElementById('time-until');
+  const fi = times.findIndex(t => t.value === f.value);
+  const ui = times.findIndex(t => t.value === u.value);
+  if (ui <= fi) u.value = times[Math.min(fi+2, times.length-1)].value;
+});
 
-function resetDemo() { goTo('s-landing'); }
+// ── GROUP SIZE STEPPER ────────────────────────────────────────────────
+const sizeInput = document.getElementById('group-size');
+document.getElementById('size-up').onclick = () => { if (+sizeInput.value < 10) sizeInput.value++; };
+document.getElementById('size-down').onclick = () => { if (+sizeInput.value > 2) sizeInput.value--; };
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
+// ── NEIGHBORHOOD PILLS ────────────────────────────────────────────────
+let selectedHoods = new Set(['Shaw']);
+
+document.querySelectorAll('.hood-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    const hood = pill.dataset.hood;
+    if (selectedHoods.has(hood)) {
+      if (selectedHoods.size === 1) return; // require at least one
+      selectedHoods.delete(hood);
+      pill.classList.remove('selected');
+    } else {
+      selectedHoods.add(hood);
+      pill.classList.add('selected');
+    }
+    const n = selectedHoods.size;
+    document.getElementById('hood-hint').textContent = n === 1 ? '1 selected' : `${n} selected`;
+  });
+});
+
+// ── SCREEN 1: HOST ────────────────────────────────────────────────────
+const hostNameEl = document.getElementById('host-name');
+const eventNameEl = document.getElementById('event-name');
+const hostSubmit = document.getElementById('host-submit');
+
+function checkHost() {
+  hostSubmit.disabled = !(hostNameEl.value.trim() && eventNameEl.value.trim());
 }
+hostNameEl.addEventListener('input', checkHost);
+eventNameEl.addEventListener('input', checkHost);
+
+document.getElementById('host-form').addEventListener('submit', e => {
+  e.preventDefault();
+  hostName = hostNameEl.value.trim();
+  eventName = eventNameEl.value.trim();
+  demoCode = fakeCode();
+
+  const hoodList = [...selectedHoods].join(' · ');
+
+  document.getElementById('s1-event-name').textContent = eventName;
+  document.getElementById('s1-hoods-display').textContent = hoodList;
+  document.getElementById('s1-join-url').textContent =
+    `rendezvous-production-408e.up.railway.app/join/${demoCode}`;
+
+  document.getElementById('host-form').style.display = 'none';
+  document.getElementById('s1-success').classList.add('show');
+});
+
+document.getElementById('btn-copy-demo').addEventListener('click', function() {
+  navigator.clipboard.writeText(document.getElementById('s1-join-url').textContent).catch(() => {});
+  this.textContent = 'Copied ✓';
+  setTimeout(() => { this.textContent = 'Copy link'; }, 2000);
+});
+
+document.getElementById('btn-continue-guest').addEventListener('click', () => {
+  const hoodList = [...selectedHoods].join(' · ');
+  document.getElementById('s2-event-name').textContent = eventName;
+  document.getElementById('s2-host-meta').textContent = `Organised by ${hostName} · ${hoodList}`;
+  document.getElementById('s3-event-name').textContent = eventName;
+  document.getElementById('s3-code-meta').textContent = `${demoCode} · Choose your plan`;
+  showGuestStep(1);
+  showScreen('s2');
+});
+
+document.getElementById('btn-restart').addEventListener('click', () => location.reload());
+
+// ── SCREEN 2: GUEST STEPS ─────────────────────────────────────────────
+const guestNameEl = document.getElementById('guest-name');
+const gs1Next = document.getElementById('gs1-next');
+guestNameEl.addEventListener('input', () => { gs1Next.disabled = !guestNameEl.value.trim(); });
+gs1Next.addEventListener('click', () => showGuestStep(2));
+
+document.querySelectorAll('.energy-opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.energy-opt').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    document.getElementById('gs2-next').disabled = false;
+  });
+});
+document.getElementById('gs2-next').addEventListener('click', () => showGuestStep(3));
+
+document.getElementById('budget-slider').addEventListener('input', function() {
+  const v = parseInt(this.value);
+  document.getElementById('budget-display').textContent = v >= 100 ? '$100+' : `$${v}`;
+});
+
+document.getElementById('gs3-submit').addEventListener('click', () => {
+  selectedPlan = null;
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('btn-lock').disabled = true;
+  showScreen('s3');
+});
+
+// ── SCREEN 3: VOTE ────────────────────────────────────────────────────
+document.querySelectorAll('.plan-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedPlan = parseInt(card.dataset.plan);
+    document.getElementById('btn-lock').disabled = false;
+  });
+});
+
+document.getElementById('btn-lock').addEventListener('click', () => {
+  const plan = PLANS[selectedPlan];
+  document.getElementById('s4-badge').textContent = plan.badge;
+  document.getElementById('s4-plan-name').textContent = plan.name;
+  document.getElementById('s4-event-context').textContent = `${eventName} · ${demoCode}`;
+  document.getElementById('s4-cost').textContent = plan.cost;
+  document.getElementById('s4-stops').innerHTML = plan.stops.map(s => `
+    <div class="confirmed-stop">
+      <div class="confirmed-stop-time">${s.time}</div>
+      <div>
+        <div class="confirmed-stop-name">${s.name}</div>
+        <div class="confirmed-stop-meta">${s.meta}</div>
+      </div>
+    </div>`).join('');
+  showScreen('s4');
+});
+
+// ── SCREEN 4: SHARE ───────────────────────────────────────────────────
+document.getElementById('btn-share').addEventListener('click', function() {
+  const plan = PLANS[selectedPlan];
+  const text = `Tonight: ${plan.name}\n${plan.stops.map(s=>`${s.time} — ${s.name}`).join('\n')}\n\nRendezvous · ${demoCode}`;
+  if (navigator.share) {
+    navigator.share({title:"Tonight's plan", text}).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(text).catch(()=>{});
+    this.textContent = 'Copied ✓';
+    setTimeout(() => { this.textContent = 'Share with your group'; }, 2000);
+  }
+});
+
+document.getElementById('btn-demo-restart').addEventListener('click', () => location.reload());
 </script>
 </body>
 </html>
