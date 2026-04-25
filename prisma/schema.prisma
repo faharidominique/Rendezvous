@@ -306,6 +306,43 @@ model AnalyticsEvent {
   @@map("analytics_events")
 }
 
+// ── EVENTS (unauthenticated host flow) ───────────────────────────────
+model Event {
+  id           String       @id @default(uuid())
+  hostName     String
+  eventName    String
+  groupSize    Int
+  date         DateTime
+  timeStart    String
+  timeEnd      String
+  neighborhood String
+  vibe         String
+  code         String       @unique
+  status       String       @default("COLLECTING")
+  createdAt    DateTime     @default(now())
+  guests       EventGuest[]
+
+  @@map("events")
+}
+
+model EventGuest {
+  id               String    @id @default(uuid())
+  eventId          String
+  event            Event     @relation(fields: [eventId], references: [id])
+  joinToken        String    @unique @default(uuid())
+  name             String?
+  email            String?
+  energy           String?
+  budget           Int?
+  vibe             String?
+  prefsSubmittedAt DateTime?
+  votedPlanId      String?
+  votedAt          DateTime?
+  createdAt        DateTime  @default(now())
+
+  @@map("event_guests")
+}
+
 // ── NOTIFICATION PREFERENCES ──────────────────────────────────────────
 model NotifPreference {
   id             String  @id @default(uuid())
